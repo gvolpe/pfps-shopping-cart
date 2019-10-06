@@ -14,6 +14,7 @@ object Dependencies {
     val log4cats      = "1.0.0"
     val newtype       = "0.4.3"
     val refined       = "0.9.10"
+    val skunk         = "0.0.4"
     val squants       = "1.5.0"
 
     val betterMonadicFor = "0.3.0"
@@ -56,6 +57,8 @@ object Dependencies {
 
     lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % Versions.log4cats
     lazy val newtype  = "io.estatico"       %% "newtype"        % Versions.newtype
+
+    lazy val skunk = "org.tpolecat" %% "skunk-core" % Versions.skunk
 
     // Compiler plugins
     lazy val betterMonadicFor = "com.olegpy"    %% "better-monadic-for" % Versions.betterMonadicFor

@@ -33,6 +33,7 @@ lazy val root = (project in file("."))
       Libraries.newtype,
       Libraries.refinedCore,
       Libraries.refinedCats,
+      Libraries.skunk,
       //Libraries.squants, // TODO: Re-enable when there's a release for 2.13.x
       Libraries.scalaTest      % Test,
       Libraries.scalaCheck     % Test,
