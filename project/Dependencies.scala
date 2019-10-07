@@ -10,7 +10,7 @@ object Dependencies {
     val ciris         = "0.13.0-RC1"
     val fs2           = "2.0.0"
     val http4s        = "0.21.0-M5"
-    val http4sJwtAuth = "0.0.1"
+    val http4sJwtAuth = "0.0.2-SNAPSHOT"
     val log4cats      = "1.0.0"
     val newtype       = "0.4.3"
     val refined       = "0.9.10"

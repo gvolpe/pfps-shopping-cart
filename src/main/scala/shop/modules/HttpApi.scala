@@ -3,7 +3,7 @@ package shop.modules
 import cats.effect._
 import cats.implicits._
 import dev.profunktor.auth.JwtAuthMiddleware
-import dev.profunktor.auth.jwt.{ JwtAuth, JwtSecretKey }
+import dev.profunktor.auth.jwt.{ JwtAuth, JwtSecretKey, JwtToken }
 import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.implicits._
@@ -52,8 +52,10 @@ class HttpApi[F[_]: Concurrent: Timer] private (
     )
   )
 
-  private val adminAuth = services.auth.findUser[AdminUser](AdminRole)(_)
-  private val usersAuth = services.auth.findUser[CommonUser](UserRole)(_)
+  private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] = t =>
+    c => services.auth.findUser[AdminUser](AdminRole)(t)(c)
+  private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] = t =>
+    c => services.auth.findUser[CommonUser](UserRole)(t)(c)
 
   private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, usersAuth)

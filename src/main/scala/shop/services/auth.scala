@@ -16,7 +16,7 @@ import scala.util.Try
 
 // TODO: We could use Neo4j to store the User-HAS_ROLE-AdminRole relationships
 trait AuthService[F[_]] {
-  def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(claim: JwtClaim): F[Option[A]]
+  def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
   def newUser(user: LoggedUser, role: AuthRole): F[Unit]
   def loginByUsername(username: UserName, password: Password): F[Option[JwtToken]]
   def loginByEmail(email: Email, password: Password): F[Option[JwtToken]]
@@ -42,7 +42,7 @@ class LiveAuthService[F[_]: MonadError[?[_], Throwable]] private (
 ) extends AuthService[F] {
 
   // FIXME: Should also take a JwtToken to verify against Redis. JwtClaim is not needed in this case.
-  def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(claim: JwtClaim): F[Option[A]] = {
+  def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] = {
     println(s">>>>>>>> CONTENT ${claim.content}")
     Try(ju.UUID.fromString(claim.content.drop(1).dropRight(1)))
       .liftTo[F]
