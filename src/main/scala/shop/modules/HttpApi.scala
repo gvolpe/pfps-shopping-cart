@@ -58,8 +58,11 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, usersAuth)
 
+  // Auth routes (open)
+  private val loginRoutes = LoginRoutes[F](services.auth).routes
+  private val userRoutes  = UserRoutes[F](services.auth).routes
+
   // Open routes
-  private val authRoutes     = AuthRoutes[F](services.auth).routes
   private val healthRoutes   = HealthRoutes[F].routes
   private val brandRoutes    = BrandRoutes[F](services.brand).routes
   private val categoryRoutes = CategoryRoutes[F](services.category).routes
@@ -69,6 +72,9 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   // Secured routes
   private val cartRoutes = CartRoutes[F](services.cart).routes(usersMiddleware)
 
+  // Auth routes (secured)
+  private val logoutRoutes = LogoutRoutes[F](services.auth).routes(usersMiddleware)
+
   // Admin routes
   private val adminBrandRoutes    = AdminBrandRoutes[F](services.brand).routes(adminMiddleware)
   private val adminCategoryRoutes = AdminCategoryRoutes[F](services.category).routes(adminMiddleware)
@@ -76,9 +82,9 @@ class HttpApi[F[_]: Concurrent: Timer] private (
 
   // Combining all the http routes
   private val openRoutes: HttpRoutes[F] =
-    healthRoutes <+> authRoutes <+> tokenRoutes <+>
-      itemRoutes <+> cartRoutes <+> brandRoutes <+>
-      categoryRoutes
+    healthRoutes <+> tokenRoutes <+> itemRoutes <+>
+      brandRoutes <+> categoryRoutes <+> loginRoutes <+>
+      userRoutes <+> logoutRoutes <+> cartRoutes
 
   private val adminRoutes: HttpRoutes[F] =
     adminItemRoutes <+> adminBrandRoutes <+> adminCategoryRoutes

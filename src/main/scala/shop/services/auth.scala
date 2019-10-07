@@ -20,8 +20,10 @@ trait AuthService[F[_]] {
   def newUser(user: LoggedUser, role: AuthRole): F[Unit]
   def loginByUsername(username: UserName, password: Password): F[Option[JwtToken]]
   def loginByEmail(email: Email, password: Password): F[Option[JwtToken]]
+  def logout(token: JwtToken): F[Unit]
 }
 
+// TODO: Use Redis to store tokens with expiration
 object LiveAuthService {
   // Hardcoded Admin UUID for now
   private val adminId = ju.UUID.fromString("004b4457-71c3-4439-a1b2-03820263b59c").coerce[UserId]
@@ -39,6 +41,7 @@ class LiveAuthService[F[_]: MonadError[?[_], Throwable]] private (
     usersRef: Ref[F, Map[String, LoggedUser]]
 ) extends AuthService[F] {
 
+  // FIXME: Should also take a JwtToken to verify against Redis. JwtClaim is not needed in this case.
   def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(claim: JwtClaim): F[Option[A]] = {
     println(s">>>>>>>> CONTENT ${claim.content}")
     Try(ju.UUID.fromString(claim.content.drop(1).dropRight(1)))
@@ -67,5 +70,7 @@ class LiveAuthService[F[_]: MonadError[?[_], Throwable]] private (
 
   def loginByEmail(email: Email, password: Password): F[Option[JwtToken]] =
     none[JwtToken].pure[F]
+
+  def logout(token: JwtToken): F[Unit] = ().pure[F]
 
 }

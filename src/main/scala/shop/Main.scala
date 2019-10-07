@@ -11,14 +11,22 @@ import org.http4s.server.blaze.BlazeServerBuilder
 object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] =
-    new Main[IO].program.as(ExitCode.Success)
+    new Main[IO].httpApi.flatMap { api =>
+      BlazeServerBuilder[IO]
+        .bindHttp(8080, "0.0.0.0")
+        .withHttpApp(api.httpApp)
+        .serve
+        .compile
+        .drain
+        .as(ExitCode.Success)
+    }
 
 }
 
-class Main[F[_]: ConcurrentEffect: ContextShift: Parallel: Timer] { // HasAppConfig
+class Main[F[_]: Concurrent: Parallel: Timer] { // HasAppConfig
   //import com.olegpy.meow.hierarchy._
 
-  val program: F[Unit] =
+  val httpApi: F[HttpApi[F]] =
     Slf4jLogger.create.flatMap { implicit logger =>
       for {
         //httpConfig <- Stream.eval(ask[F, HttpConfig])
@@ -26,13 +34,7 @@ class Main[F[_]: ConcurrentEffect: ContextShift: Parallel: Timer] { // HasAppCon
         _ <- logger.info(s"Loaded config $config")
         services <- Services.make[F](config.tokenConfig)
         api <- HttpApi.make[F](services, config.adminJwtConfig, config.tokenConfig)
-        _ <- BlazeServerBuilder[F]
-              .bindHttp(8080, "0.0.0.0")
-              .withHttpApp(api.httpApp)
-              .serve
-              .compile
-              .drain
-      } yield ()
+      } yield api
     }
 
 }

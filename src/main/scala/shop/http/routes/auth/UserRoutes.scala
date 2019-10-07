@@ -12,7 +12,7 @@ import shop.http.json.protocol._
 import shop.services.{ AuthService, GenUUID }
 import shop.http.auth.roles._
 
-final case class AuthRoutes[F[_]: GenUUID: Sync](
+final case class UserRoutes[F[_]: GenUUID: Sync](
     authService: AuthService[F]
 ) extends Http4sDsl[F] {
 
@@ -22,7 +22,7 @@ final case class AuthRoutes[F[_]: GenUUID: Sync](
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
 
     // create a new user
-    case req @ POST -> Root / "register" =>
+    case req @ POST -> Root / "users" =>
       req.decode[CreateUser] { newUser =>
         GenUUID[F].make.flatMap { uuid =>
           // TODO: 409 on email / username conflict
@@ -30,27 +30,6 @@ final case class AuthRoutes[F[_]: GenUUID: Sync](
           authService.newUser(user, UserRole) >> Created(uuid)
         }
       }
-
-    // login existing user
-    case req @ POST -> Root / "login" =>
-      req.decode[LoginUser] { loginUser =>
-        (loginUser.username, loginUser.email) match {
-          case (Some(username), _) =>
-            authService
-              .loginByUsername(username, loginUser.password)
-              .flatMap(_.fold(Forbidden())(Ok(_)))
-          case (_, Some(email)) =>
-            authService
-              .loginByEmail(email, loginUser.password)
-              .flatMap(_.fold(Forbidden())(Ok(_)))
-          case _ =>
-            BadRequest("Missing username or email")
-        }
-      }
-
-    // logout user off the system TODO: needs to be an authed route to get the token?
-    case POST -> Root / "logout" =>
-      NoContent() // TODO: expire token and return
 
   }
 
