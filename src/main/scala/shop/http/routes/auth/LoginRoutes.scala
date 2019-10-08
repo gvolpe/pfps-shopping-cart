@@ -27,11 +27,17 @@ final case class LoginRoutes[F[_]: Sync](
           case (Some(username), _) =>
             authService
               .loginByUsername(username, loginUser.password)
-              .flatMap(_.fold(Forbidden())(Ok(_)))
+              .flatMap(Ok(_))
+              .handleErrorWith {
+                case InvalidUserOrPassword(_) => Forbidden()
+              }
           case (_, Some(email)) =>
             authService
               .loginByEmail(email, loginUser.password)
-              .flatMap(_.fold(Forbidden())(Ok(_)))
+              .flatMap(Ok(_))
+              .handleErrorWith {
+                case InvalidUserOrPassword(_) => Forbidden()
+              }
           case _ =>
             BadRequest("Missing username or email")
         }

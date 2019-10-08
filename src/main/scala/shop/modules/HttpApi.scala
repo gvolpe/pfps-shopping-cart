@@ -11,7 +11,6 @@ import org.http4s.server.middleware.{ AutoSlash, CORS, Timeout }
 import org.http4s.server.Router
 import pdi.jwt._
 import scala.concurrent.duration._
-import shop.config._
 import shop.http.auth._
 import shop.http.auth.roles._
 import shop.http.routes._
@@ -20,22 +19,12 @@ import shop.http.routes.secured._
 
 object HttpApi {
   def make[F[_]: Concurrent: Timer](
-      services: Services[F],
-      jwtConfig: JwtConfig,
-      tokenConfig: TokenConfig
-  ): F[HttpApi[F]] = {
-    val adminJwtAuth: AdminJwtAuth = JwtAuth(
-      JwtSecretKey(jwtConfig.secretKey.value.value),
-      JwtAlgorithm.HS256
-    ).coerce[AdminJwtAuth]
-
-    val userJwtAuth: UserJwtAuth = JwtAuth(
-      JwtSecretKey(tokenConfig.secretKey.value.value),
-      JwtAlgorithm.HS256
-    ).coerce[UserJwtAuth]
-
-    new HttpApi[F](services, adminJwtAuth, userJwtAuth).pure[F]
-  }
+      services: Services[F]
+  ): F[HttpApi[F]] =
+    (services.auth.adminJwtAuth, services.auth.userJwtAuth).mapN {
+      case (admin, users) =>
+        new HttpApi[F](services, admin, users)
+    }
 }
 
 class HttpApi[F[_]: Concurrent: Timer] private (
@@ -43,15 +32,6 @@ class HttpApi[F[_]: Concurrent: Timer] private (
     adminJwtAuth: AdminJwtAuth,
     userJwtAuth: UserJwtAuth
 ) {
-
-  println(
-    Jwt.encode(
-      JwtClaim("""{004b4457-71c3-4439-a1b2-03820263b59c}"""),
-      adminJwtAuth.value.secretKey.value,
-      JwtAlgorithm.HS256
-    )
-  )
-
   private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] = t =>
     c => services.auth.findUser[AdminUser](AdminRole)(t)(c)
   private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] = t =>

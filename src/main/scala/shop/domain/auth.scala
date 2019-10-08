@@ -3,6 +3,7 @@ package shop.domain
 import io.estatico.newtype.macros.newtype
 import java.{ util => ju }
 import shop.http.auth.roles.UserName
+import scala.util.control.NoStackTrace
 
 object auth {
 
@@ -17,6 +18,9 @@ object auth {
       email: NewEmail,
       password: NewPassword
   )
+
+  case class UserNameInUse(username: UserName) extends NoStackTrace
+  case class InvalidUserOrPassword(username: UserName) extends NoStackTrace
 
   // --------- user login -----------
 

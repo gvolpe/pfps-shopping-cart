@@ -9,26 +9,30 @@ import org.http4s.server.Router
 import shop.domain.auth._
 import shop.http.json._
 import shop.http.json.protocol._
-import shop.services.{ AuthService, GenUUID }
+import shop.services.AuthService
 import shop.http.auth.roles._
 
-final case class UserRoutes[F[_]: GenUUID: Sync](
+final case class UserRoutes[F[_]: Sync](
     authService: AuthService[F]
 ) extends Http4sDsl[F] {
 
   private[routes] val prefixPath = "/auth"
 
-  // TODO: Register should return access token
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
 
-    // create a new user
+    // creates a new user
     case req @ POST -> Root / "users" =>
       req.decode[CreateUser] { newUser =>
-        GenUUID[F].make.flatMap { uuid =>
-          // TODO: 409 on email / username conflict
-          val user = LoggedUser(uuid.coerce[UserId], newUser.username.value.coerce[UserName])
-          authService.newUser(user, UserRole) >> Created(uuid)
-        }
+        // TODO: Use Chimney for conversions
+        val username = newUser.username.value.coerce[UserName]
+        val password = newUser.password.value.coerce[Password]
+
+        authService
+          .newUser(username, password, UserRole)
+          .flatMap(Created(_))
+          .handleErrorWith {
+            case UserNameInUse(u) => Conflict(u.value)
+          }
       }
 
   }

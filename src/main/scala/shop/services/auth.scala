@@ -7,69 +7,86 @@ import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
-import java.{ util => ju }
 import pdi.jwt.JwtClaim
-import shop.domain.auth.{ Email, Password }
+import shop.domain.auth._
 import shop.http.auth.roles._
 import scala.util.control.NonFatal
 import scala.util.Try
 
-// TODO: We could use Neo4j to store the User-HAS_ROLE-AdminRole relationships
 trait AuthService[F[_]] {
+  def adminJwtAuth: F[AdminJwtAuth]
+  def userJwtAuth: F[UserJwtAuth]
   def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
-  def newUser(user: LoggedUser, role: AuthRole): F[Unit]
-  def loginByUsername(username: UserName, password: Password): F[Option[JwtToken]]
-  def loginByEmail(email: Email, password: Password): F[Option[JwtToken]]
+  def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken]
+  def loginByUsername(username: UserName, password: Password): F[JwtToken]
+  def loginByEmail(email: Email, password: Password): F[JwtToken]
   def logout(token: JwtToken): F[Unit]
 }
 
 // TODO: Use Redis to store tokens with expiration
 object LiveAuthService {
-  // Hardcoded Admin UUID for now
-  private val adminId = ju.UUID.fromString("004b4457-71c3-4439-a1b2-03820263b59c").coerce[UserId]
-  private val admin   = LoggedUser(adminId, "admin".coerce[UserName])
-
-  def make[F[_]: Sync]: F[AuthService[F]] =
+  def make[F[_]: Sync](
+      adminToken: JwtToken,
+      adminUser: AdminUser,
+      adminJwtAuth: AdminJwtAuth,
+      userJwtAuth: UserJwtAuth,
+      tokenService: TokenService[F]
+  ): F[AuthService[F]] =
     for {
-      adminRef <- Ref.of[F, Map[String, LoggedUser]](Map(admin.id.value.toString -> admin))
-      usersRef <- Ref.of[F, Map[String, LoggedUser]](Map.empty)
-    } yield new LiveAuthService(adminRef, usersRef)
+      adminTokens <- Ref.of[F, Map[JwtToken, LoggedUser]](Map(adminToken -> adminUser.coerce[LoggedUser]))
+      userTokens <- Ref.of[F, Map[JwtToken, LoggedUser]](Map.empty)
+      usersRef <- Ref.of[F, Map[UserName, (LoggedUser, Password)]](Map.empty)
+    } yield new LiveAuthService(adminTokens, userTokens, usersRef, adminJwtAuth, userJwtAuth, tokenService)
 }
 
-class LiveAuthService[F[_]: MonadError[?[_], Throwable]] private (
-    adminRef: Ref[F, Map[String, LoggedUser]],
-    usersRef: Ref[F, Map[String, LoggedUser]]
+class LiveAuthService[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
+    adminTokens: Ref[F, Map[JwtToken, LoggedUser]],
+    userTokens: Ref[F, Map[JwtToken, LoggedUser]],
+    users: Ref[F, Map[UserName, (LoggedUser, Password)]],
+    adminAuth: AdminJwtAuth,
+    userAuth: UserJwtAuth,
+    tokenService: TokenService[F]
 ) extends AuthService[F] {
 
-  // FIXME: Should also take a JwtToken to verify against Redis. JwtClaim is not needed in this case.
-  def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] = {
-    println(s">>>>>>>> CONTENT ${claim.content}")
-    Try(ju.UUID.fromString(claim.content.drop(1).dropRight(1)))
-      .liftTo[F]
-      .flatMap { uuid =>
-        println(s">>>>>>>>>>>> UUID : $uuid")
-        val st = role match {
-          case AdminRole => adminRef.get
-          case UserRole  => usersRef.get
-        }
-        st.map(_.get(uuid.toString).fold(none[A])(_.coerce[A].some))
-      }
-      .handleErrorWith {
-        case NonFatal(e) => println(s">>>>>>> ${claim.content}"); e.printStackTrace(); throw e
-      }
-  }
+  def adminJwtAuth: F[AdminJwtAuth] = adminAuth.pure[F]
+  def userJwtAuth: F[UserJwtAuth]   = userAuth.pure[F]
 
-  def newUser(user: LoggedUser, role: AuthRole): F[Unit] =
+  // FIXME: Should also take a JwtToken to verify against Redis. JwtClaim is not needed in this case.
+  def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
-      case AdminRole => adminRef.update(_.updated(user.id.value.toString, user))
-      case UserRole  => usersRef.update(_.updated(user.id.value.toString, user))
+      case AdminRole => adminTokens.get.map(_.get(token).asInstanceOf[Option[A]])
+      case UserRole  => userTokens.get.map(_.get(token).asInstanceOf[Option[A]])
     }
 
-  def loginByUsername(username: UserName, password: Password): F[Option[JwtToken]] =
-    none[JwtToken].pure[F]
+  def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken] =
+    role match {
+      case AdminRole => new UnsupportedOperationException().raiseError[F, JwtToken]
+      case UserRole =>
+        users.get.flatMap {
+          _.get(username) match {
+            case None =>
+              GenUUID[F].make.flatMap { uuid =>
+                val user = LoggedUser(uuid.coerce[UserId], username)
+                users.update(_.updated(username, user -> password)) *> loginByUsername(username, password)
+              }
+            case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
+          }
+        }
+    }
 
-  def loginByEmail(email: Email, password: Password): F[Option[JwtToken]] =
-    none[JwtToken].pure[F]
+  def loginByUsername(username: UserName, password: Password): F[JwtToken] =
+    users.get.flatMap {
+      _.get(username) match {
+        // TODO: Encrypt passwords
+        case Some((u, p)) if p == password =>
+          tokenService.create.flatTap { token =>
+            userTokens.update(_.updated(token, u))
+          }
+        case _ => InvalidUserOrPassword(username).raiseError[F, JwtToken]
+      }
+    }
+
+  def loginByEmail(email: Email, password: Password): F[JwtToken] = ???
 
   def logout(token: JwtToken): F[Unit] = ().pure[F]
 
