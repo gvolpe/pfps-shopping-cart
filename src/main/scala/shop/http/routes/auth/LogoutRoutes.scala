@@ -21,6 +21,7 @@ final case class LogoutRoutes[F[_]: Sync](
 
   private val httpRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
 
+    // TODO: What's the correct response code on logout? 401?
     case req @ POST -> Root / "logout" as _ =>
       AuthHeaders
         .getBearerToken(req.req)

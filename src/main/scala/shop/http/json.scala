@@ -63,25 +63,29 @@ object json {
   //implicit val itemNameEncoder: Encoder[ItemName] = deriveEncoder[ItemName]
 
   implicit val newUserNameDecoder: Decoder[NewUserName] =
-    Decoder.forProduct1("username")(NewUserName.apply)
+    Decoder[String].map(NewUserName.apply)
 
   implicit val newEmailDecoder: Decoder[NewEmail] =
-    Decoder.forProduct1("email")(NewEmail.apply)
+    Decoder[String].map(NewEmail.apply)
 
   implicit val newPasswordDecoder: Decoder[NewPassword] =
-    Decoder.forProduct1("password")(NewPassword.apply)
+    Decoder[String].map(NewPassword.apply)
 
   implicit val userNameDecoder: Decoder[UserName] =
-    Decoder.forProduct1("username")(UserName.apply)
+    Decoder[String].map(UserName.apply)
 
   implicit val emailDecoder: Decoder[Email] =
-    Decoder.forProduct1("email")(Email.apply)
+    Decoder[String].map(Email.apply)
 
   implicit val passwordDecoder: Decoder[Password] =
-    Decoder.forProduct1("password")(Password.apply)
+    Decoder[String].map(Password.apply)
 
-  implicit val createUserDecoder: Decoder[CreateUser] = deriveDecoder[CreateUser]
-  implicit val loginUserDecoder: Decoder[LoginUser]   = deriveDecoder[LoginUser]
+  implicit val createUserDecoder: Decoder[CreateUser] =
+    Decoder.forProduct3("username", "email", "password")(
+      (u: NewUserName, e: NewEmail, p: NewPassword) => CreateUser(u, e, p)
+    )
+
+  implicit val loginUserDecoder: Decoder[LoginUser] = deriveDecoder[LoginUser]
 
   implicit val brandDecoder: Encoder[Brand] =
     Encoder.forProduct1("brand")(_.value)

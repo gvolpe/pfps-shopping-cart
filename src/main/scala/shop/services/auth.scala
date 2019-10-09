@@ -52,6 +52,7 @@ class LiveAuthService[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
   def userJwtAuth: F[UserJwtAuth]   = userAuth.pure[F]
 
   // FIXME: Should also take a JwtToken to verify against Redis. JwtClaim is not needed in this case.
+  // Maybe for extra security we can persist the JwtClaim to compare against.
   def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
       case AdminRole => adminTokens.get.map(_.get(token).asInstanceOf[Option[A]])
@@ -60,7 +61,7 @@ class LiveAuthService[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
 
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken] =
     role match {
-      case AdminRole => new UnsupportedOperationException().raiseError[F, JwtToken]
+      case AdminRole => UnsupportedOperation.raiseError[F, JwtToken]
       case UserRole =>
         users.get.flatMap {
           _.get(username) match {
@@ -88,6 +89,7 @@ class LiveAuthService[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
 
   def loginByEmail(email: Email, password: Password): F[JwtToken] = ???
 
-  def logout(token: JwtToken): F[Unit] = ().pure[F]
+  def logout(token: JwtToken): F[Unit] =
+    userTokens.update(_.removed(token))
 
 }
