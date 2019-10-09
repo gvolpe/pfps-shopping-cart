@@ -6,6 +6,7 @@ import io.circe._
 import io.circe.generic.extras.decoding.UnwrappedDecoder
 import io.circe.generic.extras.encoding.UnwrappedEncoder
 import io.circe.generic.semiauto._
+import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import java.{ util => ju }
 import org.http4s.{ EntityDecoder, EntityEncoder }
@@ -60,37 +61,17 @@ object json {
   implicit val tokenEncoder: Encoder[JwtToken] =
     Encoder.forProduct1("accessToken")(_.value)
 
-  //implicit val itemNameEncoder: Encoder[ItemName] = deriveEncoder[ItemName]
+  implicit def coercibleStringDecoder[A: Coercible[String, ?]]: Decoder[A] =
+    Decoder[String].map(_.coerce[A])
 
-  implicit val newUserNameDecoder: Decoder[NewUserName] =
-    Decoder[String].map(NewUserName.apply)
-
-  implicit val newEmailDecoder: Decoder[NewEmail] =
-    Decoder[String].map(NewEmail.apply)
-
-  implicit val newPasswordDecoder: Decoder[NewPassword] =
-    Decoder[String].map(NewPassword.apply)
-
-  implicit val userNameDecoder: Decoder[UserName] =
-    Decoder[String].map(UserName.apply)
-
-  implicit val emailDecoder: Decoder[Email] =
-    Decoder[String].map(Email.apply)
-
-  implicit val passwordDecoder: Decoder[Password] =
-    Decoder[String].map(Password.apply)
-
-  implicit val createUserDecoder: Decoder[CreateUser] =
-    Decoder.forProduct3("username", "email", "password")(
-      (u: NewUserName, e: NewEmail, p: NewPassword) => CreateUser(u, e, p)
-    )
+  implicit val createUserDecoder: Decoder[CreateUser] = deriveDecoder[CreateUser]
 
   implicit val loginUserDecoder: Decoder[LoginUser] = deriveDecoder[LoginUser]
 
-  implicit val brandDecoder: Encoder[Brand] =
+  implicit val brandEncoder: Encoder[Brand] =
     Encoder.forProduct1("brand")(_.value)
 
-  implicit val categoryDecoder: Encoder[Category] =
+  implicit val categoryEncoder: Encoder[Category] =
     Encoder.forProduct1("category")(_.value)
 
   object protocol {
