@@ -9,6 +9,7 @@ import io.estatico.newtype.ops._
 import java.{ util => ju }
 import pdi.jwt._
 import shop.config._
+import shop.domain.auth._
 import shop.http.auth.roles._
 import shop.services._
 

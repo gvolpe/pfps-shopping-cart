@@ -2,19 +2,18 @@ package shop.domain
 
 import io.estatico.newtype.macros.newtype
 import java.{ util => ju }
-import shop.http.auth.roles.UserName
 import scala.util.control.NoStackTrace
 
 object auth {
 
+  @newtype case class UserName(value: String)
+  @newtype case class Password(value: String)
+
   // --------- user registration -----------
 
-  @newtype case class NewUserName(value: String)
-  @newtype case class NewPassword(value: String)
-
   case class CreateUser(
-      username: NewUserName,
-      password: NewPassword
+      username: UserName,
+      password: Password
   )
 
   case class UserNameInUse(username: UserName) extends NoStackTrace
@@ -22,8 +21,6 @@ object auth {
   case object UnsupportedOperation extends NoStackTrace
 
   // --------- user login -----------
-
-  @newtype case class Password(value: String)
 
   case class LoginUser(
       username: UserName,

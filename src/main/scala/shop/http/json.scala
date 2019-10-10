@@ -16,7 +16,6 @@ import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.category._
 import shop.domain.item._
-import shop.http.auth.roles.UserName
 
 object json {
   implicit def valueClassEncoder[A: UnwrappedEncoder]: Encoder[A] = implicitly

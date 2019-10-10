@@ -20,9 +20,7 @@ final case class LoginRoutes[F[_]: Sync](
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
 
-    // login existing user
     case req @ POST -> Root / "login" =>
-      // TODO: Handle 422 code and return 400 instead?
       req.decode[LoginUser] { user =>
         authService
           .login(user.username, user.password)

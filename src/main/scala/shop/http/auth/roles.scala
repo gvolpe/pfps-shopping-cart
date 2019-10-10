@@ -3,6 +3,7 @@ package shop.http.auth
 import dev.profunktor.auth.jwt.JwtAuth
 import io.estatico.newtype.macros.newtype
 import java.{ util => ju }
+import shop.domain.auth.UserName
 
 object roles {
   sealed abstract class AuthRole
@@ -13,7 +14,6 @@ object roles {
   @newtype case class UserJwtAuth(value: JwtAuth)
 
   @newtype case class UserId(value: ju.UUID)
-  @newtype case class UserName(value: String)
 
   case class LoggedUser(id: UserId, name: UserName)
 

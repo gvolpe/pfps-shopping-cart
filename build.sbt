@@ -15,6 +15,7 @@ lazy val root = (project in file("."))
       Libraries.cats,
       Libraries.catsMeowMtl,
       Libraries.catsEffect,
+      Libraries.chimney,
       Libraries.circeCore,
       Libraries.circeGeneric,
       Libraries.circeGenericExt,

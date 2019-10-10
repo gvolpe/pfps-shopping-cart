@@ -20,20 +20,16 @@ final case class UserRoutes[F[_]: Sync](
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
 
-    // creates a new user
     case req @ POST -> Root / "users" =>
-      req.decode[CreateUser] { newUser =>
-        // TODO: Use Chimney for conversions
-        val username = newUser.username.value.coerce[UserName]
-        val password = newUser.password.value.coerce[Password]
-
-        authService
-          .newUser(username, password, UserRole)
-          .flatMap(Created(_))
-          .handleErrorWith {
-            case UserNameInUse(u) => Conflict(u.value)
-          }
-      }
+      req
+        .decode[CreateUser] { user =>
+          authService
+            .newUser(user.username, user.password, UserRole)
+            .flatMap(Created(_))
+            .handleErrorWith {
+              case UserNameInUse(u) => Conflict(u.value)
+            }
+        }
 
   }
 
