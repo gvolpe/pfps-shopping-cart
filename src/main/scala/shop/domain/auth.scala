@@ -29,8 +29,7 @@ object auth {
   @newtype case class Password(value: String)
 
   case class LoginUser(
-      username: Option[UserName],
-      email: Option[Email],
+      username: UserName,
       password: Password
   )
 }

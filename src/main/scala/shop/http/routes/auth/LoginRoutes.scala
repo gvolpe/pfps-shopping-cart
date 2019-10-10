@@ -22,25 +22,14 @@ final case class LoginRoutes[F[_]: Sync](
 
     // login existing user
     case req @ POST -> Root / "login" =>
-      req.decode[LoginUser] { loginUser =>
-        (loginUser.username, loginUser.email) match {
-          case (Some(username), _) =>
-            authService
-              .loginByUsername(username, loginUser.password)
-              .flatMap(Ok(_))
-              .handleErrorWith {
-                case InvalidUserOrPassword(_) => Forbidden()
-              }
-          case (_, Some(email)) =>
-            authService
-              .loginByEmail(email, loginUser.password)
-              .flatMap(Ok(_))
-              .handleErrorWith {
-                case InvalidUserOrPassword(_) => Forbidden()
-              }
-          case _ =>
-            BadRequest("Missing username or email")
-        }
+      // TODO: Handle 422 code and return 400 instead?
+      req.decode[LoginUser] { user =>
+        authService
+          .login(user.username, user.password)
+          .flatMap(Ok(_))
+          .handleErrorWith {
+            case InvalidUserOrPassword(_) => Forbidden()
+          }
       }
 
   }

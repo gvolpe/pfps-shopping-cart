@@ -18,8 +18,7 @@ trait AuthService[F[_]] {
   def userJwtAuth: F[UserJwtAuth]
   def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken]
-  def loginByUsername(username: UserName, password: Password): F[JwtToken]
-  def loginByEmail(email: Email, password: Password): F[JwtToken]
+  def login(username: UserName, password: Password): F[JwtToken]
   def logout(token: JwtToken): F[Unit]
 }
 
@@ -68,14 +67,14 @@ class LiveAuthService[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
             case None =>
               GenUUID[F].make.flatMap { uuid =>
                 val user = LoggedUser(uuid.coerce[UserId], username)
-                users.update(_.updated(username, user -> password)) *> loginByUsername(username, password)
+                users.update(_.updated(username, user -> password)) *> login(username, password)
               }
             case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
           }
         }
     }
 
-  def loginByUsername(username: UserName, password: Password): F[JwtToken] =
+  def login(username: UserName, password: Password): F[JwtToken] =
     users.get.flatMap {
       _.get(username) match {
         // TODO: Encrypt passwords
@@ -86,8 +85,6 @@ class LiveAuthService[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
         case _ => InvalidUserOrPassword(username).raiseError[F, JwtToken]
       }
     }
-
-  def loginByEmail(email: Email, password: Password): F[JwtToken] = ???
 
   def logout(token: JwtToken): F[Unit] =
     userTokens.update(_.removed(token))
