@@ -16,7 +16,7 @@ final case class ItemRoutes[F[_]: Sync](
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root =>
-      itemService.getAll.flatMap(Ok(_))
+      Ok(itemService.getAll)
   }
 
   val routes: HttpRoutes[F] = Router(
