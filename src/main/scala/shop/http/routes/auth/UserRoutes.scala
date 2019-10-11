@@ -6,13 +6,13 @@ import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
+import shop.algebras.Auth
 import shop.domain.auth._
 import shop.http.auth.roles._
 import shop.http.json._
-import shop.services.AuthService
 
 final case class UserRoutes[F[_]: Sync](
-    authService: AuthService[F]
+    auth: Auth[F]
 ) extends Http4sDsl[F] {
 
   private[routes] val prefixPath = "/auth"
@@ -22,7 +22,7 @@ final case class UserRoutes[F[_]: Sync](
     case req @ POST -> Root / "users" =>
       req
         .decode[CreateUser] { user =>
-          authService
+          auth
             .newUser(user.username, user.password, UserRole)
             .flatMap(Created(_))
             .handleErrorWith {

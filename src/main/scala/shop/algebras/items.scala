@@ -1,18 +1,18 @@
-package shop.services
+package shop.algebras
 
 import cats.Applicative
 import cats.implicits._
 import io.estatico.newtype.ops._
 import shop.domain.item._
 
-trait ItemService[F[_]] {
+trait Items[F[_]] {
   def getAll: F[List[Item]]
   def create(item: Item): F[Unit]
   def update(item: Item): F[Unit]
 }
 
-object LiveItemService {
-  def make[F[_]: Applicative: GenUUID]: F[ItemService[F]] =
+object LiveItems {
+  def make[F[_]: Applicative: GenUUID]: F[Items[F]] =
     GenUUID[F].make.replicateA(2).map { uuids =>
       val items = uuids
         .map(_.coerce[ItemId])
@@ -23,13 +23,13 @@ object LiveItemService {
           )
         )
         .map { case (id, (n, d, p)) => Item(id, n, d, p) }
-      new LiveItemService(items)
+      new LiveItems(items)
     }
 }
 
-class LiveItemService[F[_]: Applicative] private (
+class LiveItems[F[_]: Applicative] private (
     items: List[Item]
-) extends ItemService[F] {
+) extends Items[F] {
   def getAll: F[List[Item]]       = items.pure[F]
   def create(item: Item): F[Unit] = ().pure[F]
   def update(item: Item): F[Unit] = ().pure[F]

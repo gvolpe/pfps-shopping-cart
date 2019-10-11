@@ -1,4 +1,4 @@
-package shop.services
+package shop.algebras
 
 import cats.Applicative
 import cats.effect.Sync

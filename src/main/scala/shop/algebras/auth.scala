@@ -1,4 +1,4 @@
-package shop.services
+package shop.algebras
 
 import cats.MonadError
 import cats.effect.Sync
@@ -13,7 +13,7 @@ import shop.http.auth.roles._
 import scala.util.control.NonFatal
 import scala.util.Try
 
-trait AuthService[F[_]] {
+trait Auth[F[_]] {
   def adminJwtAuth: F[AdminJwtAuth]
   def userJwtAuth: F[UserJwtAuth]
   def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
@@ -23,29 +23,29 @@ trait AuthService[F[_]] {
 }
 
 // TODO: Use Redis to store tokens with expiration
-object LiveAuthService {
+object LiveAuth {
   def make[F[_]: Sync](
       adminToken: JwtToken,
       adminUser: AdminUser,
       adminJwtAuth: AdminJwtAuth,
       userJwtAuth: UserJwtAuth,
-      tokenService: TokenService[F]
-  ): F[AuthService[F]] =
+      tokens: Tokens[F]
+  ): F[Auth[F]] =
     for {
       adminTokens <- Ref.of[F, Map[JwtToken, LoggedUser]](Map(adminToken -> adminUser.coerce[LoggedUser]))
       userTokens <- Ref.of[F, Map[JwtToken, LoggedUser]](Map.empty)
       usersRef <- Ref.of[F, Map[UserName, (LoggedUser, Password)]](Map.empty)
-    } yield new LiveAuthService(adminTokens, userTokens, usersRef, adminJwtAuth, userJwtAuth, tokenService)
+    } yield new LiveAuth(adminTokens, userTokens, usersRef, adminJwtAuth, userJwtAuth, tokens)
 }
 
-class LiveAuthService[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
+class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
     adminTokens: Ref[F, Map[JwtToken, LoggedUser]],
     userTokens: Ref[F, Map[JwtToken, LoggedUser]],
     users: Ref[F, Map[UserName, (LoggedUser, Password)]],
     adminAuth: AdminJwtAuth,
     userAuth: UserJwtAuth,
-    tokenService: TokenService[F]
-) extends AuthService[F] {
+    tokens: Tokens[F]
+) extends Auth[F] {
 
   def adminJwtAuth: F[AdminJwtAuth] = adminAuth.pure[F]
   def userJwtAuth: F[UserJwtAuth]   = userAuth.pure[F]
@@ -79,7 +79,7 @@ class LiveAuthService[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
       _.get(username) match {
         // TODO: Encrypt passwords
         case Some((u, p)) if p == password =>
-          tokenService.create.flatTap { token =>
+          tokens.create.flatTap { token =>
             userTokens.update(_.updated(token, u))
           }
         case _ => InvalidUserOrPassword(username).raiseError[F, JwtToken]

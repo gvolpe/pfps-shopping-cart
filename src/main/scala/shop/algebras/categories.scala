@@ -1,25 +1,25 @@
-package shop.services
+package shop.algebras
 
 import cats.Applicative
 import cats.implicits._
 import io.estatico.newtype.ops._
 import shop.domain.category._
 
-trait CategoryService[F[_]] {
+trait Categories[F[_]] {
   def getAll: F[List[Category]]
   def create(category: Category): F[Unit]
 }
 
-object LiveCategoryService {
-  def make[F[_]: Applicative]: F[CategoryService[F]] =
-    new LiveCategoryService[F](
+object LiveCategories {
+  def make[F[_]: Applicative]: F[Categories[F]] =
+    new LiveCategories[F](
       List("Guitars").map(_.coerce[Category])
     ).pure[F].widen
 }
 
-class LiveCategoryService[F[_]: Applicative] private (
+class LiveCategories[F[_]: Applicative] private (
     categories: List[Category]
-) extends CategoryService[F] {
+) extends Categories[F] {
   def getAll: F[List[Category]]           = categories.pure[F]
   def create(category: Category): F[Unit] = ().pure[F]
 }

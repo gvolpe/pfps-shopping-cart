@@ -8,16 +8,16 @@ import dev.profunktor.auth.jwt._
 import io.estatico.newtype.ops._
 import java.{ util => ju }
 import pdi.jwt._
+import shop.algebras._
 import shop.config._
 import shop.domain.auth._
 import shop.http.auth.roles._
-import shop.services._
 
-object Services {
+object Algebras {
   def make[F[_]: GenUUID: Sync](
       jwtConfig: JwtConfig,
       tokenConfig: TokenConfig
-  ): F[Services[F]] = {
+  ): F[Algebras[F]] = {
     val adminJwtAuth: AdminJwtAuth = JwtAuth(
       JwtSecretKey(jwtConfig.secretKey.value.value),
       JwtAlgorithm.HS256
@@ -44,20 +44,20 @@ object Services {
 
     for {
       cart <- LiveShoppingCart.make[F]
-      token <- LiveTokenService.make[F](tokenConfig)
-      brand <- LiveBrandService.make[F]
-      category <- LiveCategoryService.make[F]
-      item <- LiveItemService.make[F]
-      auth <- LiveAuthService.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, token)
-    } yield new Services[F](cart, brand, category, item, token, auth)
+      token <- LiveTokens.make[F](tokenConfig)
+      brand <- LiveBrands.make[F]
+      category <- LiveCategories.make[F]
+      item <- LiveItems.make[F]
+      auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, token)
+    } yield new Algebras[F](cart, brand, category, item, token, auth)
   }
 }
 
-class Services[F[_]: Applicative: GenUUID] private (
+class Algebras[F[_]: Applicative: GenUUID] private (
     val cart: ShoppingCart[F],
-    val brand: BrandService[F],
-    val category: CategoryService[F],
-    val item: ItemService[F],
-    val token: TokenService[F],
-    val auth: AuthService[F]
+    val brands: Brands[F],
+    val categories: Categories[F],
+    val items: Items[F],
+    val tokens: Tokens[F],
+    val auth: Auth[F]
 ) {}

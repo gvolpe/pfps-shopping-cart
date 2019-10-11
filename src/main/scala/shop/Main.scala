@@ -32,7 +32,7 @@ class Main[F[_]: Concurrent: Parallel: Timer] { // HasAppConfig
         //httpConfig <- Stream.eval(ask[F, HttpConfig])
         config <- config.load[F]
         _ <- logger.info(s"Loaded config $config")
-        services <- Services.make[F](config.adminJwtConfig, config.tokenConfig)
+        services <- Algebras.make[F](config.adminJwtConfig, config.tokenConfig)
         api <- HttpApi.make[F](services)
       } yield api
     }

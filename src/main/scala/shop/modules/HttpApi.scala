@@ -19,47 +19,47 @@ import shop.http.routes.secured._
 
 object HttpApi {
   def make[F[_]: Concurrent: Timer](
-      services: Services[F]
+      algebras: Algebras[F]
   ): F[HttpApi[F]] =
-    (services.auth.adminJwtAuth, services.auth.userJwtAuth).mapN {
+    (algebras.auth.adminJwtAuth, algebras.auth.userJwtAuth).mapN {
       case (admin, users) =>
-        new HttpApi[F](services, admin, users)
+        new HttpApi[F](algebras, admin, users)
     }
 }
 
 class HttpApi[F[_]: Concurrent: Timer] private (
-    services: Services[F],
+    algebras: Algebras[F],
     adminJwtAuth: AdminJwtAuth,
     userJwtAuth: UserJwtAuth
 ) {
   private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] = t =>
-    c => services.auth.findUser[AdminUser](AdminRole)(t)(c)
+    c => algebras.auth.findUser[AdminUser](AdminRole)(t)(c)
   private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] = t =>
-    c => services.auth.findUser[CommonUser](UserRole)(t)(c)
+    c => algebras.auth.findUser[CommonUser](UserRole)(t)(c)
 
   private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, usersAuth)
 
   // Auth routes (open)
-  private val loginRoutes = LoginRoutes[F](services.auth).routes
-  private val userRoutes  = UserRoutes[F](services.auth).routes
+  private val loginRoutes = LoginRoutes[F](algebras.auth).routes
+  private val userRoutes  = UserRoutes[F](algebras.auth).routes
 
   // Open routes
   private val healthRoutes   = HealthRoutes[F].routes
-  private val brandRoutes    = BrandRoutes[F](services.brand).routes
-  private val categoryRoutes = CategoryRoutes[F](services.category).routes
-  private val itemRoutes     = ItemRoutes[F](services.item).routes
+  private val brandRoutes    = BrandRoutes[F](algebras.brands).routes
+  private val categoryRoutes = CategoryRoutes[F](algebras.categories).routes
+  private val itemRoutes     = ItemRoutes[F](algebras.items).routes
 
   // Secured routes
-  private val cartRoutes = CartRoutes[F](services.cart).routes(usersMiddleware)
+  private val cartRoutes = CartRoutes[F](algebras.cart).routes(usersMiddleware)
 
   // Auth routes (secured)
-  private val logoutRoutes = LogoutRoutes[F](services.auth).routes(usersMiddleware)
+  private val logoutRoutes = LogoutRoutes[F](algebras.auth).routes(usersMiddleware)
 
   // Admin routes
-  private val adminBrandRoutes    = AdminBrandRoutes[F](services.brand).routes(adminMiddleware)
-  private val adminCategoryRoutes = AdminCategoryRoutes[F](services.category).routes(adminMiddleware)
-  private val adminItemRoutes     = AdminItemRoutes[F](services.item).routes(adminMiddleware)
+  private val adminBrandRoutes    = AdminBrandRoutes[F](algebras.brands).routes(adminMiddleware)
+  private val adminCategoryRoutes = AdminCategoryRoutes[F](algebras.categories).routes(adminMiddleware)
+  private val adminItemRoutes     = AdminItemRoutes[F](algebras.items).routes(adminMiddleware)
 
   // Combining all the http routes
   private val openRoutes: HttpRoutes[F] =

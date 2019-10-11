@@ -7,13 +7,13 @@ import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
+import shop.algebras.Auth
 import shop.domain.auth._
 import shop.http.json._
-import shop.services.AuthService
 import shop.http.auth.roles._
 
 final case class LogoutRoutes[F[_]: Sync](
-    authService: AuthService[F]
+    auth: Auth[F]
 ) extends Http4sDsl[F] {
 
   private[routes] val prefixPath = "/auth"
@@ -23,7 +23,7 @@ final case class LogoutRoutes[F[_]: Sync](
     case req @ POST -> Root / "logout" as _ =>
       AuthHeaders
         .getBearerToken(req.req)
-        .fold(().pure[F])(authService.logout) *> NoContent()
+        .fold(().pure[F])(auth.logout) *> NoContent()
 
   }
 
