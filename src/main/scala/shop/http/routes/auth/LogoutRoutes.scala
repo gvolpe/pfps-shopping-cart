@@ -9,7 +9,6 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.domain.auth._
 import shop.http.json._
-import shop.http.json.protocol._
 import shop.services.AuthService
 import shop.http.auth.roles._
 

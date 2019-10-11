@@ -8,7 +8,6 @@ import org.http4s.server._
 import shop.http.auth._
 import shop.http.auth.roles.AdminUser
 import shop.http.json._
-import shop.http.json.protocol._
 import shop.services.ItemService
 
 final case class AdminItemRoutes[F[_]: Sync](

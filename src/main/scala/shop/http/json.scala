@@ -10,68 +10,39 @@ import java.{ util => ju }
 import org.http4s.{ EntityDecoder, EntityEncoder }
 import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import shop.domain.auth._
-import shop.domain.brand._
 import shop.domain.cart._
-import shop.domain.category._
 import shop.domain.item._
 
 object json {
 
+  implicit def jsonDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
+  implicit def jsonEncoder[F[_]: Sync, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
+
   implicit def coercibleDecoder[A: Coercible[B, ?], B: Decoder]: Decoder[A] =
     Decoder[B].map(_.coerce[A])
 
-  //implicit val itemNameDecoder: Decoder[ItemName]               = deriveDecoder[ItemName]
-  //implicit val itemDescriptionDecoder: Decoder[ItemDescription] = deriveDecoder[ItemDescription]
-  //implicit val itemPriceDecoder: Decoder[ItemPrice]             = deriveDecoder[ItemPrice]
-  //implicit val itemEncoder: Encoder[Item] = deriveEncoder[Item]
+  implicit def coercibleEncoder[A: Coercible[B, ?], B: Encoder]: Encoder[A] =
+    Encoder[B].contramap(_.repr.asInstanceOf[B])
 
-  //implicit def mapEncoder[K: Encoder, V: Encoder]: Encoder[Map[K, V]] = deriveEncoder[Map[K, V]]
+  implicit def coercibleKeyDecoder[A: Coercible[B, ?], B: KeyDecoder]: KeyDecoder[A] =
+    KeyDecoder[B].map(_.coerce[A])
 
-  implicit val itemDecoder: Decoder[Item] =
-    Decoder.forProduct4("uuid", "name", "description", "price")(
-      (i: ju.UUID, n: String, d: String, p: BigDecimal) => Item(ItemId(i), ItemName(n), ItemDescription(d), USD(p))
-    )
+  implicit def coercibleKeyEncoder[A: Coercible[B, ?], B: KeyEncoder]: KeyEncoder[A] =
+    KeyEncoder[A].contramap(_.repr)
 
-  // TODO: Get semiauto derivation working
-  implicit val itemEncoder: Encoder[Item] =
-    Encoder.forProduct4("uuid", "name", "description", "price")(
-      i => (i.uuid.value, i.name.value, i.description.value, i.price.value)
-    )
+  implicit val itemDecoder: Decoder[Item] = deriveDecoder[Item]
+  implicit val itemEncoder: Encoder[Item] = deriveEncoder[Item]
 
-  implicit val itemKeyDecoder: KeyDecoder[ItemId] =
-    new KeyDecoder[ItemId] {
-      def apply(key: String): Option[ItemId] =
-        KeyDecoder.decodeKeyUUID(key).map(_.coerce[ItemId])
-    }
+  implicit val cartItemEncoder: Encoder[CartItem] = deriveEncoder[CartItem]
 
-  implicit val itemKeyEncoder: KeyEncoder[ItemId] =
-    new KeyEncoder[ItemId] {
-      def apply(key: ItemId): String =
-        KeyEncoder.encodeKeyUUID(key.value)
-    }
+  implicit val tokenEncoder: Encoder[JwtToken] =
+    Encoder.forProduct1("access_token")(_.value)
 
   implicit val cartDecoder: Decoder[Cart] =
     Decoder.forProduct1("items")(Cart.apply)
 
-  implicit val cartItemEncoder: Encoder[CartItem] =
-    Encoder.forProduct2("item", "quantity")(ci => (ci.item, ci.quantity.value))
-
-  implicit val tokenEncoder: Encoder[JwtToken] =
-    Encoder.forProduct1("accessToken")(_.value)
-
   implicit val createUserDecoder: Decoder[CreateUser] = deriveDecoder[CreateUser]
 
   implicit val loginUserDecoder: Decoder[LoginUser] = deriveDecoder[LoginUser]
-
-  implicit val brandEncoder: Encoder[Brand] =
-    Encoder.forProduct1("brand")(_.value)
-
-  implicit val categoryEncoder: Encoder[Category] =
-    Encoder.forProduct1("category")(_.value)
-
-  object protocol {
-    implicit def jsonDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
-    implicit def jsonEncoder[F[_]: Sync, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
-  }
 
 }

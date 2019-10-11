@@ -6,7 +6,6 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import shop.http.json._
-import shop.http.json.protocol._
 import shop.services.BrandService
 
 final case class BrandRoutes[F[_]: Sync](
