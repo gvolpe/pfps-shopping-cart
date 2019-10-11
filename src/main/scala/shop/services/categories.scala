@@ -7,6 +7,7 @@ import shop.domain.category._
 
 trait CategoryService[F[_]] {
   def getAll: F[List[Category]]
+  def create(category: Category): F[Unit]
 }
 
 object LiveCategoryService {
@@ -19,5 +20,6 @@ object LiveCategoryService {
 class LiveCategoryService[F[_]: Applicative] private (
     categories: List[Category]
 ) extends CategoryService[F] {
-  def getAll: F[List[Category]] = categories.pure[F]
+  def getAll: F[List[Category]]           = categories.pure[F]
+  def create(category: Category): F[Unit] = ().pure[F]
 }

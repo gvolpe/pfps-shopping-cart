@@ -9,7 +9,7 @@ import shop.domain.item._
 import LiveShoppingCart._
 
 trait ShoppingCart[F[_]] {
-  def add(cartId: CartId, item: Item, quantity: Int): F[Unit]
+  def add(cartId: CartId, item: Item, quantity: Quantity): F[Unit]
   def get(cartId: CartId): F[List[CartItem]]
   def remove(cartId: CartId, itemId: ItemId): F[Unit]
   def update(cartId: CartId, cart: Cart): F[Unit]
@@ -37,7 +37,7 @@ class LiveShoppingCart[F[_]: Sync] private (
   private def getOrCreateCart(cartId: CartId): F[Ref[F, ItemsInCart]] =
     ref.get.flatMap(_.get(cartId).fold(createNewCart(cartId))(_.pure[F]))
 
-  def add(cartId: CartId, item: Item, quantity: Int): F[Unit] =
+  def add(cartId: CartId, item: Item, quantity: Quantity): F[Unit] =
     getOrCreateCart(cartId).flatMap { cart =>
       cart.update(_.updated(item.uuid, CartItem(item, quantity)))
     }

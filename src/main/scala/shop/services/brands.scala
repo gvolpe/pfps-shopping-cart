@@ -7,6 +7,7 @@ import shop.domain.brand._
 
 trait BrandService[F[_]] {
   def getAll: F[List[Brand]]
+  def create(brand: Brand): F[Unit]
 }
 
 object LiveBrandService {
@@ -19,5 +20,6 @@ object LiveBrandService {
 class LiveBrandService[F[_]: Applicative] private (
     brands: List[Brand]
 ) extends BrandService[F] {
-  def getAll: F[List[Brand]] = brands.pure[F]
+  def getAll: F[List[Brand]]        = brands.pure[F]
+  def create(brand: Brand): F[Unit] = ().pure[F]
 }

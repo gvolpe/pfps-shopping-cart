@@ -3,8 +3,6 @@ package shop.http
 import cats.effect.Sync
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe._
-import io.circe.generic.extras.decoding.UnwrappedDecoder
-import io.circe.generic.extras.encoding.UnwrappedEncoder
 import io.circe.generic.semiauto._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
@@ -18,8 +16,9 @@ import shop.domain.category._
 import shop.domain.item._
 
 object json {
-  implicit def valueClassEncoder[A: UnwrappedEncoder]: Encoder[A] = implicitly
-  implicit def valueClassDecoder[A: UnwrappedDecoder]: Decoder[A] = implicitly
+
+  implicit def coercibleDecoder[A: Coercible[B, ?], B: Decoder]: Decoder[A] =
+    Decoder[B].map(_.coerce[A])
 
   //implicit val itemNameDecoder: Decoder[ItemName]               = deriveDecoder[ItemName]
   //implicit val itemDescriptionDecoder: Decoder[ItemDescription] = deriveDecoder[ItemDescription]
@@ -55,13 +54,10 @@ object json {
     Decoder.forProduct1("items")(Cart.apply)
 
   implicit val cartItemEncoder: Encoder[CartItem] =
-    Encoder.forProduct2("item", "quantity")(ci => (ci.item, ci.quantity))
+    Encoder.forProduct2("item", "quantity")(ci => (ci.item, ci.quantity.value))
 
   implicit val tokenEncoder: Encoder[JwtToken] =
     Encoder.forProduct1("accessToken")(_.value)
-
-  implicit def coercibleStringDecoder[A: Coercible[String, ?]]: Decoder[A] =
-    Decoder[String].map(_.coerce[A])
 
   implicit val createUserDecoder: Decoder[CreateUser] = deriveDecoder[CreateUser]
 

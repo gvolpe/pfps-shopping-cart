@@ -7,6 +7,8 @@ import shop.domain.item._
 
 trait ItemService[F[_]] {
   def getAll: F[List[Item]]
+  def create(item: Item): F[Unit]
+  def update(item: Item): F[Unit]
 }
 
 object LiveItemService {
@@ -26,7 +28,9 @@ object LiveItemService {
 }
 
 class LiveItemService[F[_]: Applicative] private (
-  items: List[Item]
+    items: List[Item]
 ) extends ItemService[F] {
-  def getAll: F[List[Item]] = items.pure[F]
+  def getAll: F[List[Item]]       = items.pure[F]
+  def create(item: Item): F[Unit] = ().pure[F]
+  def update(item: Item): F[Unit] = ().pure[F]
 }
