@@ -5,9 +5,9 @@ import cats.implicits._
 import io.estatico.newtype.ops._
 import org.http4s.Uri
 import org.http4s.client._
+import shop.domain.auth.UserId
 import shop.domain.cart.Cart
 import shop.domain.order.OrderId
-import shop.http.auth.roles.UserId
 import java.{ util => ju }
 
 trait PaymentsClient[F[_]] {

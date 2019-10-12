@@ -1,8 +1,8 @@
 package shop.algebras
 
-import shop.domain.order._
+import shop.domain.auth._
 import shop.domain.cart._
-import shop.http.auth.roles.UserId
+import shop.domain.order._
 
 // TODO: Create a program with the interaction between submitting the cart to the payments remote
 // service, creating the response in PostgreSQL and resetting the cart for the user.

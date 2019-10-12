@@ -6,6 +6,7 @@ import scala.util.control.NoStackTrace
 
 object auth {
 
+  @newtype case class UserId(value: ju.UUID)
   @newtype case class UserName(value: String)
   @newtype case class Password(value: String)
 
