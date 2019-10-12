@@ -7,9 +7,11 @@ import shop.domain.item._
 
 object order {
   @newtype case class OrderId(uuid: ju.UUID)
+  @newtype case class PaymentId(uuid: ju.UUID)
 
   case class Order(
     id: OrderId,
+    paymentId: PaymentId,
     items: Map[ItemId, Quantity],
     total: USD
   )

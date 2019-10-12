@@ -21,8 +21,6 @@ object config {
 
   type HasAppConfig[F[_]] = ApplicativeAsk[F, AppConfig]
 
-  def ask[F[_], A](implicit ev: ApplicativeAsk[F, A]): F[A] = ev.ask
-
   implicit def coercibleConfigDecoder[A: Coercible[String, ?]]: ConfigDecoder[String, A] =
     ConfigDecoder[String, String].map(_.coerce[A])
 
