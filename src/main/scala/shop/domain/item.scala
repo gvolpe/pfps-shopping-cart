@@ -5,6 +5,7 @@ import java.{ util => ju }
 //import squants.market.USD
 
 object item {
+
   @newtype case class ItemId(value: ju.UUID)
   @newtype case class ItemName(value: String)
   @newtype case class ItemDescription(value: String)
@@ -16,4 +17,13 @@ object item {
       description: ItemDescription,
       price: USD
   )
+
+  // ----- Create item ------
+
+  case class CreateItem(
+    name: ItemName,
+    description: ItemDescription,
+    price: USD
+  )
+
 }

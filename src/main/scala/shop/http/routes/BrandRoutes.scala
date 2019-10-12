@@ -8,7 +8,7 @@ import org.http4s.server.Router
 import shop.algebras.Brands
 import shop.http.json._
 
-final case class BrandRoutes[F[_]: Sync](
+final class BrandRoutes[F[_]: Sync](
     brands: Brands[F]
 ) extends Http4sDsl[F] {
 

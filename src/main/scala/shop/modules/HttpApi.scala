@@ -41,25 +41,25 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, usersAuth)
 
   // Auth routes (open)
-  private val loginRoutes = LoginRoutes[F](algebras.auth).routes
-  private val userRoutes  = UserRoutes[F](algebras.auth).routes
+  private val loginRoutes = new LoginRoutes[F](algebras.auth).routes
+  private val userRoutes  = new UserRoutes[F](algebras.auth).routes
 
   // Open routes
-  private val healthRoutes   = HealthRoutes[F].routes
-  private val brandRoutes    = BrandRoutes[F](algebras.brands).routes
-  private val categoryRoutes = CategoryRoutes[F](algebras.categories).routes
-  private val itemRoutes     = ItemRoutes[F](algebras.items).routes
+  private val healthRoutes   = new HealthRoutes[F].routes
+  private val brandRoutes    = new BrandRoutes[F](algebras.brands).routes
+  private val categoryRoutes = new CategoryRoutes[F](algebras.categories).routes
+  private val itemRoutes     = new ItemRoutes[F](algebras.items).routes
 
   // Secured routes
-  private val cartRoutes = CartRoutes[F](algebras.cart).routes(usersMiddleware)
+  private val cartRoutes = new CartRoutes[F](algebras.cart).routes(usersMiddleware)
 
   // Auth routes (secured)
-  private val logoutRoutes = LogoutRoutes[F](algebras.auth).routes(usersMiddleware)
+  private val logoutRoutes = new LogoutRoutes[F](algebras.auth).routes(usersMiddleware)
 
   // Admin routes
-  private val adminBrandRoutes    = AdminBrandRoutes[F](algebras.brands).routes(adminMiddleware)
-  private val adminCategoryRoutes = AdminCategoryRoutes[F](algebras.categories).routes(adminMiddleware)
-  private val adminItemRoutes     = AdminItemRoutes[F](algebras.items).routes(adminMiddleware)
+  private val adminBrandRoutes    = new AdminBrandRoutes[F](algebras.brands).routes(adminMiddleware)
+  private val adminCategoryRoutes = new AdminCategoryRoutes[F](algebras.categories).routes(adminMiddleware)
+  private val adminItemRoutes     = new AdminItemRoutes[F](algebras.items).routes(adminMiddleware)
 
   // Combining all the http routes
   private val openRoutes: HttpRoutes[F] =

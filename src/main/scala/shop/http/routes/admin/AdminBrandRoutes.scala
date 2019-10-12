@@ -6,11 +6,12 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.Brands
+import shop.domain.brand._
 import shop.http.auth._
 import shop.http.auth.roles.AdminUser
 import shop.http.json._
 
-final case class AdminBrandRoutes[F[_]: Sync](
+final class AdminBrandRoutes[F[_]: Sync](
     brands: Brands[F]
 ) extends Http4sDsl[F] {
 
@@ -18,9 +19,10 @@ final case class AdminBrandRoutes[F[_]: Sync](
 
   private val httpRoutes: AuthedRoutes[AdminUser, F] =
     AuthedRoutes.of {
-      case POST -> Root as admin =>
-        Ok(s"You have admin rights! $admin")
-      //brands.getAll.flatMap(Created(_))
+      case ar @ POST -> Root as _ =>
+        ar.req.decode[Brand] { brand =>
+          Created(brands.create(brand))
+        }
     }
 
   def routes(authMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = Router(

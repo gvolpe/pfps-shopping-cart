@@ -8,7 +8,7 @@ import org.http4s.server.Router
 import shop.algebras.Categories
 import shop.http.json._
 
-final case class CategoryRoutes[F[_]: Sync](
+final class CategoryRoutes[F[_]: Sync](
     categories: Categories[F]
 ) extends Http4sDsl[F] {
 

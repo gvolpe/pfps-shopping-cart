@@ -11,7 +11,7 @@ import shop.domain.auth._
 import shop.http.auth.roles._
 import shop.http.json._
 
-final case class UserRoutes[F[_]: Sync](
+final class UserRoutes[F[_]: Sync](
     auth: Auth[F]
 ) extends Http4sDsl[F] {
 

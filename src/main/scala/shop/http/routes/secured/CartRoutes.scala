@@ -12,7 +12,7 @@ import shop.http.json._
 import shop.domain.cart._
 import shop.domain.item._
 
-final case class CartRoutes[F[_]: Sync](
+final class CartRoutes[F[_]: Sync](
     shoppingCart: ShoppingCart[F]
 ) extends Http4sDsl[F] {
 
