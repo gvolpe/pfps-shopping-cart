@@ -19,7 +19,7 @@ final class CheckoutRoutes[F[_]: Sync](
   private val httpRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
 
     case POST -> Root as user =>
-      program.checkout(user.value.id) *> Created()
+      Created(program.checkout(user.value.id))
 
   }
 

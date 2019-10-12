@@ -1,7 +1,9 @@
 package shop.algebras
 
 import cats.Applicative
+import cats.effect._
 import cats.implicits._
+import io.estatico.newtype.ops._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.order._
@@ -10,21 +12,21 @@ import shop.domain.order._
 // service, creating the response in PostgreSQL and resetting the cart for the user.
 trait Orders[F[_]] {
   def findBy(userId: UserId): F[List[Order]]
-  def create(userId: UserId, orderId: OrderId, paymentId: PaymentId, cart: Cart): F[Unit]
+  def create(userId: UserId, paymentId: PaymentId, cart: Cart): F[OrderId]
 }
 
 object LiveOrders {
-  def make[F[_]: Applicative]: F[Orders[F]] =
+  def make[F[_]: Sync]: F[Orders[F]] =
     new LiveOrders[F].pure[F].widen
 }
 
-private class LiveOrders[F[_]: Applicative] extends Orders[F] {
+private class LiveOrders[F[_]: Applicative: GenUUID] extends Orders[F] {
 
   def findBy(userId: UserId): F[List[Order]] =
     List.empty.pure[F]
 
-  def create(userId: UserId, orderId: OrderId, paymentId: PaymentId, cart: Cart): F[Unit] =
-    ().pure[F]
+  def create(userId: UserId, paymentId: PaymentId, cart: Cart): F[OrderId] =
+    GenUUID[F].make.map(_.coerce[OrderId])
 
 }
 
