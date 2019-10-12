@@ -6,24 +6,29 @@ import cats.implicits._
 import fs2.Stream
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import modules._
+import org.http4s.client.Client
+import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.server.blaze.BlazeServerBuilder
+import scala.concurrent.ExecutionContext
 
 object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] =
-    new Main[IO].httpApi.flatMap { api =>
-      BlazeServerBuilder[IO]
-        .bindHttp(8080, "0.0.0.0")
-        .withHttpApp(api.httpApp)
-        .serve
-        .compile
-        .drain
-        .as(ExitCode.Success)
+    BlazeClientBuilder[IO](ExecutionContext.global).resource.use { client =>
+      new Main[IO](client).httpApi.flatMap { api =>
+        BlazeServerBuilder[IO]
+          .bindHttp(8080, "0.0.0.0")
+          .withHttpApp(api.httpApp)
+          .serve
+          .compile
+          .drain
+          .as(ExitCode.Success)
+      }
     }
 
 }
 
-class Main[F[_]: Concurrent: Parallel: Timer] { // HasAppConfig
+class Main[F[_]: Concurrent: Parallel: Timer](client: Client[F]) { // HasAppConfig
   //import com.olegpy.meow.hierarchy._
 
   val httpApi: F[HttpApi[F]] =
@@ -32,8 +37,10 @@ class Main[F[_]: Concurrent: Parallel: Timer] { // HasAppConfig
         //httpConfig <- Stream.eval(ask[F, HttpConfig])
         config <- config.load[F]
         _ <- logger.info(s"Loaded config $config")
-        services <- Algebras.make[F](config.adminJwtConfig, config.tokenConfig)
-        api <- HttpApi.make[F](services)
+        algebras <- Algebras.make[F](config.adminJwtConfig, config.tokenConfig)
+        clients <- HttpClients.make[F](client)
+        programs <- Programs.make[F](algebras, clients)
+        api <- HttpApi.make[F](algebras, programs)
       } yield api
     }
 

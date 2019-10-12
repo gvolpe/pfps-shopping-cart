@@ -10,14 +10,16 @@ import shop.domain.cart.Cart
 import shop.domain.order.PaymentId
 import java.{ util => ju }
 
-trait PaymentsClient[F[_]] {
+trait PaymentClient[F[_]] {
   def process(userId: UserId, cart: Cart): F[PaymentId]
 }
 
-class LivePaymentsClient[F[_]: Sync](client: Client[F]) extends PaymentsClient[F] {
+class LivePaymentClient[F[_]: Sync](client: Client[F]) extends PaymentClient[F] {
+
   def process(userId: UserId, cart: Cart): F[PaymentId] = {
     // FIXME: hardcoded and side-effectful payment id
     val oid = ju.UUID.randomUUID().coerce[PaymentId]
     client.expect[String](Uri.unsafeFromString("http://google.com")).as(oid)
   }
+
 }

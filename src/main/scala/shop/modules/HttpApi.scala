@@ -19,16 +19,18 @@ import shop.http.routes.secured._
 
 object HttpApi {
   def make[F[_]: Concurrent: Timer](
-      algebras: Algebras[F]
+      algebras: Algebras[F],
+      programs: Programs[F]
   ): F[HttpApi[F]] =
     (algebras.auth.adminJwtAuth, algebras.auth.userJwtAuth).mapN {
       case (admin, users) =>
-        new HttpApi[F](algebras, admin, users)
+        new HttpApi[F](algebras, programs, admin, users)
     }
 }
 
 class HttpApi[F[_]: Concurrent: Timer] private (
     algebras: Algebras[F],
+    programs: Programs[F],
     adminJwtAuth: AdminJwtAuth,
     userJwtAuth: UserJwtAuth
 ) {
@@ -51,7 +53,9 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val itemRoutes     = new ItemRoutes[F](algebras.items).routes
 
   // Secured routes
-  private val cartRoutes = new CartRoutes[F](algebras.cart).routes(usersMiddleware)
+  private val cartRoutes     = new CartRoutes[F](algebras.cart).routes(usersMiddleware)
+  private val checkoutRoutes = new CheckoutRoutes[F](programs.checkout).routes(usersMiddleware)
+  private val orderRoutes    = new OrderRoutes[F](algebras.orders).routes(usersMiddleware)
 
   // Auth routes (secured)
   private val logoutRoutes = new LogoutRoutes[F](algebras.auth).routes(usersMiddleware)
@@ -65,7 +69,8 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val openRoutes: HttpRoutes[F] =
     healthRoutes <+> itemRoutes <+> brandRoutes <+>
       categoryRoutes <+> loginRoutes <+> userRoutes <+>
-      logoutRoutes <+> cartRoutes
+      logoutRoutes <+> cartRoutes <+> orderRoutes <+>
+      checkoutRoutes
 
   private val adminRoutes: HttpRoutes[F] =
     adminItemRoutes <+> adminBrandRoutes <+> adminCategoryRoutes

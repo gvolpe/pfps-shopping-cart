@@ -7,18 +7,20 @@ import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart.Cart
 import shop.domain.order.OrderId
-import shop.http.clients.PaymentsClient
+import shop.http.clients.PaymentClient
 import shop.utils._
 
 final class CheckoutProgram[F[_]: GenUUID: MonadThrow](
-    paymentsClient: PaymentsClient[F],
+    paymentClient: PaymentClient[F],
+    shoppingCart: ShoppingCart[F],
     orders: Orders[F]
 ) {
 
   // TODO: handle possible errors on remote client? define them.
-  def checkout(userId: UserId, cart: Cart): F[Unit] =
+  def checkout(userId: UserId): F[Unit] =
     for {
-      paymentId <- paymentsClient.process(userId, cart)
+      cart <- shoppingCart.findBy(userId)
+      paymentId <- paymentClient.process(userId, cart)
       orderId <- GenUUID[F].make.map(_.coerce[OrderId])
       _ <- orders.create(userId, orderId, paymentId, cart)
     } yield ()

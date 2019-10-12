@@ -49,7 +49,8 @@ object Algebras {
       category <- LiveCategories.make[F]
       item <- LiveItems.make[F]
       auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, token)
-    } yield new Algebras[F](cart, brand, category, item, token, auth)
+      orders <- LiveOrders.make[F]
+    } yield new Algebras[F](cart, brand, category, item, token, auth, orders)
   }
 }
 
@@ -59,5 +60,6 @@ class Algebras[F[_]: Applicative: GenUUID] private (
     val categories: Categories[F],
     val items: Items[F],
     val tokens: Tokens[F],
-    val auth: Auth[F]
+    val auth: Auth[F],
+    val orders: Orders[F]
 ) {}

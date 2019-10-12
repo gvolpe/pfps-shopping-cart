@@ -4,6 +4,7 @@ import cats.Monad
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
 import cats.implicits._
+import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import LiveShoppingCart._
@@ -11,6 +12,7 @@ import LiveShoppingCart._
 trait ShoppingCart[F[_]] {
   def add(cartId: CartId, item: Item, quantity: Quantity): F[Unit]
   def get(cartId: CartId): F[List[CartItem]]
+  def findBy(userId: UserId): F[Cart]
   def remove(cartId: CartId, itemId: ItemId): F[Unit]
   def update(cartId: CartId, cart: Cart): F[Unit]
 }
@@ -48,6 +50,8 @@ class LiveShoppingCart[F[_]: Sync] private (
         cart.get.map(_.values.toList)
       }
     }
+
+  def findBy(userId: UserId): F[Cart] = Cart(Map.empty).pure[F]
 
   def remove(cartId: CartId, itemId: ItemId): F[Unit] =
     ref.get.flatMap { carts =>

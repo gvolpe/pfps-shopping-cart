@@ -12,6 +12,7 @@ import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
+import shop.domain.order._
 
 object json {
 
@@ -36,6 +37,8 @@ object json {
   implicit val createItemDecoder: Decoder[CreateItem] = deriveDecoder[CreateItem]
 
   implicit val cartItemEncoder: Encoder[CartItem] = deriveEncoder[CartItem]
+
+  implicit val orderEncoder: Encoder[Order] = deriveEncoder[Order]
 
   implicit val tokenEncoder: Encoder[JwtToken] =
     Encoder.forProduct1("access_token")(_.value)
