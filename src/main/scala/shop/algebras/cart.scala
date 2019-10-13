@@ -4,22 +4,23 @@ import cats.Monad
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
 import cats.implicits._
+import io.estatico.newtype.ops._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import LiveShoppingCart._
 
 trait ShoppingCart[F[_]] {
-  def add(cartId: CartId, item: Item, quantity: Quantity): F[Unit]
-  def get(cartId: CartId): F[List[CartItem]]
+  def add(userId: UserId, item: Item, quantity: Quantity): F[Unit]
+  def get(userId: UserId): F[List[CartItem]]
   def findBy(userId: UserId): F[Cart]
-  def remove(cartId: CartId, itemId: ItemId): F[Unit]
-  def update(cartId: CartId, cart: Cart): F[Unit]
+  def remove(userId: UserId, itemId: ItemId): F[Unit]
+  def update(userId: UserId, cart: Cart): F[Unit]
 }
 
 object LiveShoppingCart {
   type ItemsInCart = Map[ItemId, CartItem]
-  type Carts[F[_]] = Map[CartId, Ref[F, ItemsInCart]]
+  type Carts[F[_]] = Map[UserId, Ref[F, ItemsInCart]]
 
   def make[F[_]: Sync]: F[ShoppingCart[F]] =
     Ref.of[F, Carts[F]](Map.empty).map(new LiveShoppingCart(_))
@@ -31,38 +32,43 @@ class LiveShoppingCart[F[_]: Sync] private (
 
   private val unit = ().pure[F]
 
-  private def createNewCart(cartId: CartId): F[Ref[F, ItemsInCart]] =
+  private def createNewCart(userId: UserId): F[Ref[F, ItemsInCart]] =
     Ref.of[F, ItemsInCart](Map.empty).flatMap { newCart =>
-      ref.update(_.updated(cartId, newCart)).as(newCart)
+      ref.update(_.updated(userId, newCart)).as(newCart)
     }
 
-  private def getOrCreateCart(cartId: CartId): F[Ref[F, ItemsInCart]] =
-    ref.get.flatMap(_.get(cartId).fold(createNewCart(cartId))(_.pure[F]))
+  private def getOrCreateCart(userId: UserId): F[Ref[F, ItemsInCart]] =
+    ref.get.flatMap(_.get(userId).fold(createNewCart(userId))(_.pure[F]))
 
-  def add(cartId: CartId, item: Item, quantity: Quantity): F[Unit] =
-    getOrCreateCart(cartId).flatMap { cart =>
+  def add(userId: UserId, item: Item, quantity: Quantity): F[Unit] =
+    getOrCreateCart(userId).flatMap { cart =>
       cart.update(_.updated(item.uuid, CartItem(item, quantity)))
     }
 
-  def get(cartId: CartId): F[List[CartItem]] =
+  def get(userId: UserId): F[List[CartItem]] =
     ref.get.flatMap { carts =>
-      carts.get(cartId).fold(List.empty[CartItem].pure[F]) { cart =>
+      carts.get(userId).fold(List.empty[CartItem].pure[F]) { cart =>
         cart.get.map(_.values.toList)
       }
     }
 
-  def findBy(userId: UserId): F[Cart] = Cart(Map.empty).pure[F]
-
-  def remove(cartId: CartId, itemId: ItemId): F[Unit] =
+  def findBy(userId: UserId): F[Cart] =
     ref.get.flatMap { carts =>
-      carts.get(cartId).fold(unit) { cart =>
+      carts.get(userId).fold(CartNotFound(userId).raiseError[F, Cart]) { items =>
+        items.get.map(_.map { case (k, v) => k -> v.quantity }.coerce[Cart])
+      }
+    }
+
+  def remove(userId: UserId, itemId: ItemId): F[Unit] =
+    ref.get.flatMap { carts =>
+      carts.get(userId).fold(unit) { cart =>
         cart.update(_.removed(itemId))
       }
     }
 
-  def update(cartId: CartId, cart: Cart): F[Unit] =
+  def update(userId: UserId, cart: Cart): F[Unit] =
     ref.get.flatMap { carts =>
-      carts.get(cartId).fold(unit) { st =>
+      carts.get(userId).fold(unit) { st =>
         cart.items
           .map {
             case (id, q) =>

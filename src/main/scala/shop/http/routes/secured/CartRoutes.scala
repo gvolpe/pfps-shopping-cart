@@ -18,13 +18,10 @@ final class CartRoutes[F[_]: Sync](
 
   private[routes] val prefixPath = "/cart"
 
-  private def getCartId(user: CommonUser): CartId =
-    user.value.id.value.coerce[CartId]
-
   private val httpRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
     // Get shopping cart
     case GET -> Root as user =>
-      shoppingCart.get(getCartId(user)).flatMap(Ok(_))
+      Ok(shoppingCart.get(user.value.id))
 
     // Add items to the cart
     case ar @ POST -> Root as user =>
@@ -34,7 +31,7 @@ final class CartRoutes[F[_]: Sync](
             case (k, v) =>
               // TODO: Lookup item by id in database
               val item = Item(k, ItemName("foo"), ItemDescription("bar"), USD(100))
-              shoppingCart.add(getCartId(user), item, v)
+              shoppingCart.add(user.value.id, item, v)
           }
           .toList
           .sequence *> Created()
@@ -43,12 +40,12 @@ final class CartRoutes[F[_]: Sync](
     // Modify items in the cart
     case ar @ PUT -> Root as user =>
       ar.req.decode[Cart] { cart =>
-        shoppingCart.update(getCartId(user), cart) *> Ok()
+        shoppingCart.update(user.value.id, cart) *> Ok()
       }
 
     // Remove item from the cart
     case DELETE -> Root / UUIDVar(uuid) as user =>
-      shoppingCart.remove(getCartId(user), uuid.coerce[ItemId]) *> NoContent()
+      shoppingCart.remove(user.value.id, uuid.coerce[ItemId]) *> NoContent()
   }
 
   def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
