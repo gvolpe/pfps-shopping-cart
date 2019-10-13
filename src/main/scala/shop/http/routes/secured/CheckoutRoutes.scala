@@ -31,7 +31,6 @@ final class CheckoutRoutes[F[_]: Sync](
             BadRequest("Shopping cart is empty!")
           case PaymentError(cause) =>
             BadRequest(cause)
-          // TODO: on order error we should crete the order id anyway and retry to persist it later
           case OrderError(cause) =>
             BadRequest(cause)
         }

@@ -4,17 +4,18 @@ import cats.effect._
 import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
 import shop.programs._
+import shop.typeclasses.Background
 import shop.utils._
 
 object Programs {
-  def make[F[_]: Logger: MonadThrow: Timer](
+  def make[F[_]: Background: Logger: MonadThrow: Timer](
       algebras: Algebras[F],
       clients: HttpClients[F]
   ): F[Programs[F]] =
     new Programs[F](algebras, clients).pure[F]
 }
 
-class Programs[F[_]: Logger: MonadThrow: Timer] private (
+class Programs[F[_]: Background: Logger: MonadThrow: Timer] private (
     algebras: Algebras[F],
     clients: HttpClients[F]
 ) {
