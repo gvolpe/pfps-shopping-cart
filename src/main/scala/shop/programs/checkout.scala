@@ -31,26 +31,33 @@ final class CheckoutProgram[F[_]: Logger: MonadThrow: Timer](
           s"Failed to process $action with ${e.getMessage}. So far we have retried ${r.retriesSoFar} times."
         )
       case g: GivingUp =>
-        Logger[F].info(s"Given up on $action after ${g.totalRetries} retries.")
+        Logger[F].info(s"Giving up on $action after ${g.totalRetries} retries.")
     }
 
   private def processPayment(userId: UserId, cart: Cart): F[PaymentId] =
     retryingOnAllErrors[PaymentId](
       policy = retryPolicy,
       onError = logError("Payments")
-    )(paymentClient.process(userId, cart))
+    )(paymentClient.process(userId, cart).adaptError {
+      case _ => PaymentError("failed to process payment")
+    })
 
   private def createOrder(userId: UserId, paymentId: PaymentId, cart: Cart): F[OrderId] =
     retryingOnAllErrors[OrderId](
       policy = retryPolicy,
       onError = logError("Order")
-    )(orders.create(userId, paymentId, cart))
+    )(orders.create(userId, paymentId, cart).adaptError {
+      case _ => OrderError("failed to create order")
+    })
 
   def checkout(userId: UserId): F[OrderId] =
-    shoppingCart.findBy(userId).flatMap { cart =>
-      processPayment(userId, cart).flatMap { paymentId =>
-        createOrder(userId, paymentId, cart)
-      }
+    shoppingCart.findBy(userId).flatMap {
+      case cart if cart.items.isEmpty =>
+        EmptyCartError.raiseError[F, OrderId]
+      case cart =>
+        processPayment(userId, cart).flatMap { paymentId =>
+          createOrder(userId, paymentId, cart)
+        }
     }
 
 }

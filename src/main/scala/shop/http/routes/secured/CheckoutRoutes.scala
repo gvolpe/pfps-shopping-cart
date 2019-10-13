@@ -7,6 +7,7 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.http.auth.roles.CommonUser
+import shop.domain.order._
 import shop.http.json._
 import shop.programs.CheckoutProgram
 
@@ -19,7 +20,19 @@ final class CheckoutRoutes[F[_]: Sync](
   private val httpRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
 
     case POST -> Root as user =>
-      Created(program.checkout(user.value.id))
+      program
+        .checkout(user.value.id)
+        .flatMap(Created(_))
+        .recoverWith {
+          case EmptyCartError =>
+            BadRequest("Shopping cart is empty!")
+          case PaymentError(cause) =>
+            BadRequest(cause)
+          // TODO: on order error we should crete the order id anyway and retry to persist it later
+          case OrderError(cause) =>
+            BadRequest(cause)
+        }
+
 
   }
 
