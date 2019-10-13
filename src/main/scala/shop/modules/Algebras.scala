@@ -1,6 +1,5 @@
 package shop.modules
 
-import cats.Applicative
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
 import cats.implicits._
@@ -54,7 +53,7 @@ object Algebras {
   }
 }
 
-class Algebras[F[_]: Applicative: GenUUID] private (
+class Algebras[F[_]] private (
     val cart: ShoppingCart[F],
     val brands: Brands[F],
     val categories: Categories[F],

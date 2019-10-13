@@ -27,11 +27,11 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
   private def logError(action: String)(e: Throwable, details: RetryDetails): F[Unit] =
     details match {
       case r: WillDelayAndRetry =>
-        Logger[F].info(
+        Logger[F].error(
           s"Failed to process $action with ${e.getMessage}. So far we have retried ${r.retriesSoFar} times."
         )
       case g: GivingUp =>
-        Logger[F].info(s"Giving up on $action after ${g.totalRetries} retries.")
+        Logger[F].error(s"Giving up on $action after ${g.totalRetries} retries.")
     }
 
   private def processPayment(userId: UserId, cart: Cart): F[PaymentId] = {
@@ -57,20 +57,19 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       }
       .onError {
         case _ =>
-          Background[F].run(
-            Timer[F].sleep(1.hour) *> action
-          )
+          Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Re-scheduling as a background action") *>
+            Background[F].schedule(1.hour, action)
       }
   }
 
   def checkout(userId: UserId): F[OrderId] =
     shoppingCart.findBy(userId).flatMap {
-      case cart if cart.items.isEmpty =>
-        EmptyCartError.raiseError[F, OrderId]
-      case cart =>
+      case Some(cart) =>
         processPayment(userId, cart).flatMap { paymentId =>
           createOrder(userId, paymentId, cart)
         }
+      case None =>
+        EmptyCartError.raiseError[F, OrderId]
     }
 
 }
