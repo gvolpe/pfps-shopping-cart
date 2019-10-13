@@ -1,4 +1,4 @@
-package shop.typeclasses
+package shop.effects
 
 import cats.effect.Concurrent
 import cats.effect.implicits._

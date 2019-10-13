@@ -13,9 +13,8 @@ import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart.Cart
 import shop.domain.order._
+import shop.effects._
 import shop.http.clients.PaymentClient
-import shop.typeclasses.Background
-import shop.utils._
 
 final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     paymentClient: PaymentClient[F],

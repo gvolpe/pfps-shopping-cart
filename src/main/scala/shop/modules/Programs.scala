@@ -3,9 +3,8 @@ package shop.modules
 import cats.effect._
 import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
+import shop.effects._
 import shop.programs._
-import shop.typeclasses.Background
-import shop.utils._
 
 object Programs {
   def make[F[_]: Background: Logger: MonadThrow: Timer](
