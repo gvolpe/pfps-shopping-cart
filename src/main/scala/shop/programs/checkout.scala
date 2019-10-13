@@ -1,25 +1,56 @@
 package shop.programs
 
 import cats.MonadError
+import cats.effect.Timer
 import cats.implicits._
+import io.chrisdavenport.log4cats.Logger
+import retry._
+import retry.CatsEffect._
+import retry.RetryDetails._
+import retry.RetryPolicies._
+import scala.concurrent.duration._
 import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart.Cart
+import shop.domain.order._
 import shop.http.clients.PaymentClient
 import shop.utils._
 
-final class CheckoutProgram[F[_]: MonadThrow](
+final class CheckoutProgram[F[_]: Logger: MonadThrow: Timer](
     paymentClient: PaymentClient[F],
     shoppingCart: ShoppingCart[F],
     orders: Orders[F]
 ) {
 
-  // TODO: handle possible errors on remote client? define them.
-  def checkout(userId: UserId): F[Unit] =
-    for {
-      cart <- shoppingCart.findBy(userId)
-      paymentId <- paymentClient.process(userId, cart)
-      _ <- orders.create(userId, paymentId, cart)
-    } yield ()
+  private val retryPolicy = limitRetries[F](3).join(exponentialBackoff[F](10.milliseconds))
+
+  private def logError(action: String)(e: Throwable, details: RetryDetails): F[Unit] =
+    details match {
+      case r: WillDelayAndRetry =>
+        Logger[F].info(
+          s"Failed to process $action with ${e.getMessage}. So far we have retried ${r.retriesSoFar} times."
+        )
+      case g: GivingUp =>
+        Logger[F].info(s"Given up on $action after ${g.totalRetries} retries.")
+    }
+
+  private def processPayment(userId: UserId, cart: Cart): F[PaymentId] =
+    retryingOnAllErrors[PaymentId](
+      policy = retryPolicy,
+      onError = logError("Payments")
+    )(paymentClient.process(userId, cart))
+
+  private def createOrder(userId: UserId, paymentId: PaymentId, cart: Cart): F[OrderId] =
+    retryingOnAllErrors[OrderId](
+      policy = retryPolicy,
+      onError = logError("Order")
+    )(orders.create(userId, paymentId, cart))
+
+  def checkout(userId: UserId): F[OrderId] =
+    shoppingCart.findBy(userId).flatMap { cart =>
+      processPayment(userId, cart).flatMap { paymentId =>
+        createOrder(userId, paymentId, cart)
+      }
+    }
 
 }

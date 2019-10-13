@@ -6,6 +6,7 @@ object Dependencies {
     val cats          = "2.0.0"
     val catsEffect    = "2.0.0"
     val catsMeowMtl   = "0.4.0"
+    val catsRetry     = "0.3.0"
     val chimney       = "0.3.2"
     val circe         = "0.12.1"
     val ciris         = "0.13.0-RC1"
@@ -27,6 +28,8 @@ object Dependencies {
   }
 
   object Libraries {
+    def catsRetry(artifact: String): ModuleID = "com.github.cb372" %% s"cats-retry-$artifact" % Versions.catsRetry
+
     def circe(artifact: String): ModuleID  = "io.circe"   %% artifact % Versions.circe
     def ciris(artifact: String): ModuleID  = "is.cir"     %% artifact % Versions.ciris
     def http4s(artifact: String): ModuleID = "org.http4s" %% artifact % Versions.http4s
@@ -36,6 +39,9 @@ object Dependencies {
     lazy val catsEffect  = "org.typelevel" %% "cats-effect"   % Versions.catsEffect
     lazy val squants     = "org.typelevel" %% "squants"       % Versions.squants
     lazy val fs2         = "co.fs2"        %% "fs2-core"      % Versions.fs2
+
+    lazy val catsRetryCore   = catsRetry("core")
+    lazy val catsRetryEffect = catsRetry("cats-effect")
 
     lazy val circeCore       = circe("circe-core")
     lazy val circeGeneric    = circe("circe-generic")
