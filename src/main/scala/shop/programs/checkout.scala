@@ -12,6 +12,7 @@ import scala.concurrent.duration._
 import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart.Cart
+import shop.domain.checkout._
 import shop.domain.order._
 import shop.effects._
 import shop.http.clients.PaymentClient
@@ -34,11 +35,11 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
         Logger[F].error(s"Giving up on $action after ${g.totalRetries} retries.")
     }
 
-  private def processPayment(userId: UserId, cart: Cart): F[PaymentId] = {
+  private def processPayment(userId: UserId, card: Card, cart: Cart): F[PaymentId] = {
     val action = retryingOnAllErrors[PaymentId](
       policy = retryPolicy,
       onError = logError("Payments")
-    )(paymentClient.process(userId, cart))
+    )(paymentClient.process(userId, card, cart))
 
     action.adaptError {
       case e => PaymentError(e.getMessage)
@@ -62,10 +63,10 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       }
   }
 
-  def checkout(userId: UserId): F[OrderId] =
+  def checkout(userId: UserId, card: Card): F[OrderId] =
     shoppingCart.findBy(userId).flatMap {
       case Some(cart) =>
-        processPayment(userId, cart).flatMap { paymentId =>
+        processPayment(userId, card, cart).flatMap { paymentId =>
           createOrder(userId, paymentId, cart)
         }
       case None =>

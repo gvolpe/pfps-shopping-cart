@@ -8,7 +8,9 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.http.auth.roles.CommonUser
 import shop.domain.cart._
+import shop.domain.checkout._
 import shop.domain.order._
+import shop.http.decoder._
 import shop.http.json._
 import shop.programs.CheckoutProgram
 
@@ -20,21 +22,22 @@ final class CheckoutRoutes[F[_]: Sync](
 
   private val httpRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
 
-    case POST -> Root as user =>
-      program
-        .checkout(user.value.id)
-        .flatMap(Created(_))
-        .recoverWith {
-          case CartNotFound(userId) =>
-            BadRequest(s"Cart not found for user: ${userId.value}")
-          case EmptyCartError =>
-            BadRequest("Shopping cart is empty!")
-          case PaymentError(cause) =>
-            BadRequest(cause)
-          case OrderError(cause) =>
-            BadRequest(cause)
-        }
-
+    case ar @ POST -> Root as user =>
+      ar.req.decodeR[Card] { card =>
+        program
+          .checkout(user.value.id, card)
+          .flatMap(Created(_))
+          .recoverWith {
+            case CartNotFound(userId) =>
+              BadRequest(s"Cart not found for user: ${userId.value}")
+            case EmptyCartError =>
+              BadRequest("Shopping cart is empty!")
+            case PaymentError(cause) =>
+              BadRequest(cause)
+            case OrderError(cause) =>
+              BadRequest(cause)
+          }
+      }
 
   }
 
