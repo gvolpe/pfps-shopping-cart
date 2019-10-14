@@ -6,13 +6,19 @@ import eu.timepit.refined.auto._
 import eu.timepit.refined.collection.Size
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
+import eu.timepit.refined.string.MatchesRegex
 
 object checkout {
-  type CardNumber     = Long Refined Size[16]
-  type CardExpiration = Int Refined Size[4]
-  type CardCCV        = Int Refined Size[3]
+  // TODO: Support Polish names? :P
+  type CardNamePred       = String Refined MatchesRegex[W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T]
+  type CardNumberPred     = Long Refined Size[16]
+  type CardExpirationPred = Int Refined Size[4]
+  type CardCCVPred        = Int Refined Size[3]
 
-  @newtype case class CardName(value: NonEmptyString) // TODO: validate with regex?
+  @newtype case class CardName(value: CardNamePred)
+  @newtype case class CardNumber(value: CardNumberPred)
+  @newtype case class CardExpiration(value: CardExpirationPred)
+  @newtype case class CardCCV(value: CardCCVPred)
 
   case class Card(
       name: CardName,

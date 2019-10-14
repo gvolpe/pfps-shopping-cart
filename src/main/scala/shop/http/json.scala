@@ -3,6 +3,7 @@ package shop.http
 import cats.effect.Sync
 import dev.profunktor.auth.jwt.JwtToken
 import eu.timepit.refined._
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
 import eu.timepit.refined.collection.Size
 import eu.timepit.refined.types.string.NonEmptyString
@@ -19,6 +20,8 @@ import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
 import shop.validation.refined._
+import eu.timepit.refined.api.Validate
+import eu.timepit.refined.string.MatchesRegex
 
 object json {
 
@@ -42,15 +45,15 @@ object json {
   implicit val nonEmptyStringDecoder: Decoder[NonEmptyString] =
     Decoder[String].emap(refineV(_))
 
-  // TODO: see if these can be made generic
-  implicit val cardNumberDecoder: Decoder[CardNumber] =
-    Decoder[Long].emap(refineV[Size[16]](_))
+  implicit def regexStringDecoder[R](
+      implicit ev: Validate[String, MatchesRegex[R]]
+  ): Decoder[String Refined MatchesRegex[R]] =
+    Decoder[String].emap(refineV[MatchesRegex[R]](_))
 
-  implicit val cardExpirationDecoder: Decoder[CardExpiration] =
-    Decoder[Int].emap(refineV(_))
-
-  implicit val cardCCVDecoder: Decoder[CardCCV] =
-    Decoder[Int].emap(refineV(_))
+  implicit def numericSizeDecoder[N <: Int, R: Decoder: Numeric](
+      implicit ev: Validate[R, Size[N]]
+  ): Decoder[R Refined Size[N]] =
+    Decoder[R].emap(refineV[Size[N]](_))
 
   // ----- Domain codecs -----
   implicit val itemDecoder: Decoder[Item] = deriveDecoder[Item]
