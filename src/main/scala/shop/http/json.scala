@@ -3,9 +3,10 @@ package shop.http
 import cats.effect.Sync
 import dev.profunktor.auth.jwt.JwtToken
 import eu.timepit.refined._
-import eu.timepit.refined.api.Refined
+import eu.timepit.refined.api._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.collection.Size
+import eu.timepit.refined.string.MatchesRegex
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe._
 import io.circe.generic.semiauto._
@@ -20,8 +21,6 @@ import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
 import shop.validation.refined._
-import eu.timepit.refined.api.Validate
-import eu.timepit.refined.string.MatchesRegex
 
 object json {
 
