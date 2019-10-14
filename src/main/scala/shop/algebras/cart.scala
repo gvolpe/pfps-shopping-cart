@@ -13,7 +13,6 @@ import LiveShoppingCart._
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, item: Item, quantity: Quantity): F[Unit]
   def get(userId: UserId): F[List[CartItem]]
-  def findBy(userId: UserId): F[Option[Cart]]
   def remove(userId: UserId, itemId: ItemId): F[Unit]
   def update(userId: UserId, cart: Cart): F[Unit]
 }
@@ -49,13 +48,6 @@ class LiveShoppingCart[F[_]: Sync] private (
     ref.get.flatMap { carts =>
       carts.get(userId).fold(List.empty[CartItem].pure[F]) { cart =>
         cart.get.map(_.values.toList)
-      }
-    }
-
-  def findBy(userId: UserId): F[Option[Cart]] =
-    ref.get.flatMap { carts =>
-      carts.get(userId).fold(none[Cart].pure[F]) { items =>
-        items.get.map(_.map { case (k, v) => k -> v.quantity }.coerce[Cart].some)
       }
     }
 

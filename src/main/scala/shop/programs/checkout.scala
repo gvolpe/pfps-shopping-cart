@@ -4,6 +4,7 @@ import cats.MonadError
 import cats.effect.Timer
 import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
+import io.estatico.newtype.ops._
 import retry._
 import retry.CatsEffect._
 import retry.RetryDetails._
@@ -11,8 +12,9 @@ import retry.RetryPolicies._
 import scala.concurrent.duration._
 import shop.algebras._
 import shop.domain.auth.UserId
-import shop.domain.cart.Cart
+import shop.domain.cart._
 import shop.domain.checkout._
+import shop.domain.item._
 import shop.domain.order._
 import shop.effects._
 import shop.http.clients.PaymentClient
@@ -35,11 +37,11 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
         Logger[F].error(s"Giving up on $action after ${g.totalRetries} retries.")
     }
 
-  private def processPayment(userId: UserId, card: Card, cart: Cart): F[PaymentId] = {
+  private def processPayment(userId: UserId, total: USD, card: Card): F[PaymentId] = {
     val action = retryingOnAllErrors[PaymentId](
       policy = retryPolicy,
       onError = logError("Payments")
-    )(paymentClient.process(userId, card, cart))
+    )(paymentClient.process(userId, total, card))
 
     action.adaptError {
       case e => PaymentError(e.getMessage)
@@ -63,14 +65,23 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       }
   }
 
+  private def calcTotal(items: List[CartItem]): USD =
+    items
+      .foldLeft(0: BigDecimal) { (acc, i) =>
+        acc + (i.item.price.value * i.quantity.value)
+      }
+      .coerce[USD]
+
   def checkout(userId: UserId, card: Card): F[OrderId] =
-    shoppingCart.findBy(userId).flatMap {
-      case Some(cart) =>
-        processPayment(userId, card, cart).flatMap { paymentId =>
+    shoppingCart.get(userId).flatMap {
+      case items if (items.isEmpty) =>
+        EmptyCartError.raiseError[F, OrderId]
+      case items =>
+        val total = calcTotal(items)
+        processPayment(userId, total, card).flatMap { paymentId =>
+          val cart = items.map(i => i.item.uuid -> i.quantity).toMap.coerce[Cart]
           createOrder(userId, paymentId, cart)
         }
-      case None =>
-        EmptyCartError.raiseError[F, OrderId]
     }
 
 }
