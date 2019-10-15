@@ -44,6 +44,9 @@ object json {
   implicit val nonEmptyStringDecoder: Decoder[NonEmptyString] =
     Decoder[String].emap(refineV(_))
 
+  implicit val nonEmptyStringEncoder: Encoder[NonEmptyString] =
+    Encoder[String].contramap(_.value)
+
   implicit def regexStringDecoder[R](
       implicit ev: Validate[String, MatchesRegex[R]]
   ): Decoder[String Refined MatchesRegex[R]] =
