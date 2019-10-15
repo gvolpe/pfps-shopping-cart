@@ -16,7 +16,7 @@ trait Brands[F[_]] {
 object LiveBrands {
   def make[F[_]: ApThrow]: F[Brands[F]] =
     List("Gibson", "Ibanez", "Schecter")
-      .traverse(b => refineV[NonEmpty](b).leftMap(InvalidBrand(_)).liftTo[F])
+      .traverse(refineV[NonEmpty](_).leftMap(InvalidBrand(_)).liftTo[F])
       .map { brands =>
         new LiveBrands[F](brands.map(_.coerce[Brand]))
       }
