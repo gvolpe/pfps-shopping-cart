@@ -9,7 +9,6 @@ import io.estatico.newtype.macros.newtype
 import eu.timepit.refined.string.MatchesRegex
 
 object checkout {
-  // TODO: Support Polish names? :P
   type CardNamePred       = String Refined MatchesRegex[W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T]
   type CardNumberPred     = Long Refined Size[16]
   type CardExpirationPred = Int Refined Size[4]

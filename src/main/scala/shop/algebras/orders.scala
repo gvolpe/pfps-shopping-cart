@@ -13,7 +13,7 @@ import shop.domain.order._
 trait Orders[F[_]] {
   def get(userId: UserId, orderId: OrderId): F[Option[Order]]
   def findBy(userId: UserId): F[List[Order]]
-  def create(userId: UserId, paymentId: PaymentId, cart: Cart): F[OrderId]
+  def create(userId: UserId, paymentId: PaymentId, items: List[CartItem]): F[OrderId]
 }
 
 object LiveOrders {
@@ -29,7 +29,7 @@ private class LiveOrders[F[_]: Applicative: GenUUID] extends Orders[F] {
   def findBy(userId: UserId): F[List[Order]] =
     List.empty.pure[F]
 
-  def create(userId: UserId, paymentId: PaymentId, cart: Cart): F[OrderId] =
+  def create(userId: UserId, paymentId: PaymentId, items: List[CartItem]): F[OrderId] =
     GenUUID[F].make.map(_.coerce[OrderId])
 
 }

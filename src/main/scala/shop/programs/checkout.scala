@@ -48,11 +48,11 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     }
   }
 
-  private def createOrder(userId: UserId, paymentId: PaymentId, cart: Cart): F[OrderId] = {
+  private def createOrder(userId: UserId, paymentId: PaymentId, items: List[CartItem]): F[OrderId] = {
     val action = retryingOnAllErrors[OrderId](
       policy = retryPolicy,
       onError = logError("Order")
-    )(orders.create(userId, paymentId, cart))
+    )(orders.create(userId, paymentId, items))
 
     action
       .adaptError {
@@ -65,23 +65,26 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       }
   }
 
-  private def calcTotal(items: List[CartItem]): USD =
-    items
+  private def calcTotal(items: List[CartItem]): F[USD] = {
+    val total = items
       .foldLeft(0: BigDecimal) { (acc, i) =>
         acc + (i.item.price.value * i.quantity.value)
       }
       .coerce[USD]
+    if (total.value <= 0) NegativeOrZeroTotalAmount(total).raiseError[F, USD]
+    else total.pure[F]
+  }
 
   def checkout(userId: UserId, card: Card): F[OrderId] =
     shoppingCart.get(userId).flatMap {
       case items if (items.isEmpty) =>
         EmptyCartError.raiseError[F, OrderId]
       case items =>
-        val total = calcTotal(items)
-        processPayment(userId, total, card).flatMap { paymentId =>
-          val cart = items.map(i => i.item.uuid -> i.quantity).toMap.coerce[Cart]
-          createOrder(userId, paymentId, cart)
-        }
+        for {
+          total <- calcTotal(items)
+          pid <- processPayment(userId, total, card)
+          order <- createOrder(userId, pid, items)
+        } yield order
     }
 
 }
