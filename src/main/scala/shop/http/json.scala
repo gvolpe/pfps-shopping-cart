@@ -2,14 +2,9 @@ package shop.http
 
 import cats.effect.Sync
 import dev.profunktor.auth.jwt.JwtToken
-import eu.timepit.refined._
-import eu.timepit.refined.api._
-import eu.timepit.refined.auto._
-import eu.timepit.refined.collection.Size
-import eu.timepit.refined.string.MatchesRegex
-import eu.timepit.refined.types.string.NonEmptyString
 import io.circe._
 import io.circe.generic.semiauto._
+import io.circe.refined._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import java.{ util => ju }
@@ -39,23 +34,6 @@ object json {
 
   implicit def coercibleKeyEncoder[A: Coercible[B, ?], B: KeyEncoder]: KeyEncoder[A] =
     KeyEncoder[A].contramap(_.repr)
-
-  // ----- Refined codecs -----
-  implicit val nonEmptyStringDecoder: Decoder[NonEmptyString] =
-    Decoder[String].emap(refineV(_))
-
-  implicit val nonEmptyStringEncoder: Encoder[NonEmptyString] =
-    Encoder[String].contramap(_.value)
-
-  implicit def regexStringDecoder[R](
-      implicit ev: Validate[String, MatchesRegex[R]]
-  ): Decoder[String Refined MatchesRegex[R]] =
-    Decoder[String].emap(refineV[MatchesRegex[R]](_))
-
-  implicit def numericSizeDecoder[N <: Int, R: Decoder: Numeric](
-      implicit ev: Validate[R, Size[N]]
-  ): Decoder[R Refined Size[N]] =
-    Decoder[R].emap(refineV[Size[N]](_))
 
   // ----- Domain codecs -----
   implicit val itemDecoder: Decoder[Item] = deriveDecoder[Item]

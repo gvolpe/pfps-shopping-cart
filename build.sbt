@@ -21,6 +21,7 @@ lazy val root = (project in file("."))
       Libraries.circeGeneric,
       Libraries.circeGenericExt,
       Libraries.circeParser,
+      Libraries.circeRefined,
       Libraries.cirisCore,
       Libraries.cirisCats,
       Libraries.cirisCatsEffect,
