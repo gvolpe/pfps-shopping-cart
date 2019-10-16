@@ -7,7 +7,6 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import shop.algebras.Items
 import shop.domain.brand._
-import shop.domain.conversions._
 import shop.http.json._
 import shop.http.params._
 
