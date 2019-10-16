@@ -7,7 +7,6 @@ object Dependencies {
     val catsEffect    = "2.0.0"
     val catsMeowMtl   = "0.4.0"
     val catsRetry     = "0.3.0"
-    val chimney       = "0.3.2"
     val circe         = "0.12.1"
     val ciris         = "0.13.0-RC1"
     val fs2           = "2.0.0"
@@ -60,7 +59,6 @@ object Dependencies {
 
     lazy val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % Versions.http4sJwtAuth
 
-    lazy val chimney     = "io.scalaland" %% "chimney"      % Versions.chimney
     lazy val refinedCore = "eu.timepit"   %% "refined"      % Versions.refined
     lazy val refinedCats = "eu.timepit"   %% "refined-cats" % Versions.refined
 
