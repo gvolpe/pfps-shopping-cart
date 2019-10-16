@@ -2,11 +2,8 @@ package shop.algebras
 
 import cats.Applicative
 import cats.implicits._
-import eu.timepit.refined._
-import eu.timepit.refined.collection.NonEmpty
 import io.estatico.newtype.ops._
 import shop.domain.brand._
-import shop.effects._
 
 trait Brands[F[_]] {
   def getAll: F[List[Brand]]
@@ -14,12 +11,10 @@ trait Brands[F[_]] {
 }
 
 object LiveBrands {
-  def make[F[_]: ApThrow]: F[Brands[F]] =
-    List("Gibson", "Ibanez", "Schecter")
-      .traverse(refineV[NonEmpty](_).leftMap(InvalidBrand(_)).liftTo[F])
-      .map { brands =>
-        new LiveBrands[F](brands.map(_.coerce[Brand]))
-      }
+  def make[F[_]: Applicative]: F[Brands[F]] =
+    new LiveBrands[F](
+      List("Gibson", "Ibanez", "Schecter").map(_.coerce[Brand])
+    ).pure[F].widen
 }
 
 class LiveBrands[F[_]: Applicative] private (

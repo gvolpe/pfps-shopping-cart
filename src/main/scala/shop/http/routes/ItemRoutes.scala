@@ -6,7 +6,8 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import shop.algebras.Items
-import shop.domain.brand.Brand
+import shop.domain.brand._
+import shop.domain.conversions._
 import shop.http.json._
 import shop.http.params._
 
@@ -16,7 +17,7 @@ final class ItemRoutes[F[_]: Sync](
 
   private[routes] val prefixPath = "/items"
 
-  object BrandQueryParam extends OptionalQueryParamDecoderMatcher[Brand]("brand")
+  object BrandQueryParam extends OptionalQueryParamDecoderMatcher[BrandParam]("brand")
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
 
@@ -24,7 +25,7 @@ final class ItemRoutes[F[_]: Sync](
       Ok(items.getAll)
 
     case GET -> Root :? BrandQueryParam(brand) =>
-      Ok(brand.fold(items.getAll)(items.findBy))
+      Ok(brand.fold(items.getAll)(b => items.findBy(b.asBrand)))
 
   }
 
