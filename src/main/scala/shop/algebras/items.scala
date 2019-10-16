@@ -7,7 +7,7 @@ import shop.domain.brand.Brand
 import shop.domain.item._
 
 trait Items[F[_]] {
-  def getAll: F[List[Item]]
+  def findAll: F[List[Item]]
   def findBy(brand: Brand): F[List[Item]]
   def create(item: CreateItem): F[Unit]
   def update(item: Item): F[Unit]
@@ -32,7 +32,7 @@ object LiveItems {
 class LiveItems[F[_]: Applicative] private (
     items: List[Item]
 ) extends Items[F] {
-  def getAll: F[List[Item]]               = items.pure[F]
+  def findAll: F[List[Item]]               = items.pure[F]
   def findBy(brand: Brand): F[List[Item]] = items.pure[F]
   def create(item: CreateItem): F[Unit]   = ().pure[F]
   def update(item: Item): F[Unit]         = ().pure[F]
