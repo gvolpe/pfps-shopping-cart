@@ -12,8 +12,8 @@ object roles {
   @newtype case class AdminJwtAuth(value: JwtAuth)
   @newtype case class UserJwtAuth(value: JwtAuth)
 
-  case class LoggedUser(id: UserId, name: UserName)
+  case class User(id: UserId, name: UserName)
 
-  @newtype case class CommonUser(value: LoggedUser)
-  @newtype case class AdminUser(value: LoggedUser)
+  @newtype case class CommonUser(value: User)
+  @newtype case class AdminUser(value: User)
 }

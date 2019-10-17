@@ -42,7 +42,7 @@ object Security {
       adminClaim <- decodeAdminToken
       content = adminClaim.content.replace("{", "0").replace("}", "c")
       adminId <- Sync[F].delay(ju.UUID.fromString(content).coerce[UserId])
-      adminUser = LoggedUser(adminId, "admin".coerce[UserName]).coerce[AdminUser]
+      adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
       tokens <- LiveTokens.make[F](tokenConfig)
       auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens)
     } yield new Security[F](auth)

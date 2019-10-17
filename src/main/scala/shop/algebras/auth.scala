@@ -16,7 +16,7 @@ import scala.util.Try
 trait Auth[F[_]] {
   def adminJwtAuth: F[AdminJwtAuth]
   def userJwtAuth: F[UserJwtAuth]
-  def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
+  def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken]
   def login(username: UserName, password: Password): F[JwtToken]
   def logout(token: JwtToken): F[Unit]
@@ -32,16 +32,16 @@ object LiveAuth {
       tokens: Tokens[F]
   ): F[Auth[F]] =
     for {
-      adminTokens <- Ref.of[F, Map[JwtToken, LoggedUser]](Map(adminToken -> adminUser.coerce[LoggedUser]))
-      userTokens <- Ref.of[F, Map[JwtToken, LoggedUser]](Map.empty)
-      usersRef <- Ref.of[F, Map[UserName, (LoggedUser, Password)]](Map.empty)
+      adminTokens <- Ref.of[F, Map[JwtToken, User]](Map(adminToken -> adminUser.coerce[User]))
+      userTokens <- Ref.of[F, Map[JwtToken, User]](Map.empty)
+      usersRef <- Ref.of[F, Map[UserName, (User, Password)]](Map.empty)
     } yield new LiveAuth(adminTokens, userTokens, usersRef, adminJwtAuth, userJwtAuth, tokens)
 }
 
 class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
-    adminTokens: Ref[F, Map[JwtToken, LoggedUser]],
-    userTokens: Ref[F, Map[JwtToken, LoggedUser]],
-    users: Ref[F, Map[UserName, (LoggedUser, Password)]],
+    adminTokens: Ref[F, Map[JwtToken, User]],
+    userTokens: Ref[F, Map[JwtToken, User]],
+    users: Ref[F, Map[UserName, (User, Password)]],
     adminAuth: AdminJwtAuth,
     userAuth: UserJwtAuth,
     tokens: Tokens[F]
@@ -52,7 +52,7 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
 
   // FIXME: Should also take a JwtToken to verify against Redis. JwtClaim is not needed in this case.
   // Maybe for extra security we can persist the JwtClaim to compare against.
-  def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
+  def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
       case AdminRole => adminTokens.get.map(_.get(token).map(_.coerce[A]))
       case UserRole  => userTokens.get.map(_.get(token).map(_.coerce[A]))
@@ -66,7 +66,7 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
           _.get(username) match {
             case None =>
               GenUUID[F].make.flatMap { uuid =>
-                val user = LoggedUser(uuid.coerce[UserId], username)
+                val user = User(uuid.coerce[UserId], username)
                 users.update(_.updated(username, user -> password)) *> login(username, password)
               }
             case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
