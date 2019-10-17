@@ -11,13 +11,21 @@ import io.estatico.newtype.ops._
 
 object config {
 
+  @newtype case class AdminUserTokenConfig(value: String)
   @newtype case class JwtSecretKeyConfig(value: String)
   @newtype case class JwtClaimConfig(value: String)
   @newtype case class TokenConfig(secretKey: Secret[JwtSecretKeyConfig])
 
-  case class AppConfig(adminJwtConfig: JwtConfig, tokenConfig: TokenConfig)
+  case class AppConfig(
+      adminJwtConfig: AdminJwtConfig,
+      tokenConfig: TokenConfig
+  )
 
-  case class JwtConfig(secretKey: Secret[JwtSecretKeyConfig], claimStr: Secret[JwtClaimConfig])
+  case class AdminJwtConfig(
+      secretKey: Secret[JwtSecretKeyConfig],
+      claimStr: Secret[JwtClaimConfig],
+      adminToken: Secret[AdminUserTokenConfig]
+  )
 
   type HasAppConfig[F[_]] = ApplicativeAsk[F, AppConfig]
 
@@ -28,10 +36,11 @@ object config {
     loadConfig(
       envF[F, Secret[JwtSecretKeyConfig]]("JWT_SECRET_KEY"),
       envF[F, Secret[JwtClaimConfig]]("JWT_CLAIM"),
-      envF[F, Secret[JwtSecretKeyConfig]]("ACCESS_TOKEN_SECRET_KEY")
-    ) { (secretKey, claimStr, tokenKey) =>
+      envF[F, Secret[JwtSecretKeyConfig]]("ACCESS_TOKEN_SECRET_KEY"),
+      envF[F, Secret[AdminUserTokenConfig]]("ADMIN_USER_TOKEN")
+    ) { (secretKey, claimStr, tokenKey, adminToken) =>
       AppConfig(
-        JwtConfig(secretKey, claimStr),
+        AdminJwtConfig(secretKey, claimStr, adminToken),
         tokenKey.coerce[TokenConfig]
       )
     }.orRaiseThrowable

@@ -13,12 +13,12 @@ import shop.http.auth.roles._
 
 object Security {
   def make[F[_]: Sync](
-      jwtConfig: JwtConfig,
+      adminJwtConfig: AdminJwtConfig,
       tokenConfig: TokenConfig
   ): F[Security[F]] = {
 
     val adminJwtAuth: AdminJwtAuth = JwtAuth(
-      JwtSecretKey(jwtConfig.secretKey.value.value),
+      JwtSecretKey(adminJwtConfig.secretKey.value.value),
       JwtAlgorithm.HS256
     ).coerce[AdminJwtAuth]
 
@@ -27,21 +27,22 @@ object Security {
       JwtAlgorithm.HS256
     ).coerce[UserJwtAuth]
 
-    // FIXME: Hardcoded Admin stuff and side-effectful
-    val adminId = ju.UUID.fromString("004b4457-71c3-4439-a1b2-03820263b59c").coerce[UserId]
-
-    val adminToken =
-      JwtToken(
-        Jwt.encode(
-          JwtClaim(adminId.value.toString),
+    val decodeAdminToken: F[JwtClaim] =
+      Jwt
+        .decode(
+          adminJwtConfig.adminToken.value.value,
           adminJwtAuth.value.secretKey.value,
-          JwtAlgorithm.HS256
+          Seq(JwtAlgorithm.HS256)
         )
-      )
+        .liftTo[F]
 
-    val adminUser = LoggedUser(adminId, "admin".coerce[UserName]).coerce[AdminUser]
+    val adminToken = JwtToken(adminJwtConfig.adminToken.value.value)
 
     for {
+      adminClaim <- decodeAdminToken
+      content = adminClaim.content.replace("{", "0").replace("}", "c")
+      adminId <- Sync[F].delay(ju.UUID.fromString(content).coerce[UserId])
+      adminUser = LoggedUser(adminId, "admin".coerce[UserName]).coerce[AdminUser]
       tokens <- LiveTokens.make[F](tokenConfig)
       auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens)
     } yield new Security[F](auth)
