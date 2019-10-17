@@ -37,10 +37,11 @@ class Main[F[_]: Concurrent: Parallel: Timer](client: Client[F]) { // HasAppConf
         //httpConfig <- Stream.eval(ask[F, HttpConfig])
         config <- config.load[F]
         _ <- logger.info(s"Loaded config $config")
-        algebras <- Algebras.make[F](config.adminJwtConfig, config.tokenConfig)
+        security <- Security.make[F](config.adminJwtConfig, config.tokenConfig)
+        algebras <- Algebras.make[F]
         clients <- HttpClients.make[F](client)
         programs <- Programs.make[F](algebras, clients)
-        api <- HttpApi.make[F](algebras, programs)
+        api <- HttpApi.make[F](algebras, programs, security)
       } yield api
     }
 

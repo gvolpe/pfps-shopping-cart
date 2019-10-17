@@ -11,6 +11,7 @@ import org.http4s.server.middleware.{ AutoSlash, CORS, Timeout }
 import org.http4s.server.Router
 import pdi.jwt._
 import scala.concurrent.duration._
+import shop.algebras.Auth
 import shop.http.auth._
 import shop.http.auth.roles._
 import shop.http.routes._
@@ -20,31 +21,33 @@ import shop.http.routes.secured._
 object HttpApi {
   def make[F[_]: Concurrent: Timer](
       algebras: Algebras[F],
-      programs: Programs[F]
+      programs: Programs[F],
+      security: Security[F]
   ): F[HttpApi[F]] =
-    (algebras.auth.adminJwtAuth, algebras.auth.userJwtAuth).mapN {
+    (security.auth.adminJwtAuth, security.auth.userJwtAuth).mapN {
       case (admin, users) =>
-        new HttpApi[F](algebras, programs, admin, users)
+        new HttpApi[F](security.auth, algebras, programs, admin, users)
     }
 }
 
 class HttpApi[F[_]: Concurrent: Timer] private (
+    auth: Auth[F],
     algebras: Algebras[F],
     programs: Programs[F],
     adminJwtAuth: AdminJwtAuth,
     userJwtAuth: UserJwtAuth
 ) {
   private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] = t =>
-    c => algebras.auth.findUser[AdminUser](AdminRole)(t)(c)
+    c => auth.findUser[AdminUser](AdminRole)(t)(c)
   private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] = t =>
-    c => algebras.auth.findUser[CommonUser](UserRole)(t)(c)
+    c => auth.findUser[CommonUser](UserRole)(t)(c)
 
   private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, usersAuth)
 
   // Auth routes (open)
-  private val loginRoutes = new LoginRoutes[F](algebras.auth).routes
-  private val userRoutes  = new UserRoutes[F](algebras.auth).routes
+  private val loginRoutes = new LoginRoutes[F](auth).routes
+  private val userRoutes  = new UserRoutes[F](auth).routes
 
   // Open routes
   private val healthRoutes   = new HealthRoutes[F].routes
@@ -58,7 +61,7 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val orderRoutes    = new OrderRoutes[F](algebras.orders).routes(usersMiddleware)
 
   // Auth routes (secured)
-  private val logoutRoutes = new LogoutRoutes[F](algebras.auth).routes(usersMiddleware)
+  private val logoutRoutes = new LogoutRoutes[F](auth).routes(usersMiddleware)
 
   // Admin routes
   private val adminBrandRoutes    = new AdminBrandRoutes[F](algebras.brands).routes(adminMiddleware)
