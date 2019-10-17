@@ -6,12 +6,14 @@ import cats.effect.concurrent.Ref
 import cats.implicits._
 import io.estatico.newtype.ops._
 import shop.domain.auth._
+import shop.domain.brand._
+import shop.domain.category._
 import shop.domain.cart._
 import shop.domain.item._
 import LiveShoppingCart._
 
 trait ShoppingCart[F[_]] {
-  def add(userId: UserId, item: Item, quantity: Quantity): F[Unit]
+  def add(userId: UserId, item: ItemId, quantity: Quantity): F[Unit]
   def get(userId: UserId): F[List[CartItem]]
   def remove(userId: UserId, itemId: ItemId): F[Unit]
   def update(userId: UserId, cart: Cart): F[Unit]
@@ -39,8 +41,10 @@ class LiveShoppingCart[F[_]: Sync] private (
   private def getOrCreateCart(userId: UserId): F[Ref[F, ItemsInCart]] =
     ref.get.flatMap(_.get(userId).fold(createNewCart(userId))(_.pure[F]))
 
-  def add(userId: UserId, item: Item, quantity: Quantity): F[Unit] =
+  def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     getOrCreateCart(userId).flatMap { cart =>
+      // TODO: Hard-coded for now. Should retrieve from items table in PSQL.
+      val item = Item(itemId, ItemName("foo"), ItemDescription("bar"), USD(100), Brand("bar"), Category("guitars"))
       cart.update(_.updated(item.uuid, CartItem(item, quantity)))
     }
 

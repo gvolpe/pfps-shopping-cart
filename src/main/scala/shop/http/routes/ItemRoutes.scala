@@ -20,9 +20,6 @@ final class ItemRoutes[F[_]: Sync](
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
 
-    case GET -> Root =>
-      Ok(items.findAll)
-
     case GET -> Root :? BrandQueryParam(brand) =>
       Ok(brand.fold(items.findAll)(b => items.findBy(b.toDomain)))
 

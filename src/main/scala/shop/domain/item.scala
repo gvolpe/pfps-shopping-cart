@@ -3,6 +3,8 @@ package shop.domain
 import io.estatico.newtype.macros.newtype
 import java.{ util => ju }
 //import squants.market.USD
+import shop.domain.brand._
+import shop.domain.category._
 
 object item {
 
@@ -15,7 +17,9 @@ object item {
       uuid: ItemId,
       name: ItemName,
       description: ItemDescription,
-      price: USD
+      price: USD,
+      brand: Brand,
+      category: Category
   )
 
   // ----- Create item ------

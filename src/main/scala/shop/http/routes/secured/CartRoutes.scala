@@ -28,10 +28,8 @@ final class CartRoutes[F[_]: Sync](
       ar.req.decode[Cart] { cart =>
         cart.items
           .map {
-            case (k, v) =>
-              // TODO: Lookup item by id in database
-              val item = Item(k, ItemName("foo"), ItemDescription("bar"), USD(100))
-              shoppingCart.add(user.value.id, item, v)
+            case (id, quantity) =>
+              shoppingCart.add(user.value.id, id, quantity)
           }
           .toList
           .sequence *> Created()
