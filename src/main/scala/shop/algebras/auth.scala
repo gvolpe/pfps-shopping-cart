@@ -54,8 +54,8 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
   // Maybe for extra security we can persist the JwtClaim to compare against.
   def findUser[A: Coercible[LoggedUser, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
-      case AdminRole => adminTokens.get.map(_.get(token).asInstanceOf[Option[A]])
-      case UserRole  => userTokens.get.map(_.get(token).asInstanceOf[Option[A]])
+      case AdminRole => adminTokens.get.map(_.get(token).map(_.coerce[A]))
+      case UserRole  => userTokens.get.map(_.get(token).map(_.coerce[A]))
     }
 
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken] =

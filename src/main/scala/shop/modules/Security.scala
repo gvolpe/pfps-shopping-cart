@@ -16,6 +16,7 @@ object Security {
       jwtConfig: JwtConfig,
       tokenConfig: TokenConfig
   ): F[Security[F]] = {
+
     val adminJwtAuth: AdminJwtAuth = JwtAuth(
       JwtSecretKey(jwtConfig.secretKey.value.value),
       JwtAlgorithm.HS256
@@ -44,6 +45,7 @@ object Security {
       tokens <- LiveTokens.make[F](tokenConfig)
       auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens)
     } yield new Security[F](auth)
+
   }
 }
 
