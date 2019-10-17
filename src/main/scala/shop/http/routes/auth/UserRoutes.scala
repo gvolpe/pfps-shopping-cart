@@ -23,7 +23,7 @@ final class UserRoutes[F[_]: Sync](
       req
         .decode[CreateUser] { user =>
           auth
-            .newUser(user.username, user.password, UserRole)
+            .newUser(user.username.toDomain, user.password.toDomain, UserRole)
             .flatMap(Created(_))
             .handleErrorWith {
               case UserNameInUse(u) => Conflict(u.value)

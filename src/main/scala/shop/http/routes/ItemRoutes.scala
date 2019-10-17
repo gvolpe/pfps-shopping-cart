@@ -24,7 +24,7 @@ final class ItemRoutes[F[_]: Sync](
       Ok(items.findAll)
 
     case GET -> Root :? BrandQueryParam(brand) =>
-      Ok(brand.fold(items.findAll)(b => items.findBy(b.asBrand)))
+      Ok(brand.fold(items.findAll)(b => items.findBy(b.toDomain)))
 
   }
 

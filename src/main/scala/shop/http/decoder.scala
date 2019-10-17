@@ -4,8 +4,8 @@ import cats.Monad
 import cats.implicits._
 import io.circe.Decoder
 import org.http4s._
-import shop.domain.checkout.Card
 import org.http4s.dsl.Http4sDsl
+import shop.domain.checkout.Card
 
 object decoder {
 

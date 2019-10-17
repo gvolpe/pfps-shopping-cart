@@ -9,7 +9,7 @@ object brand {
   @newtype case class Brand(value: String)
 
   @newtype case class BrandParam(value: NonEmptyString) {
-    def asBrand: Brand = this.value.value.coerce[Brand]
+    def toDomain: Brand = value.value.coerce[Brand]
   }
 
   case class InvalidBrand(value: String) extends NoStackTrace

@@ -22,7 +22,7 @@ final class LoginRoutes[F[_]: Sync](
     case req @ POST -> Root / "login" =>
       req.decode[LoginUser] { user =>
         auth
-          .login(user.username, user.password)
+          .login(user.username.toDomain, user.password.toDomain)
           .flatMap(Ok(_))
           .handleErrorWith {
             case InvalidUserOrPassword(_) => Forbidden()

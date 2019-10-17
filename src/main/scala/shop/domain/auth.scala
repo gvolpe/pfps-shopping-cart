@@ -1,6 +1,8 @@
 package shop.domain
 
+import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
+import io.estatico.newtype.ops._
 import java.{ util => ju }
 import scala.util.control.NoStackTrace
 
@@ -12,9 +14,17 @@ object auth {
 
   // --------- user registration -----------
 
+  @newtype case class UserNameParam(value: NonEmptyString) {
+    def toDomain: UserName = value.value.coerce[UserName]
+  }
+
+  @newtype case class PasswordParam(value: NonEmptyString) {
+    def toDomain: Password = value.value.coerce[Password]
+  }
+
   case class CreateUser(
-      username: UserName,
-      password: Password
+      username: UserNameParam,
+      password: PasswordParam
   )
 
   case class UserNameInUse(username: UserName) extends NoStackTrace
@@ -24,7 +34,7 @@ object auth {
   // --------- user login -----------
 
   case class LoginUser(
-      username: UserName,
-      password: Password
+      username: UserNameParam,
+      password: PasswordParam
   )
 }
