@@ -29,7 +29,7 @@ final class CheckoutRoutes[F[_]: Sync](
           .flatMap(Created(_))
           .recoverWith {
             case CartNotFound(userId) =>
-              BadRequest(s"Cart not found for user: ${userId.value}")
+              NotFound(s"Cart not found for user: ${userId.value}")
             case EmptyCartError =>
               BadRequest("Shopping cart is empty!")
             case PaymentError(cause) =>

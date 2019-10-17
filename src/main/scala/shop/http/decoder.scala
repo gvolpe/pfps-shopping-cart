@@ -15,8 +15,8 @@ object decoder {
       ev.decode(req, strict = false).value.flatMap {
         case Left(e) =>
           e.cause match {
-            case Some(c) if c.getMessage.startsWith("Predicate failed") => BadRequest(c.getMessage)
-            case _                                                      => UnprocessableEntity()
+            case Some(c) if c.getMessage.startsWith("Predicate") => BadRequest(c.getMessage)
+            case _                                               => UnprocessableEntity()
           }
         case Right(a) => f(a)
       }
@@ -24,4 +24,3 @@ object decoder {
   }
 
 }
-

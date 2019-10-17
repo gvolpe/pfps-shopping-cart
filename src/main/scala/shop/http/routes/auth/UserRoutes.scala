@@ -8,6 +8,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import shop.algebras.Auth
 import shop.domain.auth._
+import shop.http.decoder._
 import shop.http.auth.roles._
 import shop.http.json._
 
@@ -21,7 +22,7 @@ final class UserRoutes[F[_]: Sync](
 
     case req @ POST -> Root / "users" =>
       req
-        .decode[CreateUser] { user =>
+        .decodeR[CreateUser] { user =>
           auth
             .newUser(user.username.toDomain, user.password.toDomain, UserRole)
             .flatMap(Created(_))

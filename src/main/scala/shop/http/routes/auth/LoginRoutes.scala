@@ -8,6 +8,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import shop.algebras.Auth
 import shop.domain.auth._
+import shop.http.decoder._
 import shop.http.json._
 import shop.http.auth.roles._
 
@@ -20,7 +21,7 @@ final class LoginRoutes[F[_]: Sync](
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
 
     case req @ POST -> Root / "login" =>
-      req.decode[LoginUser] { user =>
+      req.decodeR[LoginUser] { user =>
         auth
           .login(user.username.toDomain, user.password.toDomain)
           .flatMap(Ok(_))
