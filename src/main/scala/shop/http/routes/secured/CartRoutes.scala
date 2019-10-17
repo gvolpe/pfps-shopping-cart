@@ -43,7 +43,7 @@ final class CartRoutes[F[_]: Sync](
 
     // Remove item from the cart
     case DELETE -> Root / UUIDVar(uuid) as user =>
-      shoppingCart.remove(user.value.id, uuid.coerce[ItemId]) *> NoContent()
+      shoppingCart.removeItem(user.value.id, uuid.coerce[ItemId]) *> NoContent()
   }
 
   def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(

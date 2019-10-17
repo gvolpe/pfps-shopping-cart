@@ -8,8 +8,6 @@ import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.order._
 
-// TODO: Create a program with the interaction between submitting the cart to the payments remote
-// service, creating the response in PostgreSQL and resetting the cart for the user.
 trait Orders[F[_]] {
   def get(userId: UserId, orderId: OrderId): F[Option[Order]]
   def findBy(userId: UserId): F[List[Order]]
@@ -33,4 +31,3 @@ private class LiveOrders[F[_]: Applicative: GenUUID] extends Orders[F] {
     GenUUID[F].make.map(_.coerce[OrderId])
 
 }
-

@@ -84,6 +84,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
           total <- calcTotal(items)
           pid <- processPayment(userId, total, card)
           order <- createOrder(userId, pid, items)
+          _ <- shoppingCart.delete(userId)
         } yield order
     }
 

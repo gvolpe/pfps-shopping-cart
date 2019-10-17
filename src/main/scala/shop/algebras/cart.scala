@@ -15,7 +15,8 @@ import LiveShoppingCart._
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, item: ItemId, quantity: Quantity): F[Unit]
   def get(userId: UserId): F[List[CartItem]]
-  def remove(userId: UserId, itemId: ItemId): F[Unit]
+  def delete(userId: UserId): F[Unit]
+  def removeItem(userId: UserId, itemId: ItemId): F[Unit]
   def update(userId: UserId, cart: Cart): F[Unit]
 }
 
@@ -55,7 +56,14 @@ class LiveShoppingCart[F[_]: Sync] private (
       }
     }
 
-  def remove(userId: UserId, itemId: ItemId): F[Unit] =
+  def delete(userId: UserId): F[Unit] =
+    ref.get.flatMap { carts =>
+      carts.get(userId).fold(unit) { cart =>
+        cart.update(_ => Map.empty)
+      }
+    }
+
+  def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
     ref.get.flatMap { carts =>
       carts.get(userId).fold(unit) { cart =>
         cart.update(_.removed(itemId))
