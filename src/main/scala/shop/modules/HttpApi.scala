@@ -7,7 +7,7 @@ import dev.profunktor.auth.jwt.{ JwtAuth, JwtSecretKey, JwtToken }
 import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.implicits._
-import org.http4s.server.middleware.{ AutoSlash, CORS, Timeout }
+import org.http4s.server.middleware._
 import org.http4s.server.Router
 import pdi.jwt._
 import scala.concurrent.duration._
@@ -91,6 +91,14 @@ class HttpApi[F[_]: Concurrent: Timer] private (
     }
   }
 
-  val httpApp: HttpApp[F] = middleware(routes).orNotFound
+  private val loggers: HttpApp[F] => HttpApp[F] = {
+    { http: HttpApp[F] =>
+      RequestLogger.httpApp(true, true)(http)
+    } andThen { http: HttpApp[F] =>
+      ResponseLogger.httpApp(true, true)(http)
+    }
+  }
+
+  val httpApp: HttpApp[F] = loggers(middleware(routes).orNotFound)
 
 }
