@@ -2,7 +2,7 @@ package shop.algebras
 
 import cats.effect.Sync
 import cats.implicits._
-import dev.profunktor.auth.jwt.JwtToken
+import dev.profunktor.auth.jwt._
 import io.circe.syntax._
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
@@ -31,9 +31,10 @@ class LiveTokens[F[_]: GenUUID: Sync] private (
 )(implicit val ev: java.time.Clock)
     extends Tokens[F] {
   def create: F[JwtToken] =
-    GenUUID[F].make.flatMap { uuid =>
-      Sync[F].delay(JwtClaim(uuid.asJson.noSpaces).issuedNow.expiresIn(exp.value)).map { jwtClaim =>
-        JwtToken(Jwt.encode(jwtClaim, config.secretKey.value.value, JwtAlgorithm.HS256))
-      }
-    }
+    for {
+      uuid <- GenUUID[F].make
+      claim <- Sync[F].delay(JwtClaim(uuid.asJson.noSpaces).issuedNow.expiresIn(exp.value))
+      secretKey = JwtSecretKey(config.secretKey.value.value)
+      token <- jwtEncode[F](claim, secretKey, JwtAlgorithm.HS256)
+    } yield token
 }
