@@ -46,8 +46,9 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, usersAuth)
 
   // Auth routes (open)
-  private val loginRoutes = new LoginRoutes[F](auth).routes
-  private val userRoutes  = new UserRoutes[F](auth).routes
+  private val loginRoutes  = new LoginRoutes[F](auth).routes
+  private val logoutRoutes = new LogoutRoutes[F](auth).routes
+  private val userRoutes   = new UserRoutes[F](auth).routes
 
   // Open routes
   private val healthRoutes   = new HealthRoutes[F].routes
@@ -59,9 +60,6 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val cartRoutes     = new CartRoutes[F](algebras.cart).routes(usersMiddleware)
   private val checkoutRoutes = new CheckoutRoutes[F](programs.checkout).routes(usersMiddleware)
   private val orderRoutes    = new OrderRoutes[F](algebras.orders).routes(usersMiddleware)
-
-  // Auth routes (secured)
-  private val logoutRoutes = new LogoutRoutes[F](auth).routes(usersMiddleware)
 
   // Admin routes
   private val adminBrandRoutes    = new AdminBrandRoutes[F](algebras.brands).routes(adminMiddleware)

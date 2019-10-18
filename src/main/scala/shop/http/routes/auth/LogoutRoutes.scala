@@ -18,17 +18,17 @@ final class LogoutRoutes[F[_]: Sync](
 
   private[routes] val prefixPath = "/auth"
 
-  private val httpRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
+  private val httpRoutes: HttpRoutes[F] = HttpRoutes.of {
 
-    case req @ POST -> Root / "logout" as _ =>
+    case req @ POST -> Root / "logout" =>
       AuthHeaders
-        .getBearerToken(req.req)
+        .getBearerToken(req)
         .fold(().pure[F])(auth.logout) *> NoContent()
 
   }
 
-  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
-    prefixPath -> authMiddleware(httpRoutes)
+  val routes: HttpRoutes[F] = Router(
+    prefixPath -> httpRoutes
   )
 
 }
