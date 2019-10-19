@@ -38,14 +38,21 @@ object item {
       CreateItem(
         name.value.value.coerce[ItemName],
         description.value.value.coerce[ItemDescription],
-        price
+        price,
+        Brand("Ibanez"), // FIXME: Hardcoded
+        Category("Guitars")
       )
   }
 
   case class CreateItem(
       name: ItemName,
       description: ItemDescription,
-      price: USD
-  )
+      price: USD,
+      brand: Brand,
+      category: Category
+  ) {
+    def toItem(itemId: ItemId) =
+      Item(itemId, name, description, price, brand, category)
+  }
 
 }

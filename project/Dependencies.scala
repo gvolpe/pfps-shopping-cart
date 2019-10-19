@@ -15,6 +15,7 @@ object Dependencies {
     val log4cats      = "1.0.0"
     val newtype       = "0.4.3"
     val refined       = "0.9.10"
+    val redis4cats    = "0.9.0"
     val skunk         = "0.0.4"
     val squants       = "1.5.0"
 
@@ -60,11 +61,14 @@ object Dependencies {
 
     lazy val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % Versions.http4sJwtAuth
 
-    lazy val refinedCore = "eu.timepit"   %% "refined"      % Versions.refined
-    lazy val refinedCats = "eu.timepit"   %% "refined-cats" % Versions.refined
+    lazy val refinedCore = "eu.timepit" %% "refined"      % Versions.refined
+    lazy val refinedCats = "eu.timepit" %% "refined-cats" % Versions.refined
 
     lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % Versions.log4cats
     lazy val newtype  = "io.estatico"       %% "newtype"        % Versions.newtype
+
+    lazy val redis4catsEffects  = "dev.profunktor" %% "redis4cats-effects"  % Versions.redis4cats
+    lazy val redis4catsLog4cats = "dev.profunktor" %% "redis4cats-log4cats" % Versions.redis4cats
 
     lazy val skunk = "org.tpolecat" %% "skunk-core" % Versions.skunk
 

@@ -35,6 +35,8 @@ lazy val root = (project in file("."))
       Libraries.log4cats,
       Libraries.logback % Runtime,
       Libraries.newtype,
+      Libraries.redis4catsEffects,
+      Libraries.redis4catsLog4cats,
       Libraries.refinedCore,
       Libraries.refinedCats,
       Libraries.skunk,
