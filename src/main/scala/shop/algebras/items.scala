@@ -7,6 +7,7 @@ import java.{ util => ju }
 import shop.database._
 import shop.domain.brand.Brand
 import shop.domain.category.Category
+import shop.domain.brand._
 import shop.domain.item._
 import skunk._
 import skunk.codec.all._
@@ -14,7 +15,7 @@ import skunk.implicits._
 
 trait Items[F[_]] {
   def findAll: F[List[Item]]
-  def findBy(brand: Brand): F[List[Item]]
+  def findBy(brand: BrandName): F[List[Item]]
   def create(item: CreateItem): F[Unit]
   def update(item: UpdateItem): F[Unit]
 }
@@ -34,20 +35,20 @@ class LiveItems[F[_]: GenUUID: Sync] private (
   def findAll: F[List[Item]] =
     session.execute(selectAll)
 
-  def findBy(brand: Brand): F[List[Item]] =
+  def findBy(brand: BrandName): F[List[Item]] =
     session.prepare(selectByBrand).use { ps =>
       ps.stream(brand, 1024).compile.toList
     }
 
   def create(item: CreateItem): F[Unit] =
-    session.prepare(insertBrand).use { cmd =>
+    session.prepare(insertItem).use { cmd =>
       GenUUID[F].make.flatMap { uuid =>
         cmd.execute(item.toItem(uuid.coerce[ItemId])).void
       }
     }
 
   def update(item: UpdateItem): F[Unit] =
-    session.prepare(updateBrand).use { cmd =>
+    session.prepare(updateItem).use { cmd =>
       cmd.execute(item.price.value ~ item.id.value.toString).void
     }
 
@@ -63,11 +64,11 @@ private object ItemQueries {
           n.coerce[ItemName],
           d.coerce[ItemDescription],
           p.coerce[USD],
-          b.coerce[Brand],
+          Brand(ju.UUID.fromString(b).coerce[BrandId], "foo".coerce[BrandName]),
           c.coerce[Category]
         )
     }(
-      i => i.uuid.value.toString ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brand.value ~ i.category.value
+      i => i.uuid.value.toString ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brand.uuid.value.toString ~ i.category.value
     )
 
   val selectAll: Query[Void, Item] =
@@ -75,19 +76,19 @@ private object ItemQueries {
         SELECT * FROM items
        """.query(itemCodec)
 
-  val selectByBrand: Query[Brand, Item] =
+  val selectByBrand: Query[BrandName, Item] =
     sql"""
         SELECT * FROM items
-        WHERE brand LIKE ${coercibleVarchar[Brand]}
+        WHERE brand LIKE ${coercibleVarchar[BrandName]}
        """.query(itemCodec)
 
-  val insertBrand: Command[Item] =
+  val insertItem: Command[Item] =
     sql"""
         INSERT INTO items
         VALUES ($itemCodec)
        """.command
 
-  val updateBrand: Command[BigDecimal ~ String] =
+  val updateItem: Command[BigDecimal ~ String] =
     sql"""
         UPDATE items
         SET price = $numeric

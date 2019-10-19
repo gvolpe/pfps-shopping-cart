@@ -16,7 +16,7 @@ final class BrandRoutes[F[_]: Sync](
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root =>
-      Ok(brands.getAll)
+      Ok(brands.findAll)
   }
 
   val routes: HttpRoutes[F] = Router(

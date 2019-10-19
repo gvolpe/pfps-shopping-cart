@@ -2,11 +2,15 @@ package shop.algebras
 
 import cats.Applicative
 import cats.effect.Sync
+import cats.implicits._
+import io.estatico.newtype.Coercible
+import io.estatico.newtype.ops._
 import shop.domain._
 import java.{ util => ju }
 
 trait GenUUID[F[_]] {
   def make: F[ju.UUID]
+  def make[A: Coercible[ju.UUID, ?]]: F[A]
 }
 
 object GenUUID {
@@ -16,5 +20,8 @@ object GenUUID {
     new GenUUID[F] {
       def make: F[ju.UUID] =
         Sync[F].delay(ju.UUID.randomUUID())
+
+      def make[A: Coercible[ju.UUID, ?]]: F[A] =
+        make.map(_.coerce[A])
     }
 }

@@ -41,7 +41,7 @@ object item {
         name.value.value.coerce[ItemName],
         description.value.value.coerce[ItemDescription],
         price,
-        Brand("Ibanez"), // FIXME: Hardcoded
+        Brand(ju.UUID.randomUUID.coerce[BrandId], "Ibanez".coerce[BrandName]), // FIXME: Hardcoded
         Category("Guitars")
       )
   }

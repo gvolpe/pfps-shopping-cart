@@ -1,25 +1,61 @@
 package shop.algebras
 
-import cats.Applicative
+import cats.effect._
 import cats.implicits._
 import io.estatico.newtype.ops._
+import java.{ util => ju }
 import shop.domain.brand._
+import skunk._
+import skunk.codec.all._
+import skunk.implicits._
 
 trait Brands[F[_]] {
-  def getAll: F[List[Brand]]
-  def create(brand: Brand): F[Unit]
+  def findAll: F[List[Brand]]
+  def create(brand: BrandName): F[Unit]
 }
 
 object LiveBrands {
-  def make[F[_]: Applicative]: F[Brands[F]] =
-    new LiveBrands[F](
-      List("Gibson", "Ibanez", "Schecter").map(_.coerce[Brand])
-    ).pure[F].widen
+  def make[F[_]: Sync](session: Session[F]): F[Brands[F]] =
+    new LiveBrands[F](session).pure[F].widen
 }
 
-class LiveBrands[F[_]: Applicative] private (
-    brands: List[Brand]
+class LiveBrands[F[_]: Sync] private (
+    session: Session[F]
 ) extends Brands[F] {
-  def getAll: F[List[Brand]]        = brands.pure[F]
-  def create(brand: Brand): F[Unit] = ().pure[F]
+  import BrandQueries._
+
+  def findAll: F[List[Brand]] =
+    session.execute(selectAll)
+
+  def create(brand: BrandName): F[Unit] =
+    session.prepare(insertBrand).use { cmd =>
+      GenUUID[F].make[BrandId].flatMap { id =>
+        val b = Brand(id, brand)
+        cmd.execute(b).void
+      }
+    }
+}
+
+private object BrandQueries {
+
+  val brandCodec: Codec[Brand] =
+    (varchar ~ varchar).imap {
+      case i ~ n =>
+        Brand(
+          ju.UUID.fromString(i).coerce[BrandId],
+          n.coerce[BrandName]
+        )
+    }(b => b.uuid.value.toString ~ b.name.value)
+
+  val selectAll: Query[Void, Brand] =
+    sql"""
+        SELECT * FROM brands
+       """.query(brandCodec)
+
+  val insertBrand: Command[Brand] =
+    sql"""
+        INSERT INTO brands
+        VALUES ($brandCodec)
+       """.command
+
 }

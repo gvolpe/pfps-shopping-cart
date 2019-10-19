@@ -11,6 +11,7 @@ import shop.domain.category._
 import shop.domain.cart._
 import shop.domain.item._
 import LiveShoppingCart._
+import java.{ util => ju }
 
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, item: ItemId, quantity: Quantity): F[Unit]
@@ -45,7 +46,8 @@ class LiveShoppingCart[F[_]: Sync] private (
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     getOrCreateCart(userId).flatMap { cart =>
       // TODO: Hard-coded for now. Should retrieve from items table in PSQL.
-      val item = Item(itemId, ItemName("foo"), ItemDescription("bar"), USD(100), Brand("bar"), Category("guitars"))
+      val brand = Brand(ju.UUID.randomUUID().coerce[BrandId], BrandName("some"))
+      val item  = Item(itemId, ItemName("foo"), ItemDescription("bar"), USD(100), brand, Category("guitars"))
       cart.update(_.updated(item.uuid, CartItem(item, quantity)))
     }
 

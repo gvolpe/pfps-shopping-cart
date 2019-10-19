@@ -11,6 +11,7 @@ import java.{ util => ju }
 import org.http4s.{ EntityDecoder, EntityEncoder }
 import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import shop.domain.auth._
+import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.checkout._
 import shop.domain.item._
@@ -36,6 +37,10 @@ object json {
     KeyEncoder[A].contramap(_.repr)
 
   // ----- Domain codecs -----
+
+  implicit val brandDecoder: Decoder[Brand] = deriveDecoder[Brand]
+  implicit val brandEncoder: Encoder[Brand] = deriveEncoder[Brand]
+
   implicit val itemDecoder: Decoder[Item] = deriveDecoder[Item]
   implicit val itemEncoder: Encoder[Item] = deriveEncoder[Item]
 
