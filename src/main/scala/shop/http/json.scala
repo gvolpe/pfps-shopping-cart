@@ -13,6 +13,7 @@ import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.cart._
+import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
@@ -40,6 +41,9 @@ object json {
 
   implicit val brandDecoder: Decoder[Brand] = deriveDecoder[Brand]
   implicit val brandEncoder: Encoder[Brand] = deriveEncoder[Brand]
+
+  implicit val categoryDecoder: Decoder[Category] = deriveDecoder[Category]
+  implicit val categoryEncoder: Encoder[Category] = deriveEncoder[Category]
 
   implicit val itemDecoder: Decoder[Item] = deriveDecoder[Item]
   implicit val itemEncoder: Encoder[Item] = deriveEncoder[Item]

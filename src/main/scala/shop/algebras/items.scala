@@ -6,7 +6,7 @@ import io.estatico.newtype.ops._
 import java.{ util => ju }
 import shop.database._
 import shop.domain.brand.Brand
-import shop.domain.category.Category
+import shop.domain.category._
 import shop.domain.brand._
 import shop.domain.item._
 import skunk._
@@ -65,10 +65,11 @@ private object ItemQueries {
           d.coerce[ItemDescription],
           p.coerce[USD],
           Brand(ju.UUID.fromString(b).coerce[BrandId], "foo".coerce[BrandName]),
-          c.coerce[Category]
+          Category(ju.UUID.fromString(c).coerce[CategoryId], "cat".coerce[CategoryName])
         )
     }(
-      i => i.uuid.value.toString ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brand.uuid.value.toString ~ i.category.value
+      i =>
+        i.uuid.value.toString ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brand.uuid.value.toString ~ i.category.uuid.value.toString
     )
 
   val selectAll: Query[Void, Item] =

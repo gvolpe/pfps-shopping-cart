@@ -16,7 +16,7 @@ final class CategoryRoutes[F[_]: Sync](
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root =>
-      Ok(categories.getAll)
+      Ok(categories.findAll)
   }
 
   val routes: HttpRoutes[F] = Router(

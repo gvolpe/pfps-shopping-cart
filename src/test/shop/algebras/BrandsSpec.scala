@@ -15,7 +15,6 @@ object TestBrands {
 class TestBrands[F[_]: Applicative] private (
     brands: List[Brand]
 ) extends Brands[F] {
-  def getAll: F[List[Brand]]        = brands.pure[F]
-  def create(brand: Brand): F[Unit] = ().pure[F]
+  def findAll: F[List[Brand]]          = brands.pure[F]
+  def create(name: BrandName): F[Unit] = ().pure[F]
 }
-

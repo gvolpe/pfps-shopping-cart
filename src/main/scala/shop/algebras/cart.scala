@@ -47,7 +47,8 @@ class LiveShoppingCart[F[_]: Sync] private (
     getOrCreateCart(userId).flatMap { cart =>
       // TODO: Hard-coded for now. Should retrieve from items table in PSQL.
       val brand = Brand(ju.UUID.randomUUID().coerce[BrandId], BrandName("some"))
-      val item  = Item(itemId, ItemName("foo"), ItemDescription("bar"), USD(100), brand, Category("guitars"))
+      val cat   = Category(ju.UUID.randomUUID().coerce[CategoryId], CategoryName("foo"))
+      val item  = Item(itemId, ItemName("foo"), ItemDescription("bar"), USD(100), brand, cat)
       cart.update(_.updated(item.uuid, CartItem(item, quantity)))
     }
 
