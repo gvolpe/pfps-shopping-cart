@@ -14,18 +14,18 @@ import scala.concurrent.ExecutionContext
 
 object Main extends IOApp {
 
+  implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+
   override def run(args: List[String]): IO[ExitCode] =
-    Slf4jLogger.create[IO].flatMap { implicit logger =>
-      AppResources.make[IO].use { res =>
-        Server.httpApi[IO](res).flatMap { api =>
-          BlazeServerBuilder[IO]
-            .bindHttp(8080, "0.0.0.0")
-            .withHttpApp(api.httpApp)
-            .serve
-            .compile
-            .drain
-            .as(ExitCode.Success)
-        }
+    AppResources.make[IO].use { res =>
+      Server.httpApi[IO](res).flatMap { api =>
+        BlazeServerBuilder[IO]
+          .bindHttp(8080, "0.0.0.0")
+          .withHttpApp(api.httpApp)
+          .serve
+          .compile
+          .drain
+          .as(ExitCode.Success)
       }
     }
 }
