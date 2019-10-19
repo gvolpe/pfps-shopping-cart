@@ -9,6 +9,7 @@ import shop.algebras.Items
 import shop.domain.item._
 import shop.http.auth._
 import shop.http.auth.roles.AdminUser
+import shop.http.decoder._
 import shop.http.json._
 
 final class AdminItemRoutes[F[_]: Sync](
@@ -20,8 +21,8 @@ final class AdminItemRoutes[F[_]: Sync](
   private val httpRoutes: AuthedRoutes[AdminUser, F] =
     AuthedRoutes.of {
       case ar @ POST -> Root as _ =>
-        ar.req.decode[CreateItem] { item =>
-          Created(items.create(item))
+        ar.req.decodeR[CreateItemParam] { item =>
+          Created(items.create(item.toDomain))
         }
     }
 

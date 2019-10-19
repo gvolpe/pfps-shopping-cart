@@ -1,6 +1,8 @@
 package shop.domain
 
+import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
+import io.estatico.newtype.ops._
 import java.{ util => ju }
 //import squants.market.USD
 import shop.domain.brand._
@@ -24,10 +26,26 @@ object item {
 
   // ----- Create item ------
 
+  @newtype case class ItemNameParam(value: NonEmptyString)
+  @newtype case class ItemDescriptionParam(value: NonEmptyString)
+
+  case class CreateItemParam(
+      name: ItemNameParam,
+      description: ItemDescriptionParam,
+      price: USD
+  ) {
+    def toDomain: CreateItem =
+      CreateItem(
+        name.value.value.coerce[ItemName],
+        description.value.value.coerce[ItemDescription],
+        price
+      )
+  }
+
   case class CreateItem(
-    name: ItemName,
-    description: ItemDescription,
-    price: USD
+      name: ItemName,
+      description: ItemDescription,
+      price: USD
   )
 
 }

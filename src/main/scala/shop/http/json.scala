@@ -39,7 +39,7 @@ object json {
   implicit val itemDecoder: Decoder[Item] = deriveDecoder[Item]
   implicit val itemEncoder: Encoder[Item] = deriveEncoder[Item]
 
-  implicit val createItemDecoder: Decoder[CreateItem] = deriveDecoder[CreateItem]
+  implicit val createItemDecoder: Decoder[CreateItemParam] = deriveDecoder[CreateItemParam]
 
   implicit val cartItemEncoder: Encoder[CartItem] = deriveEncoder[CartItem]
 

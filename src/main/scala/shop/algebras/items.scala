@@ -1,8 +1,13 @@
 package shop.algebras
 
 import cats.Applicative
+import cats.effect._
 import cats.implicits._
+import skunk._
+import skunk.codec.all._
+import skunk.implicits._
 import io.estatico.newtype.ops._
+import java.{ util => ju }
 import shop.domain.brand.Brand
 import shop.domain.category.Category
 import shop.domain.item._
@@ -15,39 +20,37 @@ trait Items[F[_]] {
 }
 
 object LiveItems {
-  def make[F[_]: Applicative: GenUUID]: F[Items[F]] =
-    GenUUID[F].make.replicateA(2).map { uuids =>
-      val items = uuids
-        .map(_.coerce[ItemId])
-        .zip(
-          List(
-            (
-              ItemName("Prog Power"),
-              ItemDescription("Electric Guitar"),
-              USD(343),
-              Brand("Schecter"),
-              Category("Guitars")
-            ),
-            (
-              ItemName("Petrucci Signature"),
-              ItemDescription("Electric Guitar"),
-              USD(555),
-              Brand("MusicMan"),
-              Category("Guitars")
-            )
-          )
-        )
-        .map { case (id, (n, d, p, b, c)) => Item(id, n, d, p, b, c) }
-      new LiveItems(items)
-    }
+  def make[F[_]: Applicative](
+      session: Session[F]
+  ): F[Items[F]] =
+    new LiveItems[F](session).pure[F].widen
 }
 
-class LiveItems[F[_]: Applicative] private (
-    items: List[Item]
+class LiveItems[F[_]] private (
+    session: Session[F]
 ) extends Items[F] {
-  def findAll: F[List[Item]] = items.pure[F]
-  def findBy(brand: Brand): F[List[Item]] =
-    items.filter(_.brand.value.toLowerCase == brand.value.toLowerCase).pure[F]
-  def create(item: CreateItem): F[Unit] = ().pure[F]
-  def update(item: Item): F[Unit]       = ().pure[F]
+
+  val item: Decoder[Item] =
+    (varchar ~ varchar ~ varchar ~ numeric ~ varchar ~ varchar).map {
+      case i ~ n ~ d ~ p ~ b ~ c =>
+        Item(
+          ju.UUID.fromString(i).coerce[ItemId],
+          n.coerce[ItemName],
+          d.coerce[ItemDescription],
+          p.coerce[USD],
+          b.coerce[Brand],
+          c.coerce[Category]
+        )
+    }
+
+  def findAll: F[List[Item]] =
+    session.execute(
+      sql"""
+        select * from items
+      """.query(item)
+    )
+
+  def findBy(brand: Brand): F[List[Item]] = ???
+  def create(item: CreateItem): F[Unit]   = ???
+  def update(item: Item): F[Unit]         = ???
 }
