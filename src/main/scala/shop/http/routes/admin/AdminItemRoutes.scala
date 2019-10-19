@@ -20,9 +20,16 @@ final class AdminItemRoutes[F[_]: Sync](
 
   private val httpRoutes: AuthedRoutes[AdminUser, F] =
     AuthedRoutes.of {
+      // Create new item
       case ar @ POST -> Root as _ =>
         ar.req.decodeR[CreateItemParam] { item =>
           Created(items.create(item.toDomain))
+        }
+
+      // Update price of item
+      case ar @ PUT -> Root as _ =>
+        ar.req.decodeR[UpdateItemParam] { item =>
+          Ok(items.update(item.toDomain))
         }
     }
 

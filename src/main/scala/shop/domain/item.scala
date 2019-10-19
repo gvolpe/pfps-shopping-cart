@@ -1,5 +1,7 @@
 package shop.domain
 
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
@@ -54,5 +56,26 @@ object item {
     def toItem(itemId: ItemId) =
       Item(itemId, name, description, price, brand, category)
   }
+
+  // ----- Update item ------
+
+  @newtype case class ItemIdParam(value: String Refined Uuid)
+  @newtype case class PriceParam(value: String Refined ValidBigDecimal)
+
+  case class UpdateItemParam(
+      id: ItemIdParam,
+      price: PriceParam
+  ) {
+    def toDomain: UpdateItem =
+      UpdateItem(
+        ju.UUID.fromString(id.value.value).coerce[ItemId],
+        BigDecimal(price.value.value).coerce[USD]
+      )
+  }
+
+  case class UpdateItem(
+      id: ItemId,
+      price: USD
+  )
 
 }

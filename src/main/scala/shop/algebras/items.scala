@@ -16,7 +16,7 @@ trait Items[F[_]] {
   def findAll: F[List[Item]]
   def findBy(brand: Brand): F[List[Item]]
   def create(item: CreateItem): F[Unit]
-  def update(item: Item): F[Unit]
+  def update(item: UpdateItem): F[Unit]
 }
 
 object LiveItems {
@@ -46,9 +46,9 @@ class LiveItems[F[_]: GenUUID: Sync] private (
       }
     }
 
-  def update(item: Item): F[Unit] =
+  def update(item: UpdateItem): F[Unit] =
     session.prepare(updateBrand).use { cmd =>
-      cmd.execute(item.name.value ~ item.uuid.value.toString).void
+      cmd.execute(item.price.value ~ item.id.value.toString).void
     }
 
 }
@@ -87,10 +87,10 @@ private object ItemQueries {
         VALUES ($itemCodec)
        """.command
 
-  val updateBrand: Command[String ~ String] =
+  val updateBrand: Command[BigDecimal ~ String] =
     sql"""
         UPDATE items
-        SET name = $varchar
+        SET price = $numeric
         WHERE uuid = $varchar
        """.command
 
