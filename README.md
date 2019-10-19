@@ -14,3 +14,19 @@ For Admin users:
 For access token (manipulation of the shopping cart):
 
 - `export ACCESS_TOKEN_SECRET_KEY="5h0pp1ng_k4rt"`
+
+## Requirements
+
+We need to run both `PostgreSQL` and `Redis` in order to make our application work. Get started quickly using Docker.
+
+### PostgreSQL
+
+```
+docker run --rm --name psql -e POSTGRES_DB=store -p 5432:5432 postgres
+```
+
+### Redis
+
+```
+docker run --rm --name cache -p 6379:6379 redis:5.0.0
+```
