@@ -30,8 +30,7 @@ class LiveBrands[F[_]: Sync] private (
   def create(brand: BrandName): F[Unit] =
     session.prepare(insertBrand).use { cmd =>
       GenUUID[F].make[BrandId].flatMap { id =>
-        val b = Brand(id, brand)
-        cmd.execute(b).void
+        cmd.execute(Brand(id, brand)).void
       }
     }
 }
@@ -56,6 +55,6 @@ private object BrandQueries {
     sql"""
         INSERT INTO brands
         VALUES ($brandCodec)
-       """.command
+        """.command
 
 }
