@@ -54,7 +54,7 @@ private object BrandQueries {
   val insertBrand: Command[Brand] =
     sql"""
         INSERT INTO brands
-        VALUES ($brandCodec)
-        """.command
+        VALUES ($varchar, $varchar)
+        """.command.contramap(b => b.uuid.value.toString ~ b.name.value)
 
 }
