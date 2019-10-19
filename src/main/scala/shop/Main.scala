@@ -17,7 +17,7 @@ object Main extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     Slf4jLogger.create[IO].flatMap { implicit logger =>
       AppResources.make[IO].use { res =>
-        new Main[IO].httpApi(res).flatMap { api =>
+        Server.httpApi[IO](res).flatMap { api =>
           BlazeServerBuilder[IO]
             .bindHttp(8080, "0.0.0.0")
             .withHttpApp(api.httpApp)
@@ -30,10 +30,11 @@ object Main extends IOApp {
     }
 }
 
-class Main[F[_]: Concurrent: ContextShift: Logger: Parallel: Timer]() { // HasAppConfig
-  //import com.olegpy.meow.hierarchy._
+object Server {
 
-  def httpApi(res: AppResources[F]): F[HttpApi[F]] =
+  def httpApi[F[_]: Concurrent: ContextShift: Logger: Parallel: Timer](
+      res: AppResources[F]
+  ): F[HttpApi[F]] =
     for {
       //httpConfig <- Stream.eval(ask[F, HttpConfig])
       security <- Security.make[F](res.cfg.adminJwtConfig, res.cfg.tokenConfig)
