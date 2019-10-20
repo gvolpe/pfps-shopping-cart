@@ -36,8 +36,8 @@ object Server {
       res: AppResources[F]
   ): F[HttpApi[F]] =
     for {
-      //httpConfig <- Stream.eval(ask[F, HttpConfig])
-      security <- Security.make[F](res.cfg.adminJwtConfig, res.cfg.tokenConfig)
+      //httpConfig <- ask[F, HttpConfig]
+      security <- Security.make[F](res.cfg.adminJwtConfig, res.cfg.tokenConfig, res.redis)
       algebras <- Algebras.make[F](res.psql)
       clients <- HttpClients.make[F](res.client)
       programs <- Programs.make[F](algebras, clients)

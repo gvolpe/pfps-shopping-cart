@@ -3,6 +3,7 @@ package shop.modules
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt._
+import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.estatico.newtype.ops._
 import java.{ util => ju }
 import pdi.jwt._
@@ -14,7 +15,8 @@ import shop.http.auth.roles._
 object Security {
   def make[F[_]: Sync](
       adminJwtConfig: AdminJwtConfig,
-      tokenConfig: TokenConfig
+      tokenConfig: TokenConfig,
+      redis: RedisCommands[F, String, String]
   ): F[Security[F]] = {
 
     val adminJwtAuth: AdminJwtAuth = JwtAuth(
@@ -44,7 +46,7 @@ object Security {
       adminId <- Sync[F].delay(ju.UUID.fromString(content).coerce[UserId])
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
       tokens <- LiveTokens.make[F](tokenConfig)
-      auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens)
+      auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens, new LiveUsers[F], redis)
     } yield new Security[F](auth)
 
   }

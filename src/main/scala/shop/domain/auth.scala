@@ -31,6 +31,8 @@ object auth {
   case class InvalidUserOrPassword(username: UserName) extends NoStackTrace
   case object UnsupportedOperation extends NoStackTrace
 
+  case object TokenNotFound extends NoStackTrace
+
   // --------- user login -----------
 
   case class LoginUser(

@@ -17,6 +17,7 @@ import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
+import shop.http.auth.roles._
 import shop.validation.refined._
 
 object json {
@@ -62,6 +63,9 @@ object json {
 
   implicit val cartDecoder: Decoder[Cart] =
     Decoder.forProduct1("items")(Cart.apply)
+
+  implicit val userDecoder: Decoder[User] = deriveDecoder[User]
+  implicit val userEncoder: Encoder[User] = deriveEncoder[User]
 
   implicit val createUserDecoder: Decoder[CreateUser] = deriveDecoder[CreateUser]
 

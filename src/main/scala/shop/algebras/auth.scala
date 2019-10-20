@@ -5,11 +5,15 @@ import cats.effect.Sync
 import cats.effect.concurrent.Ref
 import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
+import dev.profunktor.redis4cats.algebra.RedisCommands
+import io.circe.syntax._
+import io.circe.parser.decode
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import pdi.jwt.JwtClaim
 import shop.domain.auth._
 import shop.http.auth.roles._
+import shop.http.json._
 import scala.util.control.NonFatal
 import scala.util.Try
 
@@ -22,71 +26,107 @@ trait Auth[F[_]] {
   def logout(token: JwtToken): F[Unit]
 }
 
-// TODO: Use Redis to store tokens with expiration
 object LiveAuth {
   def make[F[_]: Sync](
       adminToken: JwtToken,
       adminUser: AdminUser,
       adminJwtAuth: AdminJwtAuth,
       userJwtAuth: UserJwtAuth,
-      tokens: Tokens[F]
+      tokens: Tokens[F],
+      users: Users[F],
+      redis: RedisCommands[F, String, String]
   ): F[Auth[F]] =
-    for {
-      adminTokens <- Ref.of[F, Map[JwtToken, User]](Map(adminToken -> adminUser.coerce[User]))
-      userTokens <- Ref.of[F, Map[JwtToken, User]](Map.empty)
-      usersRef <- Ref.of[F, Map[UserName, (User, Password)]](Map.empty)
-    } yield new LiveAuth(adminTokens, userTokens, usersRef, adminJwtAuth, userJwtAuth, tokens)
+    new LiveAuth(adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens, users, redis).pure[F].widen
 }
 
 class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
-    adminTokens: Ref[F, Map[JwtToken, User]],
-    userTokens: Ref[F, Map[JwtToken, User]],
-    users: Ref[F, Map[UserName, (User, Password)]],
+    adminToken: JwtToken,
+    adminUser: AdminUser,
     adminAuth: AdminJwtAuth,
     userAuth: UserJwtAuth,
-    tokens: Tokens[F]
+    tokens: Tokens[F],
+    users: Users[F],
+    redis: RedisCommands[F, String, String]
 ) extends Auth[F] {
+  import RedisKeys._
 
   def adminJwtAuth: F[AdminJwtAuth] = adminAuth.pure[F]
   def userJwtAuth: F[UserJwtAuth]   = userAuth.pure[F]
 
-  // FIXME: Should also take a JwtToken to verify against Redis. JwtClaim is not needed in this case.
-  // Maybe for extra security we can persist the JwtClaim to compare against.
+  private def retrieveUser[A: Coercible[User, ?]](
+      token: JwtToken
+  ): F[Option[A]] =
+    redis
+      .hGet(UsersKey.value, token.value)
+      .map(_.flatMap { u =>
+        decode[User](u).toOption.map(_.coerce[A])
+      })
+
+  private def findToken(token: JwtToken, field: Fields): F[JwtToken] =
+    redis.hGet(TokenKey.value, field.value).flatMap {
+      case Some(t) if t == token.value => token.pure[F]
+      case _                           => TokenNotFound.raiseError[F, JwtToken]
+    }
+
+  private def checkTokenGetUser[A: Coercible[User, ?]](
+      token: JwtToken,
+      field: Fields
+  ): F[Option[A]] =
+    findToken(token, field)
+      .flatMap(_ => retrieveUser[A](token))
+      .recoverWith {
+        case TokenNotFound => none[A].pure[F]
+      }
+
   def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
-      case AdminRole => adminTokens.get.map(_.get(token).map(_.coerce[A]))
-      case UserRole  => userTokens.get.map(_.get(token).map(_.coerce[A]))
+      case AdminRole if token == adminToken => adminUser.asInstanceOf[A].some.pure[F]
+      case AdminRole                        => none[A].pure[F]  // TODO: Use guard for this case?
+      case UserRole                         => checkTokenGetUser[A](token, UserField)
     }
 
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken] =
     role match {
       case AdminRole => UnsupportedOperation.raiseError[F, JwtToken]
       case UserRole =>
-        users.get.flatMap {
-          _.get(username) match {
-            case None =>
-              GenUUID[F].make.flatMap { uuid =>
-                val user = User(uuid.coerce[UserId], username)
-                users.update(_.updated(username, user -> password)) *> login(username, password)
-              }
-            case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
-          }
+        users.find(username, password).flatMap {
+          case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
+          case None =>
+            for {
+              i <- users.create(username, password)
+              t <- tokens.create
+              u = User(i, username).asJson.noSpaces
+              // TODO: Use args expiration
+              _ <- redis.hSet(UsersKey.value, t.value, u)
+              _ <- redis.hSet(TokenKey.value, t.value, t.value)
+            } yield t
         }
     }
 
   def login(username: UserName, password: Password): F[JwtToken] =
-    users.get.flatMap {
-      _.get(username) match {
-        // TODO: Encrypt passwords
-        case Some((u, p)) if p == password =>
-          tokens.create.flatTap { token =>
-            userTokens.update(_.updated(token, u))
-          }
-        case _ => InvalidUserOrPassword(username).raiseError[F, JwtToken]
-      }
+    users.find(username, password).flatMap {
+      case None => InvalidUserOrPassword(username).raiseError[F, JwtToken]
+      case Some(user) =>
+        tokens.create.flatTap { t =>
+          // TODO: Use args expiration
+          redis.hSet(UsersKey.value, t.value, user.asJson.noSpaces) *>
+            redis.hSet(TokenKey.value, t.value, t.value)
+        }
     }
 
   def logout(token: JwtToken): F[Unit] =
-    userTokens.update(_.removed(token))
+    redis.hDel(TokenKey.value, token.value)
+
+}
+
+private object RedisKeys {
+
+  sealed abstract class Keys(val value: String)
+  case object TokenKey extends Keys("tokens")
+  case object UsersKey extends Keys("users")
+
+  sealed abstract class Fields(val value: String)
+  case object AdminField extends Fields("admin")
+  case object UserField extends Fields("user")
 
 }
