@@ -40,24 +40,27 @@ class LiveCategories[F[_]: BracketThrow: GenUUID] private (
 
 private object CategoryQueries {
 
-  val categoryCodec: Codec[Category] =
-    (varchar ~ varchar).imap {
+  val decoder: Decoder[Category] =
+    (varchar ~ varchar).map {
       case i ~ n =>
         Category(
           ju.UUID.fromString(i).coerce[CategoryId],
           n.coerce[CategoryName]
         )
-    }(c => c.uuid.value.toString ~ c.name.value)
+    }
+
+  val encoder: Category => String ~ String =
+    c => c.uuid.value.toString ~ c.name.value
 
   val selectAll: Query[Void, Category] =
     sql"""
         SELECT * FROM categories
-       """.query(categoryCodec)
+       """.query(decoder)
 
   val insertCategory: Command[Category] =
     sql"""
         INSERT INTO categories
         VALUES ($varchar, $varchar)
-        """.command.contramap(c => c.uuid.value.toString ~ c.name.value)
+        """.command.contramap(encoder)
 
 }

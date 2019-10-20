@@ -65,7 +65,7 @@ private class LiveOrders[F[_]: Sync](
 
 private object OrderQueries {
 
-  val orderCodec: Decoder[Order] =
+  val decoder: Decoder[Order] =
     (varchar ~ varchar ~ varchar ~ varchar ~ numeric).map {
       case o ~ _ ~ p ~ i ~ t =>
         Order(
@@ -80,14 +80,14 @@ private object OrderQueries {
     sql"""
         SELECT * FROM orders
         WHERE user_id = ${coercibleUuid[UserId]}
-       """.query(orderCodec)
+       """.query(decoder)
 
   val selectByUserIdAndOrderId: Query[UserId ~ OrderId, Order] =
     sql"""
         SELECT * FROM orders
         WHERE user_id = ${coercibleUuid[UserId]}
         AND order_id = ${coercibleUuid[OrderId]}
-       """.query(orderCodec)
+       """.query(decoder)
 
   val insertOrder: Command[UserId ~ Order] =
     sql"""
