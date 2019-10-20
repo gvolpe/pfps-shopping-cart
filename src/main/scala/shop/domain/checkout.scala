@@ -9,7 +9,9 @@ import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 
 object checkout {
-  type CardNamePred       = String Refined MatchesRegex[W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T]
+  type Rgx = W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T
+
+  type CardNamePred       = String Refined MatchesRegex[Rgx]
   type CardNumberPred     = Long Refined Size[16]
   type CardExpirationPred = Int Refined Size[4]
   type CardCCVPred        = Int Refined Size[3]

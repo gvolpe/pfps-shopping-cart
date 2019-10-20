@@ -3,13 +3,14 @@ package shop.http.clients
 import cats.effect.Sync
 import cats.implicits._
 import io.estatico.newtype.ops._
-import org.http4s.Uri
+import org.http4s._
 import org.http4s.client._
 import shop.domain.auth.UserId
 import shop.domain.cart.Cart
 import shop.domain.checkout.Card
 import shop.domain.item.USD
-import shop.domain.order.PaymentId
+import shop.domain.order._
+import shop.http.json._
 import java.{ util => ju }
 
 trait PaymentClient[F[_]] {
@@ -18,10 +19,16 @@ trait PaymentClient[F[_]] {
 
 class LivePaymentClient[F[_]: Sync](client: Client[F]) extends PaymentClient[F] {
 
-  def process(userId: UserId, total: USD, card: Card): F[PaymentId] = {
-    // FIXME: hardcoded and side-effectful payment id
-    val oid = ju.UUID.randomUUID().coerce[PaymentId]
-    client.expect[String](Uri.unsafeFromString("http://google.com")).as(oid)
-  }
+  private val baseUri = "http://localhost:8080/api/v1"
+
+  def process(userId: UserId, total: USD, card: Card): F[PaymentId] =
+    Uri.fromString(baseUri + "/payments").liftTo[F].flatMap { uri =>
+      client.get[PaymentId](uri) { r =>
+        if (r.status == Status.Ok || r.status == Status.Conflict)
+          r.as[PaymentId]
+        else
+          PaymentError(r.status.reason).raiseError[F, PaymentId]
+      }
+    }
 
 }
