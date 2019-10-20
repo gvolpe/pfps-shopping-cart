@@ -15,7 +15,7 @@ object brand {
   }
 
   @newtype case class BrandParam(value: NonEmptyString) {
-    def toDomain: BrandName = value.value.coerce[BrandName]
+    def toDomain: BrandName = value.value.toLowerCase.capitalize.coerce[BrandName]
   }
 
   case class Brand(uuid: BrandId, name: BrandName)

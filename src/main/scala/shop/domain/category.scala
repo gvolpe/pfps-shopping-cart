@@ -10,7 +10,7 @@ object category {
   @newtype case class CategoryName(value: String)
 
   @newtype case class CategoryParam(value: NonEmptyString) {
-    def toDomain: CategoryName = value.value.coerce[CategoryName]
+    def toDomain: CategoryName = value.value.toLowerCase.capitalize.coerce[CategoryName]
   }
 
   case class Category(uuid: CategoryId, name: CategoryName)

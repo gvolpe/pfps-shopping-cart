@@ -27,7 +27,7 @@ object LiveItems {
     new LiveItems[F](session).pure[F].widen
 }
 
-class LiveItems[F[_]: GenUUID: Sync] private (
+class LiveItems[F[_]: Sync] private (
     session: Session[F]
 ) extends Items[F] {
   import ItemQueries._
@@ -42,14 +42,14 @@ class LiveItems[F[_]: GenUUID: Sync] private (
 
   def create(item: CreateItem): F[Unit] =
     session.prepare(insertItem).use { cmd =>
-      GenUUID[F].make.flatMap { uuid =>
-        cmd.execute(item.toItem(uuid.coerce[ItemId])).void
+      GenUUID[F].make[ItemId].flatMap { id =>
+        cmd.execute(id ~ item).void
       }
     }
 
   def update(item: UpdateItem): F[Unit] =
     session.prepare(updateItem).use { cmd =>
-      cmd.execute(item.price.value ~ item.id.value.toString).void
+      cmd.execute(item).void
     }
 
 }
@@ -57,43 +57,50 @@ class LiveItems[F[_]: GenUUID: Sync] private (
 private object ItemQueries {
 
   val itemCodec: Codec[Item] =
-    (varchar ~ varchar ~ varchar ~ numeric ~ varchar ~ varchar).imap {
-      case i ~ n ~ d ~ p ~ b ~ c =>
+    (varchar ~ varchar ~ varchar ~ numeric ~ varchar ~ varchar ~ varchar ~ varchar).imap {
+      case i ~ n ~ d ~ p ~ bi ~ bn ~ ci ~ cn =>
         Item(
           ju.UUID.fromString(i).coerce[ItemId],
           n.coerce[ItemName],
           d.coerce[ItemDescription],
           p.coerce[USD],
-          Brand(ju.UUID.fromString(b).coerce[BrandId], "foo".coerce[BrandName]),
-          Category(ju.UUID.fromString(c).coerce[CategoryId], "cat".coerce[CategoryName])
+          Brand(ju.UUID.fromString(bi).coerce[BrandId], bn.coerce[BrandName]),
+          Category(ju.UUID.fromString(ci).coerce[CategoryId], cn.coerce[CategoryName])
         )
     }(
       i =>
-        i.uuid.value.toString ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brand.uuid.value.toString ~ i.category.uuid.value.toString
+        i.uuid.value.toString ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brand.uuid.value.toString ~ i.brand.name.value ~ i.category.uuid.value.toString ~ i.category.name.value
     )
 
   val selectAll: Query[Void, Item] =
     sql"""
-        SELECT * FROM items
+        SELECT i.uuid, i.name, i.description, i.price, b.uuid, b.name, c.uuid, c.name
+        FROM items AS i, brands AS b, categories AS c
+        WHERE i.brand_id = b.uuid AND i.category_id = c.uuid
        """.query(itemCodec)
 
   val selectByBrand: Query[BrandName, Item] =
     sql"""
-        SELECT * FROM items
-        WHERE brand LIKE ${coercibleVarchar[BrandName]}
+        SELECT i.uuid, i.name, i.description, i.price, b.uuid, b.name, c.uuid, c.name
+        FROM items AS i, brands AS b, categories AS c
+        WHERE i.brand_id = b.uuid AND i.category_id = c.uuid
+        AND b.name LIKE ${coercibleVarchar[BrandName]}
        """.query(itemCodec)
 
-  val insertItem: Command[Item] =
+  val insertItem: Command[ItemId ~ CreateItem] =
     sql"""
         INSERT INTO items
-        VALUES ($itemCodec)
-       """.command
+        VALUES ($varchar, $varchar, $varchar, $numeric, $varchar, $varchar)
+       """.command.contramap {
+      case id ~ i =>
+        id.value.toString ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brandId.value.toString ~ i.categoryId.value.toString
+    }
 
-  val updateItem: Command[BigDecimal ~ String] =
+  val updateItem: Command[UpdateItem] =
     sql"""
         UPDATE items
         SET price = $numeric
         WHERE uuid = $varchar
-       """.command
+       """.command.contramap(i => i.price.value ~ i.id.value.toString)
 
 }

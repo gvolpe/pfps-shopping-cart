@@ -34,15 +34,17 @@ object item {
   case class CreateItemParam(
       name: ItemNameParam,
       description: ItemDescriptionParam,
-      price: USD
+      price: USD,
+      brandId: BrandId,
+      categoryId: CategoryId
   ) {
     def toDomain: CreateItem =
       CreateItem(
         name.value.value.coerce[ItemName],
         description.value.value.coerce[ItemDescription],
         price,
-        Brand(ju.UUID.randomUUID.coerce[BrandId], "Ibanez".coerce[BrandName]), // FIXME: Hardcoded
-        Category(ju.UUID.randomUUID.coerce[CategoryId], "Guitars".coerce[CategoryName]) // FIXME: Hardcoded
+        brandId,
+        categoryId
       )
   }
 
@@ -50,12 +52,9 @@ object item {
       name: ItemName,
       description: ItemDescription,
       price: USD,
-      brand: Brand,
-      category: Category
-  ) {
-    def toItem(itemId: ItemId) =
-      Item(itemId, name, description, price, brand, category)
-  }
+      brandId: BrandId,
+      categoryId: CategoryId
+  )
 
   // ----- Update item ------
 
