@@ -7,8 +7,8 @@ import shop.domain.cart._
 import shop.domain.item._
 
 object order {
-  @newtype case class OrderId(uuid: ju.UUID)
-  @newtype case class PaymentId(uuid: ju.UUID)
+  @newtype case class OrderId(value: ju.UUID)
+  @newtype case class PaymentId(value: ju.UUID)
 
   case class Order(
       id: OrderId,

@@ -48,11 +48,11 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     }
   }
 
-  private def createOrder(userId: UserId, paymentId: PaymentId, items: List[CartItem]): F[OrderId] = {
+  private def createOrder(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): F[OrderId] = {
     val action = retryingOnAllErrors[OrderId](
       policy = retryPolicy,
       onError = logError("Order")
-    )(orders.create(userId, paymentId, items))
+    )(orders.create(userId, paymentId, items, total))
 
     action
       .adaptError {
@@ -83,7 +83,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
         for {
           total <- calcTotal(items)
           pid <- processPayment(userId, total, card)
-          order <- createOrder(userId, pid, items)
+          order <- createOrder(userId, pid, items, total)
           _ <- shoppingCart.delete(userId)
         } yield order
     }

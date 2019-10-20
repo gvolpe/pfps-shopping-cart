@@ -18,7 +18,7 @@ object Algebras {
       brand <- LiveBrands.make[F](session)
       category <- LiveCategories.make[F](session)
       item <- LiveItems.make[F](session)
-      orders <- LiveOrders.make[F]
+      orders <- LiveOrders.make[F](session)
     } yield new Algebras[F](cart, brand, category, item, orders)
 }
 
