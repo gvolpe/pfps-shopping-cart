@@ -80,9 +80,13 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
 
   def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
-      case AdminRole if token == adminToken => adminUser.asInstanceOf[A].some.pure[F]
-      case AdminRole                        => none[A].pure[F]  // TODO: Use guard for this case?
-      case UserRole                         => checkTokenGetUser[A](token, UserField)
+      case UserRole =>
+        checkTokenGetUser[A](token, UserField)
+      case AdminRole =>
+        (token == adminToken)
+          .guard[Option]
+          .as(adminUser.asInstanceOf[A])
+          .pure[F]
     }
 
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken] =
