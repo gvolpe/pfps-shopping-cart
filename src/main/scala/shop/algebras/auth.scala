@@ -62,17 +62,16 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
         decode[User](u).toOption.map(_.coerce[A])
       })
 
-  private def findToken(token: JwtToken, field: Field): F[JwtToken] =
-    redis.hGet(TokenKey.value, field.value).flatMap {
+  private def findToken(token: JwtToken): F[JwtToken] =
+    redis.hGet(TokenKey.value, UserField.value).flatMap {
       case Some(t) if t == token.value => token.pure[F]
       case _                           => TokenNotFound.raiseError[F, JwtToken]
     }
 
   private def checkTokenGetUser[A: Coercible[User, ?]](
-      token: JwtToken,
-      field: Field
+      token: JwtToken
   ): F[Option[A]] =
-    findToken(token, field)
+    findToken(token)
       .flatMap(_ => retrieveUser[A](token))
       .recoverWith {
         case TokenNotFound => none[A].pure[F]
@@ -81,7 +80,7 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
   def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
       case UserRole =>
-        checkTokenGetUser[A](token, UserField)
+        checkTokenGetUser[A](token)
       case AdminRole =>
         (token == adminToken)
           .guard[Option]
