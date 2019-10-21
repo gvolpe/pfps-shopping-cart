@@ -62,7 +62,7 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
         decode[User](u).toOption.map(_.coerce[A])
       })
 
-  private def findToken(token: JwtToken, field: Fields): F[JwtToken] =
+  private def findToken(token: JwtToken, field: Field): F[JwtToken] =
     redis.hGet(TokenKey.value, field.value).flatMap {
       case Some(t) if t == token.value => token.pure[F]
       case _                           => TokenNotFound.raiseError[F, JwtToken]
@@ -70,7 +70,7 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
 
   private def checkTokenGetUser[A: Coercible[User, ?]](
       token: JwtToken,
-      field: Fields
+      field: Field
   ): F[Option[A]] =
     findToken(token, field)
       .flatMap(_ => retrieveUser[A](token))
@@ -119,18 +119,19 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
     }
 
   def logout(token: JwtToken): F[Unit] =
-    redis.hDel(TokenKey.value, token.value)
+    redis.hDel(TokenKey.value, token.value) *>
+      redis.hDel(UsersKey.value, token.value)
 
 }
 
 private object RedisKeys {
 
-  sealed abstract class Keys(val value: String)
-  case object TokenKey extends Keys("tokens")
-  case object UsersKey extends Keys("users")
+  sealed abstract class Key(val value: String)
+  case object TokenKey extends Key("tokens")
+  case object UsersKey extends Key("users")
 
-  sealed abstract class Fields(val value: String)
-  case object AdminField extends Fields("admin")
-  case object UserField extends Fields("user")
+  sealed abstract class Field(val value: String)
+  case object AdminField extends Field("admin")
+  case object UserField extends Field("user")
 
 }

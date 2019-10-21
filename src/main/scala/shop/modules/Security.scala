@@ -11,11 +11,13 @@ import shop.algebras._
 import shop.config._
 import shop.domain.auth._
 import shop.http.auth.roles._
+import skunk.Session
 
 object Security {
   def make[F[_]: Sync](
       adminJwtConfig: AdminJwtConfig,
       tokenConfig: TokenConfig,
+      session: Session[F],
       redis: RedisCommands[F, String, String]
   ): F[Security[F]] = {
 
@@ -46,7 +48,8 @@ object Security {
       adminId <- Sync[F].delay(ju.UUID.fromString(content).coerce[UserId])
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
       tokens <- LiveTokens.make[F](tokenConfig)
-      auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens, new LiveUsers[F], redis)
+      users <- LiveUsers.make[F](session)
+      auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens, users, redis)
     } yield new Security[F](auth)
 
   }

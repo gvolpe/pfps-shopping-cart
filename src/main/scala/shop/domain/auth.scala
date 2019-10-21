@@ -15,10 +15,11 @@ object auth {
   // --------- user registration -----------
 
   @newtype case class UserNameParam(value: NonEmptyString) {
-    def toDomain: UserName = value.value.coerce[UserName]
+    def toDomain: UserName = value.value.toLowerCase.coerce[UserName]
   }
 
   @newtype case class PasswordParam(value: NonEmptyString) {
+    // TODO: Encode password here maybe?
     def toDomain: Password = value.value.coerce[Password]
   }
 
