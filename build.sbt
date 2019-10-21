@@ -5,6 +5,8 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "dev.profunktor"
 ThisBuild / organizationName := "ProfunKtor"
 
+resolvers += Resolver.sonatypeRepo("snapshots")
+
 lazy val root = (project in file("."))
   .settings(
     name := "shopping-cart",

@@ -28,23 +28,29 @@ trait Orders[F[_]] {
 }
 
 object LiveOrders {
-  def make[F[_]: Sync](session: Session[F]): F[Orders[F]] =
-    new LiveOrders[F](session).pure[F].widen
+  def make[F[_]: Sync](
+      sessionPool: Resource[F, Session[F]]
+  ): F[Orders[F]] =
+    new LiveOrders[F](sessionPool).pure[F].widen
 }
 
 private class LiveOrders[F[_]: Sync](
-    session: Session[F]
+    sessionPool: Resource[F, Session[F]]
 ) extends Orders[F] {
   import OrderQueries._
 
   def get(userId: UserId, orderId: OrderId): F[Option[Order]] =
-    session.prepare(selectByUserIdAndOrderId).use { q =>
-      q.option(userId ~ orderId)
+    sessionPool.use { session =>
+      session.prepare(selectByUserIdAndOrderId).use { q =>
+        q.option(userId ~ orderId)
+      }
     }
 
   def findBy(userId: UserId): F[List[Order]] =
-    session.prepare(selectByUserId).use { q =>
-      q.stream(userId, 1024).compile.toList
+    sessionPool.use { session =>
+      session.prepare(selectByUserId).use { q =>
+        q.stream(userId, 1024).compile.toList
+      }
     }
 
   def create(
@@ -53,11 +59,13 @@ private class LiveOrders[F[_]: Sync](
       items: List[CartItem],
       total: USD
   ): F[OrderId] =
-    session.prepare(insertOrder).use { cmd =>
-      GenUUID[F].make[OrderId].flatMap { id =>
-        val itMap = items.map(x => x.item.uuid -> x.quantity).toMap
-        val order = Order(id, paymentId, itMap, total)
-        cmd.execute(userId ~ order).as(id)
+    sessionPool.use { session =>
+      session.prepare(insertOrder).use { cmd =>
+        GenUUID[F].make[OrderId].flatMap { id =>
+          val itMap = items.map(x => x.item.uuid -> x.quantity).toMap
+          val order = Order(id, paymentId, itMap, total)
+          cmd.execute(userId ~ order).as(id)
+        }
       }
     }
 

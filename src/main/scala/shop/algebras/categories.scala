@@ -1,5 +1,6 @@
 package shop.algebras
 
+import cats.effect.Resource
 import cats.implicits._
 import io.estatico.newtype.ops._
 import java.{ util => ju }
@@ -16,23 +17,25 @@ trait Categories[F[_]] {
 
 object LiveCategories {
   def make[F[_]: BracketThrow: GenUUID](
-      session: Session[F]
+      sessionPool: Resource[F, Session[F]]
   ): F[Categories[F]] =
-    new LiveCategories[F](session).pure[F].widen
+    new LiveCategories[F](sessionPool).pure[F].widen
 }
 
 class LiveCategories[F[_]: BracketThrow: GenUUID] private (
-    session: Session[F]
+    sessionPool: Resource[F, Session[F]]
 ) extends Categories[F] {
   import CategoryQueries._
 
   def findAll: F[List[Category]] =
-    session.execute(selectAll)
+    sessionPool.use(_.execute(selectAll))
 
   def create(name: CategoryName): F[Unit] =
-    session.prepare(insertCategory).use { cmd =>
-      GenUUID[F].make[CategoryId].flatMap { id =>
-        cmd.execute(Category(id, name)).void
+    sessionPool.use { session =>
+      session.prepare(insertCategory).use { cmd =>
+        GenUUID[F].make[CategoryId].flatMap { id =>
+          cmd.execute(Category(id, name)).void
+        }
       }
     }
 

@@ -1,6 +1,6 @@
 package shop.modules
 
-import cats.effect.Sync
+import cats.effect._
 import cats.implicits._
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
@@ -17,7 +17,7 @@ object Security {
   def make[F[_]: Sync](
       adminJwtConfig: AdminJwtConfig,
       tokenConfig: TokenConfig,
-      session: Session[F],
+      sessionPool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   ): F[Security[F]] = {
 
@@ -48,7 +48,7 @@ object Security {
       adminId <- Sync[F].delay(ju.UUID.fromString(content).coerce[UserId])
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
       tokens <- LiveTokens.make[F](tokenConfig)
-      users <- LiveUsers.make[F](session)
+      users <- LiveUsers.make[F](sessionPool)
       auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens, users, redis)
     } yield new Security[F](auth)
 

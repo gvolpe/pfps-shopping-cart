@@ -22,34 +22,40 @@ trait Items[F[_]] {
 
 object LiveItems {
   def make[F[_]: Sync](
-      session: Session[F]
+      sessionPool: Resource[F, Session[F]]
   ): F[Items[F]] =
-    new LiveItems[F](session).pure[F].widen
+    new LiveItems[F](sessionPool).pure[F].widen
 }
 
 class LiveItems[F[_]: Sync] private (
-    session: Session[F]
+    sessionPool: Resource[F, Session[F]]
 ) extends Items[F] {
   import ItemQueries._
 
   def findAll: F[List[Item]] =
-    session.execute(selectAll)
+    sessionPool.use(_.execute(selectAll))
 
   def findBy(brand: BrandName): F[List[Item]] =
-    session.prepare(selectByBrand).use { ps =>
-      ps.stream(brand, 1024).compile.toList
+    sessionPool.use { session =>
+      session.prepare(selectByBrand).use { ps =>
+        ps.stream(brand, 1024).compile.toList
+      }
     }
 
   def create(item: CreateItem): F[Unit] =
-    session.prepare(insertItem).use { cmd =>
-      GenUUID[F].make[ItemId].flatMap { id =>
-        cmd.execute(id ~ item).void
+    sessionPool.use { session =>
+      session.prepare(insertItem).use { cmd =>
+        GenUUID[F].make[ItemId].flatMap { id =>
+          cmd.execute(id ~ item).void
+        }
       }
     }
 
   def update(item: UpdateItem): F[Unit] =
-    session.prepare(updateItem).use { cmd =>
-      cmd.execute(item).void
+    sessionPool.use { session =>
+      session.prepare(updateItem).use { cmd =>
+        cmd.execute(item).void
+      }
     }
 
 }

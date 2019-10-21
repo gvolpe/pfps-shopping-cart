@@ -1,6 +1,6 @@
 package shop.modules
 
-import cats.effect.Sync
+import cats.effect._
 import cats.implicits._
 import java.{ util => ju }
 import shop.algebras._
@@ -11,14 +11,14 @@ import skunk._
 
 object Algebras {
   def make[F[_]: Sync](
-      session: Session[F]
+      sessionPool: Resource[F, Session[F]]
   ): F[Algebras[F]] =
     for {
       cart <- LiveShoppingCart.make[F]
-      brand <- LiveBrands.make[F](session)
-      category <- LiveCategories.make[F](session)
-      item <- LiveItems.make[F](session)
-      orders <- LiveOrders.make[F](session)
+      brand <- LiveBrands.make[F](sessionPool)
+      category <- LiveCategories.make[F](sessionPool)
+      item <- LiveItems.make[F](sessionPool)
+      orders <- LiveOrders.make[F](sessionPool)
     } yield new Algebras[F](cart, brand, category, item, orders)
 }
 

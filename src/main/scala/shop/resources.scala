@@ -20,7 +20,7 @@ import skunk._
 case class AppResources[F[_]](
     cfg: AppConfig,
     client: Client[F],
-    psql: Session[F],
+    psql: Resource[F, Session[F]],
     redis: RedisCommands[F, String, String]
 )
 
@@ -29,13 +29,14 @@ object AppResources {
   def make[F[_]: ConcurrentEffect: ContextShift: Logger]: Resource[F, AppResources[F]] = {
     // TODO: User PSQL config file
     //def psql(cfg: AppConfig): Resource[IO, Session[IO]] =
-    def mkPostgreSqlResource: Resource[F, Session[F]] =
+    def mkPostgreSqlResource: SessionPool[F] =
       Session
-        .single(
+        .pooled[F](
           host = "localhost",
           port = 5432,
           user = "postgres",
-          database = "store"
+          database = "store",
+          max = 10
         )
 
     def mkRedisResource: Resource[F, RedisCommands[F, String, String]] =
