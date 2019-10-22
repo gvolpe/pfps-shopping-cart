@@ -53,7 +53,7 @@ class LiveAuth[F[_]: GenUUID: MonadThrow] private (
   import RedisKeys._
 
   // TODO: Take from config file
-  private val TokenExpiration = 60.seconds
+  private val TokenExpiration = 30.minutes
 
   def adminJwtAuth: F[AdminJwtAuth] = adminAuth.pure[F]
   def userJwtAuth: F[UserJwtAuth]   = userAuth.pure[F]
@@ -103,7 +103,6 @@ class LiveAuth[F[_]: GenUUID: MonadThrow] private (
               i <- users.create(username, password)
               t <- tokens.create
               u = User(i, username).asJson.noSpaces
-              // TODO: Use args expiration
               _ <- redis.hSet(UsersKey.value, t.value, u)
               _ <- redis.setEx(t.value, "", TokenExpiration)
               _ <- redis.setEx(username.value, t.value, TokenExpiration)
