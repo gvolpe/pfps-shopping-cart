@@ -10,6 +10,7 @@ import shop.domain.brand._
 import shop.domain.category._
 import shop.domain.cart._
 import shop.domain.item._
+import shop.effects._
 import LiveShoppingCart._
 import scala.concurrent.duration._
 
@@ -22,14 +23,14 @@ trait ShoppingCart[F[_]] {
 }
 
 object LiveShoppingCart {
-  def make[F[_]: Monad](
+  def make[F[_]: MonadThrow](
       items: Items[F],
       redis: RedisCommands[F, String, String]
   ): F[ShoppingCart[F]] =
     new LiveShoppingCart(items, redis).pure[F].widen
 }
 
-class LiveShoppingCart[F[_]: Monad] private (
+class LiveShoppingCart[F[_]: MonadThrow] private (
     items: Items[F],
     redis: RedisCommands[F, String, String]
 ) extends ShoppingCart[F] {
@@ -46,11 +47,11 @@ class LiveShoppingCart[F[_]: Monad] private (
       it.toList
         .traverse {
           case (k, v) =>
-            val itemId   = ju.UUID.fromString(k).coerce[ItemId]
-            val quantity = v.toInt.coerce[Quantity]
-            items
-              .findById(itemId)
-              .map(_.toList.map(i => CartItem(i, quantity)))
+            for {
+              id <- ApThrow[F].catchNonFatal(ju.UUID.fromString(k).coerce[ItemId])
+              qt <- ApThrow[F].catchNonFatal(v.toInt.coerce[Quantity])
+              rs <- items.findById(id).map(_.toList.map(i => CartItem(i, qt)))
+            } yield rs
         }
         .map(_.flatten)
     }
@@ -65,10 +66,15 @@ class LiveShoppingCart[F[_]: Monad] private (
     redis.hGetAll(userId.value.toString).flatMap { it =>
       it.toList.traverse_ {
         case (k, _) =>
-          val itemId = ju.UUID.fromString(k).coerce[ItemId]
-          cart.items.get(itemId).fold(().pure[F]) { q =>
-            redis.hSet(userId.value.toString, k, q.value.toString)
-          }
+          ApThrow[F]
+            .catchNonFatal(
+              ju.UUID.fromString(k).coerce[ItemId]
+            )
+            .flatMap { id =>
+              cart.items.get(id).fold(().pure[F]) { q =>
+                redis.hSet(userId.value.toString, k, q.value.toString)
+              }
+            }
       } *>
         redis.expire(userId.value.toString, Expiration)
     }
