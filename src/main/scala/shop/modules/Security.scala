@@ -20,29 +20,26 @@ object Security {
       redis: RedisCommands[F, String, String]
   ): F[Security[F]] = {
 
-    val adminJwtAuth: AdminJwtAuth = JwtAuth(
-      JwtSecretKey(cfg.adminJwtConfig.secretKey.value.value),
-      JwtAlgorithm.HS256
-    ).coerce[AdminJwtAuth]
-
-    val userJwtAuth: UserJwtAuth = JwtAuth(
-      JwtSecretKey(cfg.tokenConfig.secretKey.value.value),
-      JwtAlgorithm.HS256
-    ).coerce[UserJwtAuth]
-
-    val decodeAdminToken: F[JwtClaim] =
-      Jwt
-        .decode(
-          cfg.adminJwtConfig.adminToken.value.value,
-          adminJwtAuth.value.secretKey.value,
-          Seq(JwtAlgorithm.HS256)
+    val adminJwtAuth: AdminJwtAuth =
+      JwtAuth
+        .hmac(
+          cfg.adminJwtConfig.secretKey.value.value,
+          JwtAlgorithm.HS256
         )
-        .liftTo[F]
+        .coerce[AdminJwtAuth]
+
+    val userJwtAuth: UserJwtAuth =
+      JwtAuth
+        .hmac(
+          cfg.tokenConfig.secretKey.value.value,
+          JwtAlgorithm.HS256
+        )
+        .coerce[UserJwtAuth]
 
     val adminToken = JwtToken(cfg.adminJwtConfig.adminToken.value.value)
 
     for {
-      adminClaim <- decodeAdminToken
+      adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
       content = adminClaim.content.replace("{", "0").replace("}", "c")
       adminId <- Sync[F].delay(ju.UUID.fromString(content).coerce[UserId])
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]

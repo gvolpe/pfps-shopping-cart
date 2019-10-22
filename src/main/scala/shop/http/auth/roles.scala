@@ -1,6 +1,6 @@
 package shop.http.auth
 
-import dev.profunktor.auth.jwt.JwtAuth
+import dev.profunktor.auth.jwt.JwtSymmetricAuth
 import io.estatico.newtype.macros.newtype
 import shop.domain.auth._
 
@@ -9,8 +9,8 @@ object roles {
   case object AdminRole extends AuthRole
   case object UserRole extends AuthRole
 
-  @newtype case class AdminJwtAuth(value: JwtAuth)
-  @newtype case class UserJwtAuth(value: JwtAuth)
+  @newtype case class AdminJwtAuth(value: JwtSymmetricAuth)
+  @newtype case class UserJwtAuth(value: JwtSymmetricAuth)
 
   case class User(id: UserId, name: UserName)
 
