@@ -25,7 +25,7 @@ trait Auth[F[_]] {
   def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken]
   def login(username: UserName, password: Password): F[JwtToken]
-  def logout(token: JwtToken): F[Unit]
+  def logout(token: JwtToken, username: UserName): F[Unit]
 }
 
 object LiveAuth {
@@ -50,7 +50,6 @@ class LiveAuth[F[_]: GenUUID: MonadThrow] private (
     users: Users[F],
     redis: RedisCommands[F, String, String]
 ) extends Auth[F] {
-  import RedisKeys._
 
   // TODO: Take from config file
   private val TokenExpiration = 30.minutes
@@ -58,33 +57,19 @@ class LiveAuth[F[_]: GenUUID: MonadThrow] private (
   def adminJwtAuth: F[AdminJwtAuth] = adminAuth.pure[F]
   def userJwtAuth: F[UserJwtAuth]   = userAuth.pure[F]
 
-  private def retrieveUser[A: Coercible[User, ?]](
+  private def findUserByToken[A: Coercible[User, ?]](
       token: JwtToken
   ): F[Option[A]] =
     redis
-      .hGet(UsersKey.value, token.value)
+      .get(token.value)
       .map(_.flatMap { u =>
         decode[User](u).toOption.map(_.coerce[A])
       })
 
-  private def findToken(token: JwtToken): F[JwtToken] =
-    redis
-      .exists(token.value)
-      .ifM(token.pure[F], TokenNotFound.raiseError[F, JwtToken])
-
-  private def checkTokenGetUser[A: Coercible[User, ?]](
-      token: JwtToken
-  ): F[Option[A]] =
-    findToken(token)
-      .flatMap(_ => retrieveUser[A](token))
-      .recoverWith {
-        case TokenNotFound => none[A].pure[F]
-      }
-
   def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
       case UserRole =>
-        checkTokenGetUser[A](token)
+        findUserByToken[A](token)
       case AdminRole =>
         (token == adminToken)
           .guard[Option]
@@ -103,8 +88,7 @@ class LiveAuth[F[_]: GenUUID: MonadThrow] private (
               i <- users.create(username, password)
               t <- tokens.create
               u = User(i, username).asJson.noSpaces
-              _ <- redis.hSet(UsersKey.value, t.value, u)
-              _ <- redis.setEx(t.value, "", TokenExpiration)
+              _ <- redis.setEx(t.value, u, TokenExpiration)
               _ <- redis.setEx(username.value, t.value, TokenExpiration)
             } yield t
         }
@@ -118,27 +102,13 @@ class LiveAuth[F[_]: GenUUID: MonadThrow] private (
           case Some(t) => JwtToken(t).pure[F]
           case None =>
             tokens.create.flatTap { t =>
-              redis.hSet(UsersKey.value, t.value, user.asJson.noSpaces) *>
-                redis.setEx(t.value, "", TokenExpiration) *>
+              redis.setEx(t.value, user.asJson.noSpaces, TokenExpiration) *>
                 redis.setEx(username.value, t.value, TokenExpiration)
             }
         }
     }
 
-  def logout(token: JwtToken): F[Unit] =
-    redis.del(token.value) *>
-      redis.hDel(UsersKey.value, token.value)
-
-}
-
-private object RedisKeys {
-
-  sealed abstract class Key(val value: String)
-  case object TokenKey extends Key("tokens")
-  case object UsersKey extends Key("users")
-
-  sealed abstract class Field(val value: String)
-  case object AdminField extends Field("admin")
-  case object UserField extends Field("user")
+  def logout(token: JwtToken, username: UserName): F[Unit] =
+    redis.del(token.value) *> redis.del(username.value)
 
 }

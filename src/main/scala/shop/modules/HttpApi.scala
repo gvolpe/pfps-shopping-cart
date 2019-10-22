@@ -45,9 +45,9 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, usersAuth)
 
-  // Auth routes (open)
+  // Auth routes
   private val loginRoutes  = new LoginRoutes[F](auth).routes
-  private val logoutRoutes = new LogoutRoutes[F](auth).routes
+  private val logoutRoutes = new LogoutRoutes[F](auth).routes(usersMiddleware)
   private val userRoutes   = new UserRoutes[F](auth).routes
 
   // Open routes
