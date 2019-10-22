@@ -16,6 +16,7 @@ import skunk.implicits._
 trait Items[F[_]] {
   def findAll: F[List[Item]]
   def findBy(brand: BrandName): F[List[Item]]
+  def findById(itemId: ItemId): F[Option[Item]]
   def create(item: CreateItem): F[Unit]
   def update(item: UpdateItem): F[Unit]
 }
@@ -39,6 +40,13 @@ class LiveItems[F[_]: Sync] private (
     sessionPool.use { session =>
       session.prepare(selectByBrand).use { ps =>
         ps.stream(brand, 1024).compile.toList
+      }
+    }
+
+  def findById(itemId: ItemId): F[Option[Item]] =
+    sessionPool.use { session =>
+      session.prepare(selectById).use { ps =>
+        ps.option(itemId)
       }
     }
 
@@ -88,6 +96,14 @@ private object ItemQueries {
         FROM items AS i, brands AS b, categories AS c
         WHERE i.brand_id = b.uuid AND i.category_id = c.uuid
         AND b.name LIKE ${coercibleVarchar[BrandName]}
+       """.query(decoder)
+
+  val selectById: Query[ItemId, Item] =
+    sql"""
+        SELECT i.uuid, i.name, i.description, i.price, b.uuid, b.name, c.uuid, c.name
+        FROM items AS i, brands AS b, categories AS c
+        WHERE i.uuid = ${coercibleUuid[ItemId]}
+        AND i.brand_id = b.uuid AND i.category_id = c.uuid
        """.query(decoder)
 
   val insertItem: Command[ItemId ~ CreateItem] =

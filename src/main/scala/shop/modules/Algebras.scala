@@ -2,6 +2,7 @@ package shop.modules
 
 import cats.effect._
 import cats.implicits._
+import dev.profunktor.redis4cats.algebra.RedisCommands
 import java.{ util => ju }
 import shop.algebras._
 import shop.config._
@@ -11,15 +12,16 @@ import skunk._
 
 object Algebras {
   def make[F[_]: Sync](
+      redis: RedisCommands[F, String, String],
       sessionPool: Resource[F, Session[F]]
   ): F[Algebras[F]] =
     for {
-      cart <- LiveShoppingCart.make[F]
-      brand <- LiveBrands.make[F](sessionPool)
-      category <- LiveCategories.make[F](sessionPool)
-      item <- LiveItems.make[F](sessionPool)
+      brands <- LiveBrands.make[F](sessionPool)
+      categories <- LiveCategories.make[F](sessionPool)
+      items <- LiveItems.make[F](sessionPool)
+      cart <- LiveShoppingCart.make[F](items, redis)
       orders <- LiveOrders.make[F](sessionPool)
-    } yield new Algebras[F](cart, brand, category, item, orders)
+    } yield new Algebras[F](cart, brands, categories, items, orders)
 }
 
 class Algebras[F[_]] private (
