@@ -42,27 +42,24 @@ class LiveBrands[F[_]: BracketThrow: GenUUID] private (
 
 private object BrandQueries {
 
-  val decoder: Decoder[Brand] =
-    (varchar ~ varchar).map {
+  val codec: Codec[Brand] =
+    (varchar ~ varchar).imap {
       case i ~ n =>
         Brand(
           ju.UUID.fromString(i).coerce[BrandId],
           n.coerce[BrandName]
         )
-    }
-
-  val encoder: Brand => String ~ String =
-    b => b.uuid.value.toString ~ b.name.value
+    }(b => b.uuid.value.toString ~ b.name.value)
 
   val selectAll: Query[Void, Brand] =
     sql"""
         SELECT * FROM brands
-       """.query(decoder)
+       """.query(codec)
 
   val insertBrand: Command[Brand] =
     sql"""
         INSERT INTO brands
-        VALUES ($varchar, $varchar)
-        """.command.contramap(encoder)
+        VALUES ($codec)
+        """.command
 
 }
