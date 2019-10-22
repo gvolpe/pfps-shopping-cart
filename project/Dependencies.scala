@@ -9,6 +9,7 @@ object Dependencies {
     val catsRetry     = "0.3.0"
     val circe         = "0.12.2"
     val ciris         = "0.13.0-RC1"
+    val javaxCrypto   = "1.0.1"
     val fs2           = "2.0.0"
     val http4s        = "0.21.0-M5"
     val http4sJwtAuth = "0.0.2"
@@ -66,6 +67,8 @@ object Dependencies {
 
     lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % Versions.log4cats
     lazy val newtype  = "io.estatico"       %% "newtype"        % Versions.newtype
+
+    lazy val javaxCrypto = "javax.xml.crypto" % "jsr105-api" % Versions.javaxCrypto
 
     lazy val redis4catsEffects  = "dev.profunktor" %% "redis4cats-effects"  % Versions.redis4cats
     lazy val redis4catsLog4cats = "dev.profunktor" %% "redis4cats-log4cats" % Versions.redis4cats

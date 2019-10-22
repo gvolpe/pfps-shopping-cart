@@ -19,13 +19,15 @@ trait Users[F[_]] {
 
 object LiveUsers {
   def make[F[_]: BracketThrow: GenUUID](
-      sessionPool: Resource[F, Session[F]]
+      sessionPool: Resource[F, Session[F]],
+      crypto: Crypto
   ): F[Users[F]] =
-    new LiveUsers[F](sessionPool).pure[F].widen
+    new LiveUsers[F](sessionPool, crypto).pure[F].widen
 }
 
 class LiveUsers[F[_]: BracketThrow: GenUUID] private (
-    sessionPool: Resource[F, Session[F]]
+    sessionPool: Resource[F, Session[F]],
+    crypto: Crypto
 ) extends Users[F] {
   import UserQueries._
 
@@ -33,9 +35,8 @@ class LiveUsers[F[_]: BracketThrow: GenUUID] private (
     sessionPool.use { session =>
       session.prepare(selectUser).use { q =>
         q.option(username).map {
-          // TODO: encode password to compare
-          case Some(u ~ p) if p.value == password.value => u.some
-          case _                                        => none[User]
+          case Some(u ~ p) if p.value == crypto.encrypt(password).value => u.some
+          case _                                                        => none[User]
         }
       }
     }
@@ -45,7 +46,7 @@ class LiveUsers[F[_]: BracketThrow: GenUUID] private (
       session.prepare(insertUser).use { cmd =>
         GenUUID[F].make[UserId].flatMap { id =>
           cmd
-            .execute(User(id, username) ~ password)
+            .execute(User(id, username) ~ crypto.encrypt(password))
             .as(id)
             .handleErrorWith {
               case SqlState.UniqueViolation(_) =>
@@ -59,25 +60,25 @@ class LiveUsers[F[_]: BracketThrow: GenUUID] private (
 
 private object UserQueries {
 
-  val codec: Codec[User ~ Password] =
+  val codec: Codec[User ~ EncryptedPassword] =
     (varchar ~ varchar ~ varchar).imap {
       case i ~ n ~ p =>
         User(
           ju.UUID.fromString(i).coerce[UserId],
           n.coerce[UserName]
-        ) ~ p.coerce[Password]
+        ) ~ p.coerce[EncryptedPassword]
     } {
       case u ~ p =>
         u.id.value.toString ~ u.name.value ~ p.value
     }
 
-  val selectUser: Query[UserName, User ~ Password] =
+  val selectUser: Query[UserName, User ~ EncryptedPassword] =
     sql"""
         SELECT * FROM users
         WHERE name = ${coercibleVarchar[UserName]}
        """.query(codec)
 
-  val insertUser: Command[User ~ Password] =
+  val insertUser: Command[User ~ EncryptedPassword] =
     sql"""
         INSERT INTO users
         VALUES ($codec)

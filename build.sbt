@@ -34,6 +34,7 @@ lazy val root = (project in file("."))
       Libraries.http4sClient,
       Libraries.http4sCirce,
       Libraries.http4sJwtAuth,
+      Libraries.javaxCrypto,
       Libraries.log4cats,
       Libraries.logback % Runtime,
       Libraries.newtype,

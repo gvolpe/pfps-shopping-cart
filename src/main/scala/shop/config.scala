@@ -16,9 +16,13 @@ object config {
   @newtype case class JwtClaimConfig(value: String)
   @newtype case class TokenConfig(secretKey: Secret[JwtSecretKeyConfig])
 
+  @newtype case class PasswordSalt(value: String)
+  @newtype case class PasswordConfig(secret: Secret[PasswordSalt])
+
   case class AppConfig(
       adminJwtConfig: AdminJwtConfig,
-      tokenConfig: TokenConfig
+      tokenConfig: TokenConfig,
+      passwordSalt: PasswordConfig
   )
 
   case class AdminJwtConfig(
@@ -34,14 +38,16 @@ object config {
 
   def load[F[_]: Sync]: F[AppConfig] =
     loadConfig(
-      envF[F, Secret[JwtSecretKeyConfig]]("JWT_SECRET_KEY"),
-      envF[F, Secret[JwtClaimConfig]]("JWT_CLAIM"),
-      envF[F, Secret[JwtSecretKeyConfig]]("ACCESS_TOKEN_SECRET_KEY"),
-      envF[F, Secret[AdminUserTokenConfig]]("ADMIN_USER_TOKEN")
-    ) { (secretKey, claimStr, tokenKey, adminToken) =>
+      envF[F, Secret[JwtSecretKeyConfig]]("SC_JWT_SECRET_KEY"),
+      envF[F, Secret[JwtClaimConfig]]("SC_JWT_CLAIM"),
+      envF[F, Secret[JwtSecretKeyConfig]]("SC_ACCESS_TOKEN_SECRET_KEY"),
+      envF[F, Secret[AdminUserTokenConfig]]("SC_ADMIN_USER_TOKEN"),
+      envF[F, Secret[PasswordSalt]]("SC_PASSWORD_SALT")
+    ) { (secretKey, claimStr, tokenKey, adminToken, salt) =>
       AppConfig(
         AdminJwtConfig(secretKey, claimStr, adminToken),
-        tokenKey.coerce[TokenConfig]
+        tokenKey.coerce[TokenConfig],
+        salt.coerce[PasswordConfig]
       )
     }.orRaiseThrowable
 

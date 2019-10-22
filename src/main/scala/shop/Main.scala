@@ -37,7 +37,7 @@ object Server {
   ): F[HttpApi[F]] =
     for {
       //httpConfig <- ask[F, HttpConfig]
-      security <- Security.make[F](res.cfg.adminJwtConfig, res.cfg.tokenConfig, res.psql, res.redis)
+      security <- Security.make[F](res.cfg, res.psql, res.redis)
       algebras <- Algebras.make[F](res.psql)
       clients <- HttpClients.make[F](res.client)
       programs <- Programs.make[F](algebras, clients)

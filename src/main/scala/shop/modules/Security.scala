@@ -15,40 +15,40 @@ import skunk.Session
 
 object Security {
   def make[F[_]: Sync](
-      adminJwtConfig: AdminJwtConfig,
-      tokenConfig: TokenConfig,
+      cfg: AppConfig,
       sessionPool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   ): F[Security[F]] = {
 
     val adminJwtAuth: AdminJwtAuth = JwtAuth(
-      JwtSecretKey(adminJwtConfig.secretKey.value.value),
+      JwtSecretKey(cfg.adminJwtConfig.secretKey.value.value),
       JwtAlgorithm.HS256
     ).coerce[AdminJwtAuth]
 
     val userJwtAuth: UserJwtAuth = JwtAuth(
-      JwtSecretKey(tokenConfig.secretKey.value.value),
+      JwtSecretKey(cfg.tokenConfig.secretKey.value.value),
       JwtAlgorithm.HS256
     ).coerce[UserJwtAuth]
 
     val decodeAdminToken: F[JwtClaim] =
       Jwt
         .decode(
-          adminJwtConfig.adminToken.value.value,
+          cfg.adminJwtConfig.adminToken.value.value,
           adminJwtAuth.value.secretKey.value,
           Seq(JwtAlgorithm.HS256)
         )
         .liftTo[F]
 
-    val adminToken = JwtToken(adminJwtConfig.adminToken.value.value)
+    val adminToken = JwtToken(cfg.adminJwtConfig.adminToken.value.value)
 
     for {
       adminClaim <- decodeAdminToken
       content = adminClaim.content.replace("{", "0").replace("}", "c")
       adminId <- Sync[F].delay(ju.UUID.fromString(content).coerce[UserId])
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
-      tokens <- LiveTokens.make[F](tokenConfig)
-      users <- LiveUsers.make[F](sessionPool)
+      tokens <- LiveTokens.make[F](cfg.tokenConfig)
+      crypto <- LiveCrypto.make[F](cfg.passwordSalt.secret.value)
+      users <- LiveUsers.make[F](sessionPool, crypto)
       auth <- LiveAuth.make[F](adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens, users, redis)
     } yield new Security[F](auth)
 
