@@ -12,8 +12,10 @@ import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import pdi.jwt.JwtClaim
 import shop.domain.auth._
+import shop.effects._
 import shop.http.auth.roles._
 import shop.http.json._
+import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.util.Try
 
@@ -39,7 +41,7 @@ object LiveAuth {
     new LiveAuth(adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens, users, redis).pure[F].widen
 }
 
-class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
+class LiveAuth[F[_]: GenUUID: MonadThrow] private (
     adminToken: JwtToken,
     adminUser: AdminUser,
     adminAuth: AdminJwtAuth,
@@ -49,6 +51,9 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
     redis: RedisCommands[F, String, String]
 ) extends Auth[F] {
   import RedisKeys._
+
+  // TODO: Take from config file
+  private val TokenExpiration = 60.seconds
 
   def adminJwtAuth: F[AdminJwtAuth] = adminAuth.pure[F]
   def userJwtAuth: F[UserJwtAuth]   = userAuth.pure[F]
@@ -63,10 +68,9 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
       })
 
   private def findToken(token: JwtToken): F[JwtToken] =
-    redis.hGet(TokenKey.value, UserField.value).flatMap {
-      case Some(t) if t == token.value => token.pure[F]
-      case _                           => TokenNotFound.raiseError[F, JwtToken]
-    }
+    redis
+      .exists(token.value)
+      .ifM(token.pure[F], TokenNotFound.raiseError[F, JwtToken])
 
   private def checkTokenGetUser[A: Coercible[User, ?]](
       token: JwtToken
@@ -101,7 +105,8 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
               u = User(i, username).asJson.noSpaces
               // TODO: Use args expiration
               _ <- redis.hSet(UsersKey.value, t.value, u)
-              _ <- redis.hSet(TokenKey.value, t.value, t.value)
+              _ <- redis.setEx(t.value, "", TokenExpiration)
+              _ <- redis.setEx(username.value, t.value, TokenExpiration)
             } yield t
         }
     }
@@ -110,15 +115,19 @@ class LiveAuth[F[_]: GenUUID: MonadError[?[_], Throwable]] private (
     users.find(username, password).flatMap {
       case None => InvalidUserOrPassword(username).raiseError[F, JwtToken]
       case Some(user) =>
-        tokens.create.flatTap { t =>
-          // TODO: Use args expiration
-          redis.hSet(UsersKey.value, t.value, user.asJson.noSpaces) *>
-            redis.hSet(TokenKey.value, t.value, t.value)
+        redis.get(username.value).flatMap {
+          case Some(t) => JwtToken(t).pure[F]
+          case None =>
+            tokens.create.flatTap { t =>
+              redis.hSet(UsersKey.value, t.value, user.asJson.noSpaces) *>
+                redis.setEx(t.value, "", TokenExpiration) *>
+                redis.setEx(username.value, t.value, TokenExpiration)
+            }
         }
     }
 
   def logout(token: JwtToken): F[Unit] =
-    redis.hDel(TokenKey.value, token.value) *>
+    redis.del(token.value) *>
       redis.hDel(UsersKey.value, token.value)
 
 }
