@@ -25,7 +25,6 @@ object auth {
   }
 
   @newtype case class PasswordParam(value: NonEmptyString) {
-    // TODO: Encode password here maybe?
     def toDomain: Password = value.value.coerce[Password]
   }
 

@@ -17,8 +17,6 @@ object order {
       total: USD
   )
 
-  case class NegativeOrZeroTotalAmount(value: USD) extends NoStackTrace
-
   case object EmptyCartError extends NoStackTrace
   case class OrderError(cause: String) extends NoStackTrace
   case class PaymentError(cause: String) extends NoStackTrace

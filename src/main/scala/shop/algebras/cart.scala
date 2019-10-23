@@ -14,8 +14,8 @@ import LiveShoppingCart._
 import scala.concurrent.duration._
 
 trait ShoppingCart[F[_]] {
-  def add(userId: UserId, item: ItemId, quantity: Quantity): F[Unit]
-  def get(userId: UserId): F[List[CartItem]]
+  def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit]
+  def get(userId: UserId): F[CartTotal]
   def delete(userId: UserId): F[Unit]
   def removeItem(userId: UserId, itemId: ItemId): F[Unit]
   def update(userId: UserId, cart: Cart): F[Unit]
@@ -37,11 +37,19 @@ class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
   // TODO: Take from config file
   private val Expiration = 30.minutes
 
+  private def calcTotal(items: List[CartItem]): USD =
+    items
+      .foldLeft(0: BigDecimal) {
+        case (acc, i) =>
+          acc + (i.item.price.value * i.quantity.value)
+      }
+      .coerce[USD]
+
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
       redis.expire(userId.value.toString, Expiration)
 
-  def get(userId: UserId): F[List[CartItem]] =
+  def get(userId: UserId): F[CartTotal] =
     redis.hGetAll(userId.value.toString).flatMap { it =>
       it.toList
         .traverse {
@@ -53,6 +61,7 @@ class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
             } yield rs
         }
         .map(_.flatten)
+        .map(items => CartTotal(items, calcTotal(items)))
     }
 
   def delete(userId: UserId): F[Unit] =

@@ -12,6 +12,7 @@ object cart {
   @newtype case class CartId(value: ju.UUID)
 
   case class CartItem(item: Item, quantity: Quantity)
+  case class CartTotal(items: List[CartItem], total: USD)
 
   case class CartNotFound(userId: UserId) extends NoStackTrace
 }

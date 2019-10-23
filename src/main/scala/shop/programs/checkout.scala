@@ -65,23 +65,12 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       }
   }
 
-  private def calcTotal(items: List[CartItem]): F[USD] = {
-    val total = items
-      .foldLeft(0: BigDecimal) { (acc, i) =>
-        acc + (i.item.price.value * i.quantity.value)
-      }
-      .coerce[USD]
-    if (total.value <= 0) NegativeOrZeroTotalAmount(total).raiseError[F, USD]
-    else total.pure[F]
-  }
-
   def checkout(userId: UserId, card: Card): F[OrderId] =
     shoppingCart.get(userId).flatMap {
-      case items if (items.isEmpty) =>
+      case CartTotal(items, _) if items.isEmpty =>
         EmptyCartError.raiseError[F, OrderId]
-      case items =>
+      case CartTotal(items, total) =>
         for {
-          total <- calcTotal(items)
           pid <- processPayment(userId, total, card)
           order <- createOrder(userId, pid, items, total)
           _ <- shoppingCart.delete(userId)
