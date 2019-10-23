@@ -31,16 +31,16 @@ object AppResources {
     def mkPostgreSqlResource(cfg: PostgreSQLConfig): SessionPool[F] =
       Session
         .pooled[F](
-          host = cfg.host,
-          port = cfg.port,
-          user = cfg.user,
-          database = cfg.database,
-          max = cfg.max
+          host = cfg.host.value,
+          port = cfg.port.value,
+          user = cfg.user.value,
+          database = cfg.database.value,
+          max = cfg.max.value
         )
 
     def mkRedisResource(cfg: RedisConfig): Resource[F, RedisCommands[F, String, String]] =
       for {
-        uri <- Resource.liftF(RedisURI.make[F](cfg.uri))
+        uri <- Resource.liftF(RedisURI.make[F](cfg.uri.value))
         client <- RedisClient[F](uri)
         cmd <- Redis[F, String, String](client, RedisCodec.Utf8, uri)
       } yield cmd

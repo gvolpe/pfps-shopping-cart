@@ -34,7 +34,7 @@ class LiveTokens[F[_]: GenUUID: Sync] private (
     for {
       uuid <- GenUUID[F].make
       claim <- Sync[F].delay(JwtClaim(uuid.asJson.noSpaces).issuedNow.expiresIn(exp.value))
-      secretKey = JwtSecretKey(config.secretKey.value.value)
+      secretKey = JwtSecretKey(config.secretKey.value.value.value)
       token <- jwtEncode[F](claim, secretKey, JwtAlgorithm.HS256)
     } yield token
 }

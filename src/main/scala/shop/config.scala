@@ -3,20 +3,25 @@ package shop
 import cats.effect.Sync
 import cats.mtl.ApplicativeAsk
 import cats.implicits._
+import eu.timepit.refined.api._
+import eu.timepit.refined.auto._
+import eu.timepit.refined.types.net.UserPortNumber
+import eu.timepit.refined.types.numeric.PosLong
+import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
 
 object config {
-  import ciris._, ciris.cats.effect._, ciris.enumeratum._
+  import ciris._, ciris.cats.effect._, ciris.enumeratum._, ciris.refined._
   import environments._, environments.AppEnvironment._
 
-  @newtype case class AdminUserTokenConfig(value: String)
-  @newtype case class JwtSecretKeyConfig(value: String)
-  @newtype case class JwtClaimConfig(value: String)
+  @newtype case class AdminUserTokenConfig(value: NonEmptyString)
+  @newtype case class JwtSecretKeyConfig(value: NonEmptyString)
+  @newtype case class JwtClaimConfig(value: NonEmptyString)
   @newtype case class TokenConfig(secretKey: Secret[JwtSecretKeyConfig])
 
-  @newtype case class PasswordSalt(value: String)
+  @newtype case class PasswordSalt(value: NonEmptyString)
   @newtype case class PasswordConfig(secret: Secret[PasswordSalt])
 
   case class AppConfig(
@@ -33,23 +38,25 @@ object config {
       adminToken: Secret[AdminUserTokenConfig]
   )
 
-  // TODO: User ciris-refined
   case class PostgreSQLConfig(
-      host: String,
-      port: Int,
-      user: String,
-      database: String,
-      max: Long
+      host: NonEmptyString,
+      port: UserPortNumber,
+      user: NonEmptyString,
+      database: NonEmptyString,
+      max: PosLong
   )
 
   case class RedisConfig(
-      uri: String
+      uri: NonEmptyString
   )
 
   type HasAppConfig[F[_]] = ApplicativeAsk[F, AppConfig]
 
   implicit def coercibleConfigDecoder[A: Coercible[String, ?]]: ConfigDecoder[String, A] =
     ConfigDecoder[String, String].map(_.coerce[A])
+
+  implicit def coercibleNonEmptyStringConfigDecoder[A: Coercible[NonEmptyString, ?]]: ConfigDecoder[String, Secret[A]] =
+    ConfigDecoder[String, Secret[NonEmptyString]].map(x => Secret(x.value.coerce[A]))
 
   // Ciris promotes configuration as code
   def load[F[_]: Sync]: F[AppConfig] =
@@ -58,7 +65,7 @@ object config {
       case Prod => default[F](redisUri = "redis://10.123.154.176")
     }.orRaiseThrowable
 
-  private def default[F[_]: Sync](redisUri: String) =
+  private def default[F[_]: Sync](redisUri: NonEmptyString) =
     loadConfig(
       envF[F, Secret[JwtSecretKeyConfig]]("SC_JWT_SECRET_KEY"),
       envF[F, Secret[JwtClaimConfig]]("SC_JWT_CLAIM"),

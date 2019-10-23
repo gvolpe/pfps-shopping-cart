@@ -23,7 +23,7 @@ object Security {
     val adminJwtAuth: AdminJwtAuth =
       JwtAuth
         .hmac(
-          cfg.adminJwtConfig.secretKey.value.value,
+          cfg.adminJwtConfig.secretKey.value.value.value,
           JwtAlgorithm.HS256
         )
         .coerce[AdminJwtAuth]
@@ -31,12 +31,12 @@ object Security {
     val userJwtAuth: UserJwtAuth =
       JwtAuth
         .hmac(
-          cfg.tokenConfig.secretKey.value.value,
+          cfg.tokenConfig.secretKey.value.value.value,
           JwtAlgorithm.HS256
         )
         .coerce[UserJwtAuth]
 
-    val adminToken = JwtToken(cfg.adminJwtConfig.adminToken.value.value)
+    val adminToken = JwtToken(cfg.adminJwtConfig.adminToken.value.value.value)
 
     for {
       adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
