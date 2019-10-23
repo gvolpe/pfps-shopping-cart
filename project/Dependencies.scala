@@ -73,7 +73,8 @@ object Dependencies {
     lazy val redis4catsEffects  = "dev.profunktor" %% "redis4cats-effects"  % Versions.redis4cats
     lazy val redis4catsLog4cats = "dev.profunktor" %% "redis4cats-log4cats" % Versions.redis4cats
 
-    lazy val skunk = "org.tpolecat" %% "skunk-core" % Versions.skunk
+    lazy val skunkCore    = "org.tpolecat" %% "skunk-core"    % Versions.skunk
+    lazy val skunkGeneric = "org.tpolecat" %% "skunk-generic" % Versions.skunk
 
     // Compiler plugins
     lazy val betterMonadicFor = "com.olegpy"    %% "better-monadic-for" % Versions.betterMonadicFor

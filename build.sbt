@@ -42,7 +42,8 @@ lazy val root = (project in file("."))
       Libraries.redis4catsLog4cats,
       Libraries.refinedCore,
       Libraries.refinedCats,
-      Libraries.skunk,
+      Libraries.skunkCore,
+      Libraries.skunkGeneric,
       //Libraries.squants, // TODO: Re-enable when there's a release for 2.13.x
       Libraries.scalaTest      % Test,
       Libraries.scalaCheck     % Test,
