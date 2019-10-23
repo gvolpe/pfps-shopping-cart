@@ -6,11 +6,13 @@ import cats.implicits._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import shop.domain._
+import shop.effects._
 import java.{ util => ju }
 
 trait GenUUID[F[_]] {
   def make: F[ju.UUID]
   def make[A: Coercible[ju.UUID, ?]]: F[A]
+  def read[A: Coercible[ju.UUID, ?]](str: String): F[A]
 }
 
 object GenUUID {
@@ -23,5 +25,8 @@ object GenUUID {
 
       def make[A: Coercible[ju.UUID, ?]]: F[A] =
         make.map(_.coerce[A])
+
+      def read[A: Coercible[ju.UUID, ?]](str: String): F[A] =
+        ApThrow[F].catchNonFatal(ju.UUID.fromString(str).coerce[A])
     }
 }

@@ -17,7 +17,7 @@ object Dependencies {
     val newtype       = "0.4.3"
     val refined       = "0.9.10"
     val redis4cats    = "0.9.1"
-    val skunk         = "0.0.4+13-665a9f87-SNAPSHOT"
+    val skunk         = "0.0.4+19-4cb3e5f7-SNAPSHOT"
     val squants       = "1.5.0"
 
     val betterMonadicFor = "0.3.0"

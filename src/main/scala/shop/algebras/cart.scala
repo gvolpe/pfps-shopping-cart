@@ -1,6 +1,5 @@
 package shop.algebras
 
-import cats.Monad
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.estatico.newtype.ops._
@@ -23,14 +22,14 @@ trait ShoppingCart[F[_]] {
 }
 
 object LiveShoppingCart {
-  def make[F[_]: MonadThrow](
+  def make[F[_]: GenUUID: MonadThrow](
       items: Items[F],
       redis: RedisCommands[F, String, String]
   ): F[ShoppingCart[F]] =
     new LiveShoppingCart(items, redis).pure[F].widen
 }
 
-class LiveShoppingCart[F[_]: MonadThrow] private (
+class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
     items: Items[F],
     redis: RedisCommands[F, String, String]
 ) extends ShoppingCart[F] {
@@ -48,7 +47,7 @@ class LiveShoppingCart[F[_]: MonadThrow] private (
         .traverse {
           case (k, v) =>
             for {
-              id <- ApThrow[F].catchNonFatal(ju.UUID.fromString(k).coerce[ItemId])
+              id <- GenUUID[F].read[ItemId](k)
               qt <- ApThrow[F].catchNonFatal(v.toInt.coerce[Quantity])
               rs <- items.findById(id).map(_.toList.map(i => CartItem(i, qt)))
             } yield rs
