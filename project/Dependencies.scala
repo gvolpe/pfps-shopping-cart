@@ -53,6 +53,7 @@ object Dependencies {
     lazy val cirisCore       = ciris("ciris-core")
     lazy val cirisCats       = ciris("ciris-cats")
     lazy val cirisCatsEffect = ciris("ciris-cats-effect")
+    lazy val cirisEnum       = ciris("ciris-enumeratum")
     lazy val cirisRefined    = ciris("ciris-refined")
 
     lazy val http4sDsl    = http4s("http4s-dsl")

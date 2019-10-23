@@ -40,3 +40,11 @@ psql -h localhost -U postgres
 ```
 docker run --rm --name cache -p 6379:6379 redis:5.0.0
 ```
+
+## Deploying
+
+Set the proper environment variable ("test" or "prod"):
+
+```
+export SC_APP_ENV="test"
+```

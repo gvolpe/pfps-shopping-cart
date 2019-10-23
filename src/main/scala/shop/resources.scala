@@ -3,7 +3,7 @@ package shop
 import cats.Parallel
 import cats.effect._
 import cats.implicits._
-import config.AppConfig
+import config._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
 import dev.profunktor.redis4cats.domain.RedisCodec
@@ -27,21 +27,20 @@ case class AppResources[F[_]](
 object AppResources {
 
   def make[F[_]: ConcurrentEffect: ContextShift: Logger]: Resource[F, AppResources[F]] = {
-    // TODO: User PSQL config file
-    //def psql(cfg: AppConfig): Resource[IO, Session[IO]] =
-    def mkPostgreSqlResource: SessionPool[F] =
+
+    def mkPostgreSqlResource(cfg: PostgreSQLConfig): SessionPool[F] =
       Session
         .pooled[F](
-          host = "localhost",
-          port = 5432,
-          user = "postgres",
-          database = "store",
-          max = 10
+          host = cfg.host,
+          port = cfg.port,
+          user = cfg.user,
+          database = cfg.database,
+          max = cfg.max
         )
 
-    def mkRedisResource: Resource[F, RedisCommands[F, String, String]] =
+    def mkRedisResource(cfg: RedisConfig): Resource[F, RedisCommands[F, String, String]] =
       for {
-        uri <- Resource.liftF(RedisURI.make[F]("redis://localhost"))
+        uri <- Resource.liftF(RedisURI.make[F](cfg.uri))
         client <- RedisClient[F](uri)
         cmd <- Redis[F, String, String](client, RedisCodec.Utf8, uri)
       } yield cmd
@@ -50,8 +49,8 @@ object AppResources {
       cfg <- Resource.liftF(config.load[F])
       _ <- Resource.liftF(Logger[F].info(s"Loaded config $cfg"))
       client <- BlazeClientBuilder[F](ExecutionContext.global).resource
-      psql <- mkPostgreSqlResource
-      redis <- mkRedisResource
+      psql <- mkPostgreSqlResource(cfg.postgreSQL)
+      redis <- mkRedisResource(cfg.redis)
     } yield AppResources[F](cfg, client, psql, redis)
   }
 
