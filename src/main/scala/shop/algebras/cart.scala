@@ -74,15 +74,11 @@ class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
     redis.hGetAll(userId.value.toString).flatMap { it =>
       it.toList.traverse_ {
         case (k, _) =>
-          ApThrow[F]
-            .catchNonFatal(
-              ju.UUID.fromString(k).coerce[ItemId]
-            )
-            .flatMap { id =>
-              cart.items.get(id).fold(().pure[F]) { q =>
-                redis.hSet(userId.value.toString, k, q.value.toString)
-              }
+          GenUUID[F].read[ItemId](k).flatMap { id =>
+            cart.items.get(id).fold(().pure[F]) { q =>
+              redis.hSet(userId.value.toString, k, q.value.toString)
             }
+          }
       } *>
         redis.expire(userId.value.toString, Expiration)
     }

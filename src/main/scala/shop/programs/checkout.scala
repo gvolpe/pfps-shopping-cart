@@ -1,6 +1,5 @@
 package shop.programs
 
-import cats.MonadError
 import cats.effect.Timer
 import cats.implicits._
 import io.chrisdavenport.log4cats.Logger

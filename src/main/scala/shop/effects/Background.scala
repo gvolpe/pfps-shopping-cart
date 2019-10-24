@@ -5,8 +5,6 @@ import cats.effect.implicits._
 import cats.implicits._
 import scala.concurrent.duration.FiniteDuration
 
-// Runs an arbitrary action in the background
-// TODO: Define laws? or make it a simple interface
 trait Background[F[_]] {
   def schedule[A](
       duration: FiniteDuration,
