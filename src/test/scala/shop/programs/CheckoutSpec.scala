@@ -5,13 +5,16 @@ import cats.effect.concurrent.Ref
 import cats.effect.laws.util.TestContext
 import cats.implicits._
 import eu.timepit.refined.auto._
+import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import java.{ util => ju }
 import org.scalatest.AsyncFunSuite
 import shop.IOAssertion
 import shop.algebras._
 import shop.domain.auth._
+import shop.domain.brand._
 import shop.domain.cart._
+import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
@@ -28,6 +31,12 @@ class CheckoutSpec extends AsyncFunSuite {
 
   implicit val timer: Timer[IO] = IO.timer(ec)
 
+  def randomId[A: Coercible[ju.UUID, ?]]: A = ju.UUID.randomUUID().coerce[A]
+
+  val testPaymentId = randomId[PaymentId]
+  val testOrderId   = randomId[OrderId]
+  val testUserId    = randomId[UserId]
+
   def mkBackground: IO[Background[IO]] =
     Ref.of[IO, Int](0).map { ref =>
       new Background[IO] {
@@ -36,45 +45,36 @@ class CheckoutSpec extends AsyncFunSuite {
       }
     }
 
-  val paymentId = ju.UUID.fromString("7a465b27-0db6-4cb7-8c98-78f275b0235e").coerce[PaymentId]
-  val userId    = ju.UUID.fromString("509b77fd-3a0e-4aa3-9d84-496a3211d2b1").coerce[UserId]
-
   // TODO: Also create a bad client that returns 409 and 500
-  val testClient: PaymentClient[IO] =
+  val successfulClient: PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
-        IO.pure(paymentId)
+      def process(testUserId: UserId, total: USD, card: Card): IO[PaymentId] =
+        IO.pure(testPaymentId)
     }
 
-  val emptyCart: ShoppingCart[IO] =
-    new ShoppingCart[IO] {
-      def add(userId: UserId, itemId: ItemId, quantity: Quantity): IO[Unit] = ???
-      def get(userId: UserId): IO[CartTotal] =
-        IO.pure(CartTotal(List.empty, USD(0)))
-      def delete(userId: UserId): IO[Unit]                     = ???
-      def removeItem(userId: UserId, itemId: ItemId): IO[Unit] = ???
-      def update(userId: UserId, cart: Cart): IO[Unit]         = ???
-    }
+  val emptyCart: ShoppingCart[IO] = new TestCart {
+    override def get(testUserId: UserId): IO[CartTotal] =
+      IO.pure(CartTotal(List.empty, USD(0)))
+  }
 
-  val testCart: ShoppingCart[IO] =
-    new ShoppingCart[IO] {
-      def add(userId: UserId, itemId: ItemId, quantity: Quantity): IO[Unit] = ???
-      def get(userId: UserId): IO[CartTotal]                                = ???
-      def delete(userId: UserId): IO[Unit]                                  = ???
-      def removeItem(userId: UserId, itemId: ItemId): IO[Unit]              = ???
-      def update(userId: UserId, cart: Cart): IO[Unit]                      = ???
-    }
+  val testItem = Item(
+    uuid = randomId[ItemId],
+    name = "Telecaster".coerce[ItemName],
+    description = "Classic guitar".coerce[ItemDescription],
+    price = USD(100),
+    brand = Brand(randomId[BrandId], "Fender".coerce[BrandName]),
+    category = Category(randomId[CategoryId], "Guitars".coerce[CategoryName])
+  )
 
-  // TODO: consider errors for rety logic
-  val testOrders: Orders[IO] =
-    new Orders[IO] {
-      def get(userId: UserId, orderId: OrderId): IO[Option[Order]]                                     = ???
-      def findBy(userId: UserId): IO[List[Order]]                                                      = ???
-      def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] = ???
-    }
+  val successfulCart: ShoppingCart[IO] = new TestCart {
+    override def get(testUserId: UserId): IO[CartTotal] =
+      IO.pure(CartTotal(List(CartItem(testItem, 1.coerce[Quantity])), USD(100)))
+    override def delete(userId: UserId): IO[Unit] = IO.unit
+  }
 
-  val mkProgram = mkBackground.map { implicit bg =>
-    new CheckoutProgram[IO](testClient, testCart, testOrders)
+  val successfulOrders: Orders[IO] = new TestOrders {
+    override def create(testUserId: UserId, testPaymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
+      IO.pure(testOrderId)
   }
 
   val testCard = Card(
@@ -87,10 +87,21 @@ class CheckoutSpec extends AsyncFunSuite {
   test("empty cart on checkout") {
     IOAssertion {
       mkBackground.flatMap { implicit bg =>
-        val program = new CheckoutProgram[IO](testClient, emptyCart, testOrders)
-        program.checkout(userId, testCard).attempt.map {
+        val program = new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders())
+        program.checkout(testUserId, testCard).attempt.map {
           case Left(EmptyCartError) => assert(true)
           case _                    => fail("Cart was not empty as expected")
+        }
+      }
+    }
+  }
+
+  test("successful checkout") {
+    IOAssertion {
+      mkBackground.flatMap { implicit bg =>
+        val program = new CheckoutProgram[IO](successfulClient, successfulCart, successfulOrders)
+        program.checkout(testUserId, testCard).map { oid =>
+          assert(oid == testOrderId)
         }
       }
     }
