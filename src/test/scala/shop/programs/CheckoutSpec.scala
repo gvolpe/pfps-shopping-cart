@@ -103,15 +103,15 @@ class CheckoutSpec extends PureTestSuite {
   }
 
   pureTest("unreachable payment client") {
-    Ref.of[IO, List[String]](List.empty).flatMap { ref =>
+    Ref.of[IO, List[String]](List.empty).flatMap { logs =>
       implicit val bg     = shop.background.NoOp
-      implicit val logger = shop.logger.acc(ref)
+      implicit val logger = shop.logger.acc(logs)
       new CheckoutProgram[IO](unreachableClient, successfulCart, successfulOrders, retryPolicy)
         .checkout(testUserId, testCard)
         .attempt
         .flatMap {
           case Left(PaymentError(_)) =>
-            ref.get.map {
+            logs.get.map {
               case (x :: xs) => assert(x.contains("Giving up") && xs.size == MaxRetries)
               case _         => fail(s"Expected $MaxRetries retries")
             }
@@ -122,15 +122,15 @@ class CheckoutSpec extends PureTestSuite {
 
   pureTest("cannot create order, run in the background") {
     Ref.of[IO, Int](0).flatMap { ref =>
-      Ref.of[IO, List[String]](List.empty).flatMap { logRef =>
+      Ref.of[IO, List[String]](List.empty).flatMap { logs =>
         implicit val bg     = shop.background.counter(ref)
-        implicit val logger = shop.logger.acc(logRef)
+        implicit val logger = shop.logger.acc(logs)
         new CheckoutProgram[IO](successfulClient, successfulCart, failingOrders, retryPolicy)
           .checkout(testUserId, testCard)
           .attempt
           .flatMap {
             case Left(OrderError(_)) =>
-              (ref.get, logRef.get).mapN {
+              (ref.get, logs.get).mapN {
                 case (c, (x :: y :: xs)) =>
                   assert(
                     x.contains("Rescheduling") &&
