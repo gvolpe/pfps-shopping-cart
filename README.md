@@ -48,3 +48,7 @@ Set the proper environment variable ("test" or "prod"):
 ```
 export SC_APP_ENV="test"
 ```
+
+## HTTP API Resources
+
+If you use the [Insomnia](https://insomnia.rest/) REST Client, you can import the shopping cart resources using the [insomnia.json](insomnia.json) file.
