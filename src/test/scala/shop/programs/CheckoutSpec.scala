@@ -98,7 +98,7 @@ class CheckoutSpec extends AsyncFunSuite {
   val testCard = Card(
     name = CardName("Haskell Curry"),
     number = CardNumber(1111444433332222L),
-    expiration = CardExpiration(4208),
+    expiration = CardExpiration("0821"),
     ccv = CardCCV(123)
   )
 
