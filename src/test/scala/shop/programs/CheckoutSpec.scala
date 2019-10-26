@@ -70,15 +70,11 @@ class CheckoutSpec extends AsyncFunSuite {
       IO.pure(CartTotal(List.empty, USD(0)))
   }
 
-  val testItem = Item(
-    uuid = randomId[ItemId],
-    name = "Telecaster".coerce[ItemName],
-    description = "Classic guitar".coerce[ItemDescription],
-    price = USD(100),
-    brand = Brand(randomId[BrandId], "Fender".coerce[BrandName]),
-    category = Category(randomId[CategoryId], "Guitars".coerce[CategoryName])
-  )
-
+  val failingCart: ShoppingCart[IO] = new TestCart {
+    override def get(testUserId: UserId): IO[CartTotal] =
+      IO.pure(CartTotal(List(CartItem(testItem, 1.coerce[Quantity])), USD(100)))
+    override def delete(userId: UserId): IO[Unit] = IO.raiseError(new Exception(""))
+  }
   val successfulCart: ShoppingCart[IO] = new TestCart {
     override def get(testUserId: UserId): IO[CartTotal] =
       IO.pure(CartTotal(List(CartItem(testItem, 1.coerce[Quantity])), USD(100)))
@@ -89,6 +85,15 @@ class CheckoutSpec extends AsyncFunSuite {
     override def create(testUserId: UserId, testPaymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
       IO.pure(testOrderId)
   }
+
+  val testItem = Item(
+    uuid = randomId[ItemId],
+    name = "Telecaster".coerce[ItemName],
+    description = "Classic guitar".coerce[ItemDescription],
+    price = USD(100),
+    brand = Brand(randomId[BrandId], "Fender".coerce[BrandName]),
+    category = Category(randomId[CategoryId], "Guitars".coerce[CategoryName])
+  )
 
   val testCard = Card(
     name = CardName("Haskell Curry"),
@@ -137,6 +142,17 @@ class CheckoutSpec extends AsyncFunSuite {
               fail("Expected order error")
           }
       }
+    }
+  }
+
+  test("failing to delete cart does not affect checkout") {
+    IOAssertion {
+      implicit val bg = defaultBackground
+      new CheckoutProgram[IO](successfulClient, failingCart, successfulOrders)
+        .checkout(testUserId, testCard)
+        .map { oid =>
+          assert(oid == testOrderId)
+        }
     }
   }
 
