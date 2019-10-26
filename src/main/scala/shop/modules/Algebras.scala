@@ -13,13 +13,14 @@ import skunk._
 object Algebras {
   def make[F[_]: Sync](
       redis: RedisCommands[F, String, String],
-      sessionPool: Resource[F, Session[F]]
+      sessionPool: Resource[F, Session[F]],
+      cartExpiration: ShoppingCartExpiration
   ): F[Algebras[F]] =
     for {
       brands <- LiveBrands.make[F](sessionPool)
       categories <- LiveCategories.make[F](sessionPool)
       items <- LiveItems.make[F](sessionPool)
-      cart <- LiveShoppingCart.make[F](items, redis)
+      cart <- LiveShoppingCart.make[F](items, redis, cartExpiration)
       orders <- LiveOrders.make[F](sessionPool)
     } yield new Algebras[F](cart, brands, categories, items, orders)
 }

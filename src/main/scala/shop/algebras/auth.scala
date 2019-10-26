@@ -15,9 +15,6 @@ import shop.domain.auth._
 import shop.effects._
 import shop.http.auth.roles._
 import shop.http.json._
-import scala.concurrent.duration._
-import scala.util.control.NonFatal
-import scala.util.Try
 
 trait Auth[F[_]] {
   def adminJwtAuth: F[AdminJwtAuth]
@@ -30,32 +27,25 @@ trait Auth[F[_]] {
 
 object LiveAuth {
   def make[F[_]: Sync](
-      adminToken: JwtToken,
-      adminUser: AdminUser,
-      adminJwtAuth: AdminJwtAuth,
-      userJwtAuth: UserJwtAuth,
+      authData: AuthData,
       tokens: Tokens[F],
       users: Users[F],
       redis: RedisCommands[F, String, String]
   ): F[Auth[F]] =
-    new LiveAuth(adminToken, adminUser, adminJwtAuth, userJwtAuth, tokens, users, redis).pure[F].widen
+    new LiveAuth(authData, tokens, users, redis).pure[F].widen
 }
 
 class LiveAuth[F[_]: GenUUID: MonadThrow] private (
-    adminToken: JwtToken,
-    adminUser: AdminUser,
-    adminAuth: AdminJwtAuth,
-    userAuth: UserJwtAuth,
+    authData: AuthData,
     tokens: Tokens[F],
     users: Users[F],
     redis: RedisCommands[F, String, String]
 ) extends Auth[F] {
 
-  // TODO: Take from config file
-  private val TokenExpiration = 30.minutes
+  private val TokenExpiration = authData.tokenExpiration.value
 
-  def adminJwtAuth: F[AdminJwtAuth] = adminAuth.pure[F]
-  def userJwtAuth: F[UserJwtAuth]   = userAuth.pure[F]
+  def adminJwtAuth: F[AdminJwtAuth] = authData.adminJwtAuth.pure[F]
+  def userJwtAuth: F[UserJwtAuth]   = authData.userJwtAuth.pure[F]
 
   private def findUserByToken[A: Coercible[User, ?]](
       token: JwtToken
@@ -71,9 +61,9 @@ class LiveAuth[F[_]: GenUUID: MonadThrow] private (
       case UserRole =>
         findUserByToken[A](token)
       case AdminRole =>
-        (token == adminToken)
+        (token == authData.adminToken)
           .guard[Option]
-          .as(adminUser.asInstanceOf[A])
+          .as(authData.adminUser.asInstanceOf[A])
           .pure[F]
     }
 

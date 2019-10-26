@@ -12,6 +12,7 @@ import shop.domain.item._
 import shop.effects._
 import LiveShoppingCart._
 import scala.concurrent.duration._
+import shop.config.ShoppingCartExpiration
 
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit]
@@ -24,18 +25,19 @@ trait ShoppingCart[F[_]] {
 object LiveShoppingCart {
   def make[F[_]: GenUUID: MonadThrow](
       items: Items[F],
-      redis: RedisCommands[F, String, String]
+      redis: RedisCommands[F, String, String],
+      exp: ShoppingCartExpiration
   ): F[ShoppingCart[F]] =
-    new LiveShoppingCart(items, redis).pure[F].widen
+    new LiveShoppingCart(items, redis, exp).pure[F].widen
 }
 
 class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
     items: Items[F],
-    redis: RedisCommands[F, String, String]
+    redis: RedisCommands[F, String, String],
+    exp: ShoppingCartExpiration
 ) extends ShoppingCart[F] {
 
-  // TODO: Take from config file
-  private val Expiration = 30.minutes
+  private val Expiration = exp.value
 
   private def calcTotal(items: List[CartItem]): USD =
     items

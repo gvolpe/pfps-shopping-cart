@@ -37,7 +37,7 @@ object Server {
   ): F[HttpApi[F]] =
     for {
       security <- Security.make[F](res.cfg, res.psql, res.redis)
-      algebras <- Algebras.make[F](res.redis, res.psql)
+      algebras <- Algebras.make[F](res.redis, res.psql, res.cfg.cartExpiration)
       clients <- HttpClients.make[F](res.client)
       programs <- Programs.make[F](res.cfg.checkoutConfig, algebras, clients)
       api <- HttpApi.make[F](algebras, programs, security)

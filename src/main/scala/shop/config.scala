@@ -21,9 +21,12 @@ object config {
   @newtype case class JwtSecretKeyConfig(value: NonEmptyString)
   @newtype case class JwtClaimConfig(value: NonEmptyString)
   @newtype case class TokenConfig(secretKey: Secret[JwtSecretKeyConfig])
+  @newtype case class TokenExpiration(value: FiniteDuration)
 
   @newtype case class PasswordSalt(value: NonEmptyString)
   @newtype case class PasswordConfig(secret: Secret[PasswordSalt])
+
+  @newtype case class ShoppingCartExpiration(value: FiniteDuration)
 
   case class CheckoutConfig(
       retriesLimit: PosInt,
@@ -34,6 +37,8 @@ object config {
       adminJwtConfig: AdminJwtConfig,
       tokenConfig: TokenConfig,
       passwordSalt: PasswordConfig,
+      tokenExpiration: TokenExpiration,
+      cartExpiration: ShoppingCartExpiration,
       checkoutConfig: CheckoutConfig,
       postgreSQL: PostgreSQLConfig,
       redis: RedisConfig
@@ -84,6 +89,8 @@ object config {
         AdminJwtConfig(secretKey, claimStr, adminToken),
         tokenKey.coerce[TokenConfig],
         salt.coerce[PasswordConfig],
+        30.minutes.coerce[TokenExpiration],
+        30.minutes.coerce[ShoppingCartExpiration],
         CheckoutConfig(
           retriesLimit = 3,
           retriesBackoff = 10.milliseconds
