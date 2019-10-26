@@ -29,7 +29,7 @@ class CheckoutSpec extends AsyncFunSuite {
 
   val ec: ExecutionContext = TestContext()
 
-  implicit val timer: Timer[IO] = IO.timer(ec)
+  implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
 
   def randomId[A: Coercible[ju.UUID, ?]]: A = ju.UUID.randomUUID().coerce[A]
 
@@ -45,11 +45,16 @@ class CheckoutSpec extends AsyncFunSuite {
       }
     }
 
-  // TODO: Also create a bad client that returns 409 and 500
   val successfulClient: PaymentClient[IO] =
     new PaymentClient[IO] {
       def process(testUserId: UserId, total: USD, card: Card): IO[PaymentId] =
         IO.pure(testPaymentId)
+    }
+
+  val unreachableClient: PaymentClient[IO] =
+    new PaymentClient[IO] {
+      def process(testUserId: UserId, total: USD, card: Card): IO[PaymentId] =
+        IO.raiseError(PaymentError(""))
     }
 
   val emptyCart: ShoppingCart[IO] = new TestCart {
@@ -84,13 +89,25 @@ class CheckoutSpec extends AsyncFunSuite {
     ccv = CardCCV(123)
   )
 
-  test("empty cart on checkout") {
+  test("empty cart") {
     IOAssertion {
       mkBackground.flatMap { implicit bg =>
         val program = new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders())
         program.checkout(testUserId, testCard).attempt.map {
           case Left(EmptyCartError) => assert(true)
           case _                    => fail("Cart was not empty as expected")
+        }
+      }
+    }
+  }
+
+  test("unreachable payment client") {
+    IOAssertion {
+      mkBackground.flatMap { implicit bg =>
+        val program = new CheckoutProgram[IO](unreachableClient, successfulCart, successfulOrders)
+        program.checkout(testUserId, testCard).attempt.map {
+          case Left(PaymentError(_)) => assert(true)
+          case _                     => fail("Expected payment error")
         }
       }
     }
