@@ -57,6 +57,11 @@ class CheckoutSpec extends AsyncFunSuite {
         IO.raiseError(PaymentError(""))
     }
 
+  val failingOrders: Orders[IO] = new TestOrders {
+    override def create(testUserId: UserId, testPaymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
+      IO.raiseError(OrderError(""))
+  }
+
   val emptyCart: ShoppingCart[IO] = new TestCart {
     override def get(testUserId: UserId): IO[CartTotal] =
       IO.pure(CartTotal(List.empty, USD(0)))
@@ -108,6 +113,18 @@ class CheckoutSpec extends AsyncFunSuite {
         program.checkout(testUserId, testCard).attempt.map {
           case Left(PaymentError(_)) => assert(true)
           case _                     => fail("Expected payment error")
+        }
+      }
+    }
+  }
+
+  test("cannot create order") {
+    IOAssertion {
+      mkBackground.flatMap { implicit bg =>
+        val program = new CheckoutProgram[IO](successfulClient, successfulCart, failingOrders)
+        program.checkout(testUserId, testCard).attempt.map {
+          case Left(OrderError(_)) => assert(true)
+          case _                   => fail("Expected order error")
         }
       }
     }
