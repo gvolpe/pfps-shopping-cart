@@ -10,7 +10,7 @@ import java.{ util => ju }
 import org.scalatest.AsyncFunSuite
 import retry.RetryPolicy
 import retry.RetryPolicies._
-import shop.IOAssertion
+import shop.PureTestSuite
 import shop.algebras._
 import shop.domain.auth._
 import shop.domain.brand._
@@ -22,27 +22,13 @@ import shop.domain.order._
 import shop.effects.Background
 import shop.http.clients._
 import shop.validation.refined._
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-class CheckoutSpec extends AsyncFunSuite {
-
-  implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
+class CheckoutSpec extends PureTestSuite {
 
   val MaxRetries = 3
 
   val retryPolicy: RetryPolicy[IO] = limitRetries[IO](MaxRetries)
-
-  val defaultBackground: Background[IO] =
-    new Background[IO] {
-      def schedule[A](duration: FiniteDuration, fa: IO[A]): IO[Unit] = IO.unit
-    }
-
-  def counterBackground(ref: Ref[IO, Int]): Background[IO] =
-    new Background[IO] {
-      def schedule[A](duration: FiniteDuration, fa: IO[A]): IO[Unit] =
-        ref.update(_ + 1)
-    }
 
   def randomId[A: Coercible[ju.UUID, ?]]: A = ju.UUID.randomUUID().coerce[A]
 
@@ -104,86 +90,81 @@ class CheckoutSpec extends AsyncFunSuite {
     ccv = CardCCV(123)
   )
 
-  test("empty cart") {
-    IOAssertion {
-      import shop.logger.NoOp
-      implicit val bg = defaultBackground
-      new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders(), retryPolicy)
+  pureTest("empty cart") {
+    implicit val bg = shop.background.NoOp
+    import shop.logger.NoOp
+    new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders(), retryPolicy)
+      .checkout(testUserId, testCard)
+      .attempt
+      .map {
+        case Left(EmptyCartError) => assert(true)
+        case _                    => fail("Cart was not empty as expected")
+      }
+  }
+
+  pureTest("unreachable payment client") {
+    Ref.of[IO, List[String]](List.empty).flatMap { ref =>
+      implicit val bg     = shop.background.NoOp
+      implicit val logger = shop.logger.acc(ref)
+      new CheckoutProgram[IO](unreachableClient, successfulCart, successfulOrders, retryPolicy)
         .checkout(testUserId, testCard)
         .attempt
-        .map {
-          case Left(EmptyCartError) => assert(true)
-          case _                    => fail("Cart was not empty as expected")
+        .flatMap {
+          case Left(PaymentError(_)) =>
+            ref.get.map {
+              case (x :: xs) => assert(x.contains("Giving up") && xs.size == MaxRetries)
+              case _         => fail(s"Expected $MaxRetries retries")
+            }
+          case _ => fail("Expected payment error")
         }
     }
   }
 
-  test("unreachable payment client") {
-    IOAssertion {
-      Ref.of[IO, List[String]](List.empty).flatMap { ref =>
-        implicit val bg     = defaultBackground
-        implicit val logger = shop.logger.accLogger(ref)
-        new CheckoutProgram[IO](unreachableClient, successfulCart, successfulOrders, retryPolicy)
+  pureTest("cannot create order, run in the background") {
+    Ref.of[IO, Int](0).flatMap { ref =>
+      Ref.of[IO, List[String]](List.empty).flatMap { logRef =>
+        implicit val bg     = shop.background.counter(ref)
+        implicit val logger = shop.logger.acc(logRef)
+        new CheckoutProgram[IO](successfulClient, successfulCart, failingOrders, retryPolicy)
           .checkout(testUserId, testCard)
           .attempt
           .flatMap {
-            case Left(PaymentError(_)) =>
-              ref.get.map {
-                case (x :: xs) => assert(x.contains("Giving up") && xs.size == 3)
-                case _         => fail("Expected 3 retries")
+            case Left(OrderError(_)) =>
+              (ref.get, logRef.get).mapN {
+                case (c, (x :: y :: xs)) =>
+                  assert(
+                    x.contains("Rescheduling") &&
+                    y.contains("Giving up") &&
+                    xs.size == MaxRetries &&
+                    c == 1
+                  )
+                case _ => fail(s"Expected $MaxRetries retries and reschedule")
               }
-            case _ => fail("Expected payment error")
+            case _ =>
+              fail("Expected order error")
           }
       }
     }
   }
 
-  test("cannot create order, run in the background") {
-    IOAssertion {
-      Ref.of[IO, Int](0).flatMap { ref =>
-        Ref.of[IO, List[String]](List.empty).flatMap { logRef =>
-          implicit val bg     = counterBackground(ref)
-          implicit val logger = shop.logger.accLogger(logRef)
-          new CheckoutProgram[IO](successfulClient, successfulCart, failingOrders, retryPolicy)
-            .checkout(testUserId, testCard)
-            .attempt
-            .flatMap {
-              case Left(OrderError(_)) =>
-                (ref.get, logRef.get).mapN {
-                  case (c, (x :: y :: xs)) =>
-                    assert(x.contains("Rescheduling") && y.contains("Giving up") && xs.size == 3 && c == 1)
-                  case _ => fail("Expected 3 retries and reschedule")
-                }
-              case _ =>
-                fail("Expected order error")
-            }
-        }
+  pureTest("failing to delete cart does not affect checkout") {
+    implicit val bg = shop.background.NoOp
+    import shop.logger.NoOp
+    new CheckoutProgram[IO](successfulClient, failingCart, successfulOrders, retryPolicy)
+      .checkout(testUserId, testCard)
+      .map { oid =>
+        assert(oid == testOrderId)
       }
-    }
   }
 
-  test("failing to delete cart does not affect checkout") {
-    IOAssertion {
-      import shop.logger.NoOp
-      implicit val bg = defaultBackground
-      new CheckoutProgram[IO](successfulClient, failingCart, successfulOrders, retryPolicy)
-        .checkout(testUserId, testCard)
-        .map { oid =>
-          assert(oid == testOrderId)
-        }
-    }
-  }
-
-  test("successful checkout") {
-    IOAssertion {
-      import shop.logger.NoOp
-      implicit val bg = defaultBackground
-      new CheckoutProgram[IO](successfulClient, successfulCart, successfulOrders, retryPolicy)
-        .checkout(testUserId, testCard)
-        .map { oid =>
-          assert(oid == testOrderId)
-        }
-    }
+  pureTest("successful checkout") {
+    implicit val bg = shop.background.NoOp
+    import shop.logger.NoOp
+    new CheckoutProgram[IO](successfulClient, successfulCart, successfulOrders, retryPolicy)
+      .checkout(testUserId, testCard)
+      .map { oid =>
+        assert(oid == testOrderId)
+      }
   }
 
 }

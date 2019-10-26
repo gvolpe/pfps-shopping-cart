@@ -8,7 +8,7 @@ object logger {
 
   implicit object NoOp extends NoLogger
 
-  def accLogger(ref: Ref[IO, List[String]]): Logger[IO] =
+  def acc(ref: Ref[IO, List[String]]): Logger[IO] =
     new NoLogger {
       override def error(message: => String): IO[Unit] =
         ref.update(xs => message :: xs)
