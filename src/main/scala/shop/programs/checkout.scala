@@ -7,7 +7,6 @@ import io.estatico.newtype.ops._
 import retry._
 import retry.CatsEffect._
 import retry.RetryDetails._
-import retry.RetryPolicies._
 import scala.concurrent.duration._
 import shop.algebras._
 import shop.domain.auth.UserId
@@ -21,10 +20,9 @@ import shop.http.clients.PaymentClient
 final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     paymentClient: PaymentClient[F],
     shoppingCart: ShoppingCart[F],
-    orders: Orders[F]
+    orders: Orders[F],
+    retryPolicy: RetryPolicy[F]
 ) {
-
-  private val retryPolicy = limitRetries[F](3) |+| exponentialBackoff[F](10.milliseconds)
 
   private def logError(action: String)(e: Throwable, details: RetryDetails): F[Unit] =
     details match {
@@ -59,7 +57,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       }
       .onError {
         case _ =>
-          Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Re-scheduling as a background action") *>
+          Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
             Background[F].schedule(1.hour, action)
       }
   }

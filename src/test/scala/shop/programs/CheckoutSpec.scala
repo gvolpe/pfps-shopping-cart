@@ -2,13 +2,14 @@ package shop.programs
 
 import cats.effect._
 import cats.effect.concurrent.Ref
-import cats.effect.laws.util.TestContext
 import cats.implicits._
 import eu.timepit.refined.auto._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import java.{ util => ju }
 import org.scalatest.AsyncFunSuite
+import retry.RetryPolicy
+import retry.RetryPolicies._
 import shop.IOAssertion
 import shop.algebras._
 import shop.domain.auth._
@@ -20,16 +21,17 @@ import shop.domain.item._
 import shop.domain.order._
 import shop.effects.Background
 import shop.http.clients._
-import shop.logger.NoOp
 import shop.validation.refined._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 class CheckoutSpec extends AsyncFunSuite {
 
-  val ec: ExecutionContext = TestContext()
-
   implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
+
+  val MaxRetries = 3
+
+  val retryPolicy: RetryPolicy[IO] = limitRetries[IO](MaxRetries)
 
   val defaultBackground: Background[IO] =
     new Background[IO] {
@@ -104,8 +106,9 @@ class CheckoutSpec extends AsyncFunSuite {
 
   test("empty cart") {
     IOAssertion {
+      import shop.logger.NoOp
       implicit val bg = defaultBackground
-      new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders())
+      new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders(), retryPolicy)
         .checkout(testUserId, testCard)
         .attempt
         .map {
@@ -117,38 +120,53 @@ class CheckoutSpec extends AsyncFunSuite {
 
   test("unreachable payment client") {
     IOAssertion {
-      implicit val bg = defaultBackground
-      new CheckoutProgram[IO](unreachableClient, successfulCart, successfulOrders)
-        .checkout(testUserId, testCard)
-        .attempt
-        .map {
-          case Left(PaymentError(_)) => assert(true)
-          case _                     => fail("Expected payment error")
-        }
+      Ref.of[IO, List[String]](List.empty).flatMap { ref =>
+        implicit val bg     = defaultBackground
+        implicit val logger = shop.logger.accLogger(ref)
+        new CheckoutProgram[IO](unreachableClient, successfulCart, successfulOrders, retryPolicy)
+          .checkout(testUserId, testCard)
+          .attempt
+          .flatMap {
+            case Left(PaymentError(_)) =>
+              ref.get.map {
+                case (x :: xs) => assert(x.contains("Giving up") && xs.size == 3)
+                case _         => fail("Expected 3 retries")
+              }
+            case _ => fail("Expected payment error")
+          }
+      }
     }
   }
 
   test("cannot create order, run in the background") {
     IOAssertion {
       Ref.of[IO, Int](0).flatMap { ref =>
-        implicit val bg = counterBackground(ref)
-        new CheckoutProgram[IO](successfulClient, successfulCart, failingOrders)
-          .checkout(testUserId, testCard)
-          .attempt
-          .flatMap {
-            case Left(OrderError(_)) =>
-              ref.get.map(c => assert(c == 1))
-            case _ =>
-              fail("Expected order error")
-          }
+        Ref.of[IO, List[String]](List.empty).flatMap { logRef =>
+          implicit val bg     = counterBackground(ref)
+          implicit val logger = shop.logger.accLogger(logRef)
+          new CheckoutProgram[IO](successfulClient, successfulCart, failingOrders, retryPolicy)
+            .checkout(testUserId, testCard)
+            .attempt
+            .flatMap {
+              case Left(OrderError(_)) =>
+                (ref.get, logRef.get).mapN {
+                  case (c, (x :: y :: xs)) =>
+                    assert(x.contains("Rescheduling") && y.contains("Giving up") && xs.size == 3 && c == 1)
+                  case _ => fail("Expected 3 retries and reschedule")
+                }
+              case _ =>
+                fail("Expected order error")
+            }
+        }
       }
     }
   }
 
   test("failing to delete cart does not affect checkout") {
     IOAssertion {
+      import shop.logger.NoOp
       implicit val bg = defaultBackground
-      new CheckoutProgram[IO](successfulClient, failingCart, successfulOrders)
+      new CheckoutProgram[IO](successfulClient, failingCart, successfulOrders, retryPolicy)
         .checkout(testUserId, testCard)
         .map { oid =>
           assert(oid == testOrderId)
@@ -158,8 +176,9 @@ class CheckoutSpec extends AsyncFunSuite {
 
   test("successful checkout") {
     IOAssertion {
+      import shop.logger.NoOp
       implicit val bg = defaultBackground
-      new CheckoutProgram[IO](successfulClient, successfulCart, successfulOrders)
+      new CheckoutProgram[IO](successfulClient, successfulCart, successfulOrders, retryPolicy)
         .checkout(testUserId, testCard)
         .map { oid =>
           assert(oid == testOrderId)

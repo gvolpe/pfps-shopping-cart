@@ -6,11 +6,12 @@ import cats.implicits._
 import eu.timepit.refined.api._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.types.net.UserPortNumber
-import eu.timepit.refined.types.numeric.PosLong
+import eu.timepit.refined.types.numeric.{ PosInt, PosLong }
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
+import scala.concurrent.duration._
 
 object config {
   import ciris._, ciris.cats.effect._, ciris.enumeratum._, ciris.refined._
@@ -24,10 +25,16 @@ object config {
   @newtype case class PasswordSalt(value: NonEmptyString)
   @newtype case class PasswordConfig(secret: Secret[PasswordSalt])
 
+  case class CheckoutConfig(
+      retriesLimit: PosInt,
+      retriesBackoff: FiniteDuration
+  )
+
   case class AppConfig(
       adminJwtConfig: AdminJwtConfig,
       tokenConfig: TokenConfig,
       passwordSalt: PasswordConfig,
+      checkoutConfig: CheckoutConfig,
       postgreSQL: PostgreSQLConfig,
       redis: RedisConfig
   )
@@ -77,6 +84,10 @@ object config {
         AdminJwtConfig(secretKey, claimStr, adminToken),
         tokenKey.coerce[TokenConfig],
         salt.coerce[PasswordConfig],
+        CheckoutConfig(
+          retriesLimit = 3,
+          retriesBackoff = 10.milliseconds
+        ),
         PostgreSQLConfig(
           host = "localhost",
           port = 5432,

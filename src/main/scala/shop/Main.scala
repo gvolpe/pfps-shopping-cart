@@ -36,11 +36,10 @@ object Server {
       res: AppResources[F]
   ): F[HttpApi[F]] =
     for {
-      //httpConfig <- ask[F, HttpConfig]
       security <- Security.make[F](res.cfg, res.psql, res.redis)
       algebras <- Algebras.make[F](res.redis, res.psql)
       clients <- HttpClients.make[F](res.client)
-      programs <- Programs.make[F](algebras, clients)
+      programs <- Programs.make[F](res.cfg.checkoutConfig, algebras, clients)
       api <- HttpApi.make[F](algebras, programs, security)
     } yield api
 
