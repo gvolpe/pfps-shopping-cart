@@ -31,19 +31,22 @@ class CheckoutSpec extends AsyncFunSuite {
 
   implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
 
+  val defaultBackground: Background[IO] =
+    new Background[IO] {
+      def schedule[A](duration: FiniteDuration, fa: IO[A]): IO[Unit] = IO.unit
+    }
+
+  def counterBackground(ref: Ref[IO, Int]): Background[IO] =
+    new Background[IO] {
+      def schedule[A](duration: FiniteDuration, fa: IO[A]): IO[Unit] =
+        ref.update(_ + 1)
+    }
+
   def randomId[A: Coercible[ju.UUID, ?]]: A = ju.UUID.randomUUID().coerce[A]
 
   val testPaymentId = randomId[PaymentId]
   val testOrderId   = randomId[OrderId]
   val testUserId    = randomId[UserId]
-
-  def mkBackground: IO[Background[IO]] =
-    Ref.of[IO, Int](0).map { ref =>
-      new Background[IO] {
-        def schedule[A](duration: FiniteDuration, fa: IO[A]): IO[Unit] =
-          ref.update(_ + 1)
-      }
-    }
 
   val successfulClient: PaymentClient[IO] =
     new PaymentClient[IO] {
@@ -96,48 +99,55 @@ class CheckoutSpec extends AsyncFunSuite {
 
   test("empty cart") {
     IOAssertion {
-      mkBackground.flatMap { implicit bg =>
-        val program = new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders())
-        program.checkout(testUserId, testCard).attempt.map {
+      implicit val bg = defaultBackground
+      new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders())
+        .checkout(testUserId, testCard)
+        .attempt
+        .map {
           case Left(EmptyCartError) => assert(true)
           case _                    => fail("Cart was not empty as expected")
         }
-      }
     }
   }
 
   test("unreachable payment client") {
     IOAssertion {
-      mkBackground.flatMap { implicit bg =>
-        val program = new CheckoutProgram[IO](unreachableClient, successfulCart, successfulOrders)
-        program.checkout(testUserId, testCard).attempt.map {
+      implicit val bg = defaultBackground
+      new CheckoutProgram[IO](unreachableClient, successfulCart, successfulOrders)
+        .checkout(testUserId, testCard)
+        .attempt
+        .map {
           case Left(PaymentError(_)) => assert(true)
           case _                     => fail("Expected payment error")
         }
-      }
     }
   }
 
-  test("cannot create order") {
+  test("cannot create order, run in the background") {
     IOAssertion {
-      mkBackground.flatMap { implicit bg =>
-        val program = new CheckoutProgram[IO](successfulClient, successfulCart, failingOrders)
-        program.checkout(testUserId, testCard).attempt.map {
-          case Left(OrderError(_)) => assert(true)
-          case _                   => fail("Expected order error")
-        }
+      Ref.of[IO, Int](0).flatMap { ref =>
+        implicit val bg = counterBackground(ref)
+        new CheckoutProgram[IO](successfulClient, successfulCart, failingOrders)
+          .checkout(testUserId, testCard)
+          .attempt
+          .flatMap {
+            case Left(OrderError(_)) =>
+              ref.get.map(c => assert(c == 1))
+            case _ =>
+              fail("Expected order error")
+          }
       }
     }
   }
 
   test("successful checkout") {
     IOAssertion {
-      mkBackground.flatMap { implicit bg =>
-        val program = new CheckoutProgram[IO](successfulClient, successfulCart, successfulOrders)
-        program.checkout(testUserId, testCard).map { oid =>
+      implicit val bg = defaultBackground
+      new CheckoutProgram[IO](successfulClient, successfulCart, successfulOrders)
+        .checkout(testUserId, testCard)
+        .map { oid =>
           assert(oid == testOrderId)
         }
-      }
     }
   }
 
