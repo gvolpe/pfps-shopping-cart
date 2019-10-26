@@ -4,9 +4,11 @@ import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.effect.laws.util.TestContext
 import cats.implicits._
+import eu.timepit.refined.auto._
 import io.estatico.newtype.ops._
 import java.{ util => ju }
 import org.scalatest.AsyncFunSuite
+import shop.IOAssertion
 import shop.algebras._
 import shop.domain.auth._
 import shop.domain.cart._
@@ -16,6 +18,7 @@ import shop.domain.order._
 import shop.effects.Background
 import shop.http.clients._
 import shop.logger.NoOp
+import shop.validation.refined._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
@@ -34,6 +37,7 @@ class CheckoutSpec extends AsyncFunSuite {
     }
 
   val paymentId = ju.UUID.fromString("7a465b27-0db6-4cb7-8c98-78f275b0235e").coerce[PaymentId]
+  val userId    = ju.UUID.fromString("509b77fd-3a0e-4aa3-9d84-496a3211d2b1").coerce[UserId]
 
   // TODO: Also create a bad client that returns 409 and 500
   val testClient: PaymentClient[IO] =
@@ -42,7 +46,16 @@ class CheckoutSpec extends AsyncFunSuite {
         IO.pure(paymentId)
     }
 
-  // TODO: consider all errors
+  val emptyCart: ShoppingCart[IO] =
+    new ShoppingCart[IO] {
+      def add(userId: UserId, itemId: ItemId, quantity: Quantity): IO[Unit] = ???
+      def get(userId: UserId): IO[CartTotal] =
+        IO.pure(CartTotal(List.empty, USD(0)))
+      def delete(userId: UserId): IO[Unit]                     = ???
+      def removeItem(userId: UserId, itemId: ItemId): IO[Unit] = ???
+      def update(userId: UserId, cart: Cart): IO[Unit]         = ???
+    }
+
   val testCart: ShoppingCart[IO] =
     new ShoppingCart[IO] {
       def add(userId: UserId, itemId: ItemId, quantity: Quantity): IO[Unit] = ???
@@ -64,7 +77,23 @@ class CheckoutSpec extends AsyncFunSuite {
     new CheckoutProgram[IO](testClient, testCart, testOrders)
   }
 
-  // TODO: Background.schedule can just store its duration and action as state to assert against
-  //Background[IO].schedule(1.hour, action)
+  val testCard = Card(
+    name = CardName("Haskell Curry"),
+    number = CardNumber(1111444433332222L),
+    expiration = CardExpiration(4208),
+    ccv = CardCCV(123)
+  )
+
+  test("empty cart on checkout") {
+    IOAssertion {
+      mkBackground.flatMap { implicit bg =>
+        val program = new CheckoutProgram[IO](testClient, emptyCart, testOrders)
+        program.checkout(userId, testCard).attempt.map {
+          case Left(EmptyCartError) => assert(true)
+          case _                    => fail("Cart was not empty as expected")
+        }
+      }
+    }
+  }
 
 }
