@@ -93,7 +93,7 @@ class CheckoutSpec extends PureTestSuite {
   pureTest("empty cart") {
     implicit val bg = shop.background.NoOp
     import shop.logger.NoOp
-    new CheckoutProgram[IO](successfulClient, emptyCart, TestOrders(), retryPolicy)
+    new CheckoutProgram[IO](successfulClient, emptyCart, successfulOrders, retryPolicy)
       .checkout(testUserId, testCard)
       .attempt
       .map {

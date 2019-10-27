@@ -7,8 +7,8 @@ import scala.concurrent.duration.FiniteDuration
 
 trait Background[F[_]] {
   def schedule[A](
-      duration: FiniteDuration,
-      fa: F[A]
+      fa: F[A],
+      duration: FiniteDuration
   ): F[Unit]
 }
 
@@ -19,8 +19,8 @@ object Background {
     new Background[F] {
 
       def schedule[A](
-          duration: FiniteDuration,
-          fa: F[A]
+          fa: F[A],
+          duration: FiniteDuration
       ): F[Unit] =
         (Timer[F].sleep(duration) *> fa).start.void
 

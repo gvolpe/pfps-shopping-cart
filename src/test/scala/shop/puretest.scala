@@ -14,4 +14,3 @@ trait PureTestSuite extends AsyncFunSuite {
     test(testName)(f.unsafeToFuture())
 
 }
-
