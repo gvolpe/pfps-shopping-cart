@@ -33,6 +33,7 @@ class LiveItems[F[_]: Sync] private (
 ) extends Items[F] {
   import ItemQueries._
 
+  // In the book we'll see how to retrieve results in chunks using stream or cursor
   def findAll: F[List[Item]] =
     sessionPool.use(_.execute(selectAll))
 
