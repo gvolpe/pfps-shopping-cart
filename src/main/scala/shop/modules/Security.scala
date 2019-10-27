@@ -10,6 +10,7 @@ import pdi.jwt._
 import shop.algebras._
 import shop.config.data._
 import shop.domain.auth._
+import shop.effects._
 import shop.http.auth.roles._
 import skunk.Session
 
@@ -41,7 +42,7 @@ object Security {
     for {
       adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
       content = adminClaim.content.replace("{", "0").replace("}", "c")
-      adminId <- Sync[F].delay(ju.UUID.fromString(content).coerce[UserId])
+      adminId <- ApThrow[F].catchNonFatal(ju.UUID.fromString(content).coerce[UserId])
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
       authData = AuthData(adminToken, adminUser, adminJwtAuth, userJwtAuth, cfg.tokenExpiration)
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
