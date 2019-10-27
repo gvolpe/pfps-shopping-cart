@@ -51,7 +51,7 @@ class HttpApi[F[_]: Concurrent: Timer] private (
   private val userRoutes   = new UserRoutes[F](auth).routes
 
   // Open routes
-  private val healthRoutes   = new HealthRoutes[F].routes
+  private val healthRoutes   = new HealthRoutes[F](algebras.healthCheck).routes
   private val brandRoutes    = new BrandRoutes[F](algebras.brands).routes
   private val categoryRoutes = new CategoryRoutes[F](algebras.categories).routes
   private val itemRoutes     = new ItemRoutes[F](algebras.items).routes

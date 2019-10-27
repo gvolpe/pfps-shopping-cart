@@ -37,8 +37,6 @@ class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
     exp: ShoppingCartExpiration
 ) extends ShoppingCart[F] {
 
-  private val Expiration = exp.value
-
   private def calcTotal(items: List[CartItem]): USD =
     items
       .foldLeft(0: BigDecimal) {
@@ -49,7 +47,7 @@ class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
 
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
-      redis.expire(userId.value.toString, Expiration)
+      redis.expire(userId.value.toString, exp.value)
 
   def get(userId: UserId): F[CartTotal] =
     redis.hGetAll(userId.value.toString).flatMap { it =>
@@ -82,7 +80,7 @@ class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
             }
           }
       } *>
-        redis.expire(userId.value.toString, Expiration)
+        redis.expire(userId.value.toString, exp.value)
     }
 
 }

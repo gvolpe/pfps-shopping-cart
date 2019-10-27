@@ -22,7 +22,8 @@ object Algebras {
       items <- LiveItems.make[F](sessionPool)
       cart <- LiveShoppingCart.make[F](items, redis, cartExpiration)
       orders <- LiveOrders.make[F](sessionPool)
-    } yield new Algebras[F](cart, brands, categories, items, orders)
+      health <- LiveHealthCheck.make[F](sessionPool, redis)
+    } yield new Algebras[F](cart, brands, categories, items, orders, health)
 }
 
 class Algebras[F[_]] private (
@@ -30,5 +31,6 @@ class Algebras[F[_]] private (
     val brands: Brands[F],
     val categories: Categories[F],
     val items: Items[F],
-    val orders: Orders[F]
+    val orders: Orders[F],
+    val healthCheck: HealthCheck[F]
 ) {}
