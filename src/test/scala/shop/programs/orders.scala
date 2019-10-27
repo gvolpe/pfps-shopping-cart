@@ -7,7 +7,7 @@ import shop.domain.cart._
 import shop.domain.order._
 import shop.domain.item.USD
 
-case class TestOrders() extends Orders[IO] {
+class TestOrders() extends Orders[IO] {
   def get(userId: UserId, orderId: OrderId): IO[Option[Order]]                                     = ???
   def findBy(userId: UserId): IO[List[Order]]                                                      = ???
   def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] = ???

@@ -18,7 +18,7 @@ trait HttpClients[F[_]] {
   def payment: PaymentClient[F]
 }
 
-class LiveHttpClients[F[_]: Sync] private[modules] (
+final class LiveHttpClients[F[_]: Sync] private[modules] (
     cfg: PaymentConfig,
     client: Client[F]
 ) extends HttpClients[F] {

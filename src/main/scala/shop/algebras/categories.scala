@@ -22,7 +22,7 @@ object LiveCategories {
     new LiveCategories[F](sessionPool).pure[F].widen
 }
 
-class LiveCategories[F[_]: BracketThrow: GenUUID] private (
+final class LiveCategories[F[_]: BracketThrow: GenUUID] private (
     sessionPool: Resource[F, Session[F]]
 ) extends Categories[F] {
   import CategoryQueries._

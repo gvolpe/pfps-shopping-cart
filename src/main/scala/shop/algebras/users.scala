@@ -25,7 +25,7 @@ object LiveUsers {
     new LiveUsers[F](sessionPool, crypto).pure[F].widen
 }
 
-class LiveUsers[F[_]: BracketThrow: GenUUID] private (
+final class LiveUsers[F[_]: BracketThrow: GenUUID] private (
     sessionPool: Resource[F, Session[F]],
     crypto: Crypto
 ) extends Users[F] {

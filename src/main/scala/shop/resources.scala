@@ -17,7 +17,7 @@ import org.http4s.client.blaze.BlazeClientBuilder
 import scala.concurrent.ExecutionContext
 import skunk._
 
-case class AppResources[F[_]](
+final case class AppResources[F[_]](
     client: Client[F],
     psql: Resource[F, Session[F]],
     redis: RedisCommands[F, String, String]

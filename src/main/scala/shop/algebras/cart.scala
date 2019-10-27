@@ -31,7 +31,7 @@ object LiveShoppingCart {
     new LiveShoppingCart(items, redis, exp).pure[F].widen
 }
 
-class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
+final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
     items: Items[F],
     redis: RedisCommands[F, String, String],
     exp: ShoppingCartExpiration

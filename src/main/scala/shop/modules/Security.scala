@@ -54,6 +54,6 @@ object Security {
   }
 }
 
-class Security[F[_]] private (
+final class Security[F[_]] private (
     val auth: Auth[F]
 ) {}
