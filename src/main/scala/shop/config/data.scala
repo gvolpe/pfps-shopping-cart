@@ -41,6 +41,7 @@ object data {
       tokenExpiration: TokenExpiration,
       cartExpiration: ShoppingCartExpiration,
       checkoutConfig: CheckoutConfig,
+      paymentConfig: PaymentConfig,
       postgreSQL: PostgreSQLConfig,
       redis: RedisConfig
   )
@@ -61,6 +62,10 @@ object data {
 
   case class RedisConfig(
       uri: NonEmptyString
+  )
+
+  case class PaymentConfig(
+    uri: NonEmptyString
   )
 
 }

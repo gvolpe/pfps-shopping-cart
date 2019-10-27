@@ -43,7 +43,7 @@ object Server {
     for {
       security <- Security.make[F](cfg, res.psql, res.redis)
       algebras <- Algebras.make[F](res.redis, res.psql, cfg.cartExpiration)
-      clients <- HttpClients.make[F](res.client)
+      clients <- HttpClients.make[F](cfg.paymentConfig, res.client)
       programs <- Programs.make[F](cfg.checkoutConfig, algebras, clients)
       api <- HttpApi.make[F](algebras, programs, security)
     } yield api

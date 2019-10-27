@@ -23,11 +23,22 @@ object load {
   // Ciris promotes configuration as code
   def apply[F[_]: Sync]: F[AppConfig] =
     withValue(envF[F, AppEnvironment]("SC_APP_ENV")) {
-      case Test => default[F](redisUri = "redis://localhost")
-      case Prod => default[F](redisUri = "redis://10.123.154.176")
+      case Test =>
+        default[F](
+          redisUri = "redis://localhost",
+          paymentUri = "http://10.123.154.10/api"
+        )
+      case Prod =>
+        default[F](
+          redisUri = "redis://10.123.154.176",
+          paymentUri = "https://payments.netm/api"
+        )
     }.orRaiseThrowable
 
-  private def default[F[_]: Sync](redisUri: NonEmptyString) =
+  private def default[F[_]: Sync](
+      redisUri: NonEmptyString,
+      paymentUri: NonEmptyString
+  ) =
     loadConfig(
       envF[F, Secret[JwtSecretKeyConfig]]("SC_JWT_SECRET_KEY"),
       envF[F, Secret[JwtClaimConfig]]("SC_JWT_CLAIM"),
@@ -45,6 +56,7 @@ object load {
           retriesLimit = 3,
           retriesBackoff = 10.milliseconds
         ),
+        PaymentConfig(paymentUri),
         PostgreSQLConfig(
           host = "localhost",
           port = 5432,
