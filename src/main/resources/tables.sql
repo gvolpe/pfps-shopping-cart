@@ -36,4 +36,3 @@ CREATE TABLE orders (
   items VARCHAR NOT NULL,
   total NUMERIC
 );
-

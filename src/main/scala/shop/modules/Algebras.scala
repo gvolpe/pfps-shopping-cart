@@ -1,5 +1,6 @@
 package shop.modules
 
+import cats.Parallel
 import cats.effect._
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
@@ -11,7 +12,7 @@ import shop.http.auth.roles._
 import skunk._
 
 object Algebras {
-  def make[F[_]: Sync](
+  def make[F[_]: Concurrent: Parallel: Timer](
       redis: RedisCommands[F, String, String],
       sessionPool: Resource[F, Session[F]],
       cartExpiration: ShoppingCartExpiration
