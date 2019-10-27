@@ -5,7 +5,7 @@ import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import java.{ util => ju }
 import shop.algebras._
-import shop.config._
+import shop.config.data._
 import shop.domain.auth._
 import shop.http.auth.roles._
 import skunk._

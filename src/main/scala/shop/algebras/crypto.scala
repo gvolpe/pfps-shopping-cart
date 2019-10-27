@@ -5,7 +5,7 @@ import cats.implicits._
 import io.estatico.newtype.ops._
 import javax.crypto.spec.{ PBEKeySpec, SecretKeySpec }
 import javax.crypto.{ Cipher, SecretKeyFactory }
-import shop.config.PasswordSalt
+import shop.config.data.PasswordSalt
 import shop.domain.auth._
 
 trait Crypto {

@@ -12,7 +12,7 @@ import shop.domain.item._
 import shop.effects._
 import LiveShoppingCart._
 import scala.concurrent.duration._
-import shop.config.ShoppingCartExpiration
+import shop.config.data.ShoppingCartExpiration
 
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit]

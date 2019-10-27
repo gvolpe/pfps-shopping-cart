@@ -11,7 +11,7 @@ import modules._
 import org.http4s.client.Client
 import org.http4s.server.blaze.BlazeServerBuilder
 import scala.concurrent.ExecutionContext
-import shop.config.AppConfig
+import shop.config.data.AppConfig
 
 object Main extends IOApp {
 

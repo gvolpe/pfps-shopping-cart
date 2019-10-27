@@ -8,7 +8,7 @@ import io.estatico.newtype.ops._
 import java.{ util => ju }
 import pdi.jwt._
 import shop.algebras._
-import shop.config._
+import shop.config.data._
 import shop.domain.auth._
 import shop.http.auth.roles._
 import skunk.Session

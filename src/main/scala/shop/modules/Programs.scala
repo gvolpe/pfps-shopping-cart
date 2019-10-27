@@ -5,7 +5,7 @@ import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
 import retry.RetryPolicy
 import retry.RetryPolicies._
-import shop.config.CheckoutConfig
+import shop.config.data.CheckoutConfig
 import shop.effects._
 import shop.programs._
 

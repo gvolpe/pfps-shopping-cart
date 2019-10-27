@@ -8,7 +8,7 @@ import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
 import pdi.jwt._
 import scala.concurrent.duration.FiniteDuration
-import shop.config._
+import shop.config.data._
 
 trait Tokens[F[_]] {
   def create: F[JwtToken]
