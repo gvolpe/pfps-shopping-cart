@@ -10,7 +10,7 @@ trait PureTestSuite extends AsyncFunSuite {
 
   implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
 
-  def pureTest(testName: String)(f: IO[Assertion])(implicit pos: Position): Unit =
+  def spec(testName: String)(f: IO[Assertion])(implicit pos: Position): Unit =
     test(testName)(f.unsafeToFuture())
 
 }

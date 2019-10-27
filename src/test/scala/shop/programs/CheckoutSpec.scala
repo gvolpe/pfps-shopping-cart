@@ -90,7 +90,7 @@ class CheckoutSpec extends PureTestSuite {
     ccv = CardCCV(123)
   )
 
-  pureTest("empty cart") {
+  spec("empty cart") {
     implicit val bg = shop.background.NoOp
     import shop.logger.NoOp
     new CheckoutProgram[IO](successfulClient, emptyCart, successfulOrders, retryPolicy)
@@ -102,7 +102,7 @@ class CheckoutSpec extends PureTestSuite {
       }
   }
 
-  pureTest("unreachable payment client") {
+  spec("unreachable payment client") {
     Ref.of[IO, List[String]](List.empty).flatMap { logs =>
       implicit val bg     = shop.background.NoOp
       implicit val logger = shop.logger.acc(logs)
@@ -120,7 +120,7 @@ class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  pureTest("cannot create order, run in the background") {
+  spec("cannot create order, run in the background") {
     Ref.of[IO, Int](0).flatMap { ref =>
       Ref.of[IO, List[String]](List.empty).flatMap { logs =>
         implicit val bg     = shop.background.counter(ref)
@@ -147,7 +147,7 @@ class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  pureTest("failing to delete cart does not affect checkout") {
+  spec("failing to delete cart does not affect checkout") {
     implicit val bg = shop.background.NoOp
     import shop.logger.NoOp
     new CheckoutProgram[IO](successfulClient, failingCart, successfulOrders, retryPolicy)
@@ -157,7 +157,7 @@ class CheckoutSpec extends PureTestSuite {
       }
   }
 
-  pureTest("successful checkout") {
+  spec("successful checkout") {
     implicit val bg = shop.background.NoOp
     import shop.logger.NoOp
     new CheckoutProgram[IO](successfulClient, successfulCart, successfulOrders, retryPolicy)
