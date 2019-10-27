@@ -4,11 +4,11 @@ import cats.effect._
 import cats.implicits._
 import io.estatico.newtype.ops._
 import java.{ util => ju }
-import shop.database._
 import shop.domain.brand.Brand
 import shop.domain.category._
 import shop.domain.brand._
 import shop.domain.item._
+import shop.ext.skunkx._
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._

@@ -1,4 +1,4 @@
-package shop
+package shop.ext
 
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
@@ -6,7 +6,7 @@ import skunk.Codec
 import skunk.codec.all._
 import java.{ util => ju }
 
-object database {
+object skunkx {
 
   def coercibleVarchar[A: Coercible[String, ?]]: Codec[A] =
     varchar.imap(_.coerce[A])(_.repr.toString)

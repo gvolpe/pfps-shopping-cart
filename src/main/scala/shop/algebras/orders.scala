@@ -5,12 +5,12 @@ import cats.implicits._
 import io.circe.parser.decode
 import io.circe.syntax._
 import io.estatico.newtype.ops._
-import shop.database._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
 import shop.http.json._
+import shop.ext.skunkx._
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._

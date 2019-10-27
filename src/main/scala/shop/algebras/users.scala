@@ -5,9 +5,9 @@ import cats.implicits._
 import io.estatico.newtype.ops._
 import java.{ util => ju }
 import shop.domain.auth._
-import shop.database._
 import shop.effects._
 import shop.http.auth.roles._
+import shop.ext.skunkx._
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._

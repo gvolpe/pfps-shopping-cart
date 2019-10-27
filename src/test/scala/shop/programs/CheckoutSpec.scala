@@ -20,8 +20,8 @@ import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
 import shop.effects.Background
+import shop.ext.refined._
 import shop.http.clients._
-import shop.validation.refined._
 import scala.concurrent.duration._
 
 class CheckoutSpec extends PureTestSuite {

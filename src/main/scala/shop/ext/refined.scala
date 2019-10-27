@@ -1,4 +1,4 @@
-package shop.validation
+package shop.ext
 
 import eu.timepit.refined._
 import eu.timepit.refined.api._

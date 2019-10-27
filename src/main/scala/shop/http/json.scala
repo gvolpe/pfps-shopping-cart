@@ -18,8 +18,8 @@ import shop.domain.checkout._
 import shop.domain.healthcheck._
 import shop.domain.item._
 import shop.domain.order._
+import shop.ext.refined._
 import shop.http.auth.roles._
-import shop.validation.refined._
 
 object json {
 
