@@ -48,6 +48,15 @@ class CheckoutSpec extends PureTestSuite {
         IO.raiseError(PaymentError(""))
     }
 
+  def recoveringClient(ref: Ref[IO, Int]): PaymentClient[IO] =
+    new PaymentClient[IO] {
+      def process(testUserId: UserId, total: USD, card: Card): IO[PaymentId] =
+        ref.get.flatMap {
+          case n if n == 1 => IO.pure(testPaymentId)
+          case _           => ref.update(_ + 1) *> IO.raiseError(PaymentError(""))
+        }
+    }
+
   val failingOrders: Orders[IO] = new TestOrders {
     override def create(testUserId: UserId, testPaymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
       IO.raiseError(OrderError(""))
@@ -117,6 +126,25 @@ class CheckoutSpec extends PureTestSuite {
             }
           case _ => fail("Expected payment error")
         }
+    }
+  }
+
+  spec("failing payment client succeeds after one retry") {
+    Ref.of[IO, List[String]](List.empty).flatMap { logs =>
+      Ref.of[IO, Int](0).flatMap { ref =>
+        implicit val bg     = shop.background.NoOp
+        implicit val logger = shop.logger.acc(logs)
+        new CheckoutProgram[IO](recoveringClient(ref), successfulCart, successfulOrders, retryPolicy)
+          .checkout(testUserId, testCard)
+          .attempt
+          .flatMap {
+            case Right(oid) =>
+              logs.get.map { xs =>
+                assert(oid == testOrderId && xs.size == 1)
+              }
+            case Left(_) => fail("Expected Payment Id")
+          }
+      }
     }
   }
 
