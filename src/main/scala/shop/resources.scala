@@ -18,7 +18,6 @@ import scala.concurrent.ExecutionContext
 import skunk._
 
 case class AppResources[F[_]](
-    cfg: AppConfig,
     client: Client[F],
     psql: Resource[F, Session[F]],
     redis: RedisCommands[F, String, String]
@@ -26,32 +25,32 @@ case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: ConcurrentEffect: ContextShift: Logger]: Resource[F, AppResources[F]] = {
+  def make[F[_]: ConcurrentEffect: ContextShift: Logger](
+      cfg: AppConfig
+  ): Resource[F, AppResources[F]] = {
 
-    def mkPostgreSqlResource(cfg: PostgreSQLConfig): SessionPool[F] =
+    def mkPostgreSqlResource(c: PostgreSQLConfig): SessionPool[F] =
       Session
         .pooled[F](
-          host = cfg.host.value,
-          port = cfg.port.value,
-          user = cfg.user.value,
-          database = cfg.database.value,
-          max = cfg.max.value
+          host = c.host.value,
+          port = c.port.value,
+          user = c.user.value,
+          database = c.database.value,
+          max = c.max.value
         )
 
-    def mkRedisResource(cfg: RedisConfig): Resource[F, RedisCommands[F, String, String]] =
+    def mkRedisResource(c: RedisConfig): Resource[F, RedisCommands[F, String, String]] =
       for {
-        uri <- Resource.liftF(RedisURI.make[F](cfg.uri.value))
+        uri <- Resource.liftF(RedisURI.make[F](c.uri.value))
         client <- RedisClient[F](uri)
         cmd <- Redis[F, String, String](client, RedisCodec.Utf8, uri)
       } yield cmd
 
     for {
-      cfg <- Resource.liftF(config.load[F])
-      _ <- Resource.liftF(Logger[F].info(s"Loaded config $cfg"))
       client <- BlazeClientBuilder[F](ExecutionContext.global).resource
       psql <- mkPostgreSqlResource(cfg.postgreSQL)
       redis <- mkRedisResource(cfg.redis)
-    } yield AppResources[F](cfg, client, psql, redis)
+    } yield AppResources[F](client, psql, redis)
   }
 
 }
