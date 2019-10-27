@@ -42,6 +42,7 @@ object data {
       cartExpiration: ShoppingCartExpiration,
       checkoutConfig: CheckoutConfig,
       paymentConfig: PaymentConfig,
+      httpClientConfig: HttpClientConfig,
       postgreSQL: PostgreSQLConfig,
       redis: RedisConfig
   )
@@ -60,12 +61,13 @@ object data {
       max: PosLong
   )
 
-  case class RedisConfig(
-      uri: NonEmptyString
-  )
+  @newtype case class RedisConfig(uri: NonEmptyString)
 
-  case class PaymentConfig(
-    uri: NonEmptyString
+  @newtype case class PaymentConfig(uri: NonEmptyString)
+
+  case class HttpClientConfig(
+    connectTimeout: FiniteDuration,
+    requestTimeout: FiniteDuration
   )
 
 }

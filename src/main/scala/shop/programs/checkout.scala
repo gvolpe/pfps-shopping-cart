@@ -8,6 +8,7 @@ import retry._
 import retry.CatsEffect._
 import retry.RetryDetails._
 import scala.concurrent.duration._
+import scala.util.control.NonFatal
 import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart._
@@ -41,7 +42,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     )(paymentClient.process(userId, total, card))
 
     action.adaptError {
-      case e => PaymentError(e.getMessage)
+      case NonFatal(e) => PaymentError(e.getMessage)
     }
   }
 
@@ -53,7 +54,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
 
     action
       .adaptError {
-        case e => OrderError(e.getMessage)
+        case NonFatal(e) => OrderError(e.getMessage)
       }
       .onError {
         case _ =>

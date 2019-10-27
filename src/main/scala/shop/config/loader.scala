@@ -57,6 +57,10 @@ object load {
           retriesBackoff = 10.milliseconds
         ),
         PaymentConfig(paymentUri),
+        HttpClientConfig(
+          connectTimeout = 2.seconds,
+          requestTimeout = 2.seconds
+        ),
         PostgreSQLConfig(
           host = "localhost",
           port = 5432,

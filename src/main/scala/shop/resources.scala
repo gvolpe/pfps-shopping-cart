@@ -46,9 +46,14 @@ object AppResources {
         cmd <- Redis[F, String, String](client, RedisCodec.Utf8, uri)
       } yield cmd
 
-    // TODO: Configure HTTP client timeouts
+    def mkHttpClient(c: HttpClientConfig): Resource[F, Client[F]] =
+      BlazeClientBuilder[F](ExecutionContext.global)
+        .withConnectTimeout(c.connectTimeout)
+        .withRequestTimeout(c.requestTimeout)
+        .resource
+
     for {
-      client <- BlazeClientBuilder[F](ExecutionContext.global).resource
+      client <- mkHttpClient(cfg.httpClientConfig)
       psql <- mkPostgreSqlResource(cfg.postgreSQL)
       redis <- mkRedisResource(cfg.redis)
     } yield AppResources[F](client, psql, redis)
