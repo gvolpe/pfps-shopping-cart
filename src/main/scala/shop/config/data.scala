@@ -24,7 +24,7 @@ object data {
       def show(t: A): String = t.repr.asInstanceOf[NonEmptyString].value
     }
 
-  implicit def bar[A: Coercible[NonEmptyString, ?]: Show]: ConfigDecoder[String, Secret[A]] =
+  implicit def coercibleNonEmptyStringConfigDecoder[A: Coercible[NonEmptyString, ?]: Show]: ConfigDecoder[String, Secret[A]] =
     ConfigDecoder[String, String].mapEither(
       (_, x) => refineV[NonEmpty](x).map(s => Secret(s.coerce[A])).leftMap(e => ConfigError(e))
     )
