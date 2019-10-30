@@ -8,7 +8,7 @@ object Dependencies {
     val catsMeowMtl   = "0.4.0"
     val catsRetry     = "0.3.1"
     val circe         = "0.12.2"
-    val ciris         = "0.13.0-RC1"
+    val ciris         = "1.0.0"
     val javaxCrypto   = "1.0.1"
     val fs2           = "2.0.0"
     val http4s        = "0.21.0-M5"
@@ -50,9 +50,7 @@ object Dependencies {
     lazy val circeParser     = circe("circe-parser")
     lazy val circeRefined    = circe("circe-refined")
 
-    lazy val cirisCore       = ciris("ciris-core")
-    lazy val cirisCats       = ciris("ciris-cats")
-    lazy val cirisCatsEffect = ciris("ciris-cats-effect")
+    lazy val cirisCore       = ciris("ciris")
     lazy val cirisEnum       = ciris("ciris-enumeratum")
     lazy val cirisRefined    = ciris("ciris-refined")
 

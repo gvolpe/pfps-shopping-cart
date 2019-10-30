@@ -1,7 +1,11 @@
 package shop.config
 
+import cats.Show
+import cats.implicits._
 import ciris._
 import ciris.refined._
+import eu.timepit.refined._
+import eu.timepit.refined.collection.NonEmpty
 import eu.timepit.refined.types.net.UserPortNumber
 import eu.timepit.refined.types.numeric.{ PosInt, PosLong }
 import eu.timepit.refined.types.string.NonEmptyString
@@ -15,8 +19,15 @@ object data {
   implicit def coercibleConfigDecoder[A: Coercible[String, ?]]: ConfigDecoder[String, A] =
     ConfigDecoder[String, String].map(_.coerce[A])
 
-  implicit def coercibleNonEmptyStringConfigDecoder[A: Coercible[NonEmptyString, ?]]: ConfigDecoder[String, Secret[A]] =
-    ConfigDecoder[String, Secret[NonEmptyString]].map(x => Secret(x.value.coerce[A]))
+  implicit def showCoercible[A: Coercible[NonEmptyString, ?]]: Show[A] =
+    new Show[A] {
+      def show(t: A): String = t.repr.asInstanceOf[NonEmptyString].value
+    }
+
+  implicit def bar[A: Coercible[NonEmptyString, ?]: Show]: ConfigDecoder[String, Secret[A]] =
+    ConfigDecoder[String, String].mapEither(
+      (_, x) => refineV[NonEmpty](x).map(s => Secret(s.coerce[A])).leftMap(e => ConfigError(e))
+    )
 
   @newtype case class AdminUserTokenConfig(value: NonEmptyString)
   @newtype case class JwtSecretKeyConfig(value: NonEmptyString)
@@ -66,8 +77,8 @@ object data {
   @newtype case class PaymentConfig(uri: NonEmptyString)
 
   case class HttpClientConfig(
-    connectTimeout: FiniteDuration,
-    requestTimeout: FiniteDuration
+      connectTimeout: FiniteDuration,
+      requestTimeout: FiniteDuration
   )
 
 }
