@@ -21,7 +21,7 @@ object Dependencies {
     val squants       = "1.5.0"
 
     val betterMonadicFor = "0.3.0"
-    val kindProjector    = "0.10.3"
+    val kindProjector    = "0.11.0"
     val logback          = "1.2.3"
 
     val scalaCheck = "1.14.1"
@@ -50,9 +50,9 @@ object Dependencies {
     lazy val circeParser     = circe("circe-parser")
     lazy val circeRefined    = circe("circe-refined")
 
-    lazy val cirisCore       = ciris("ciris")
-    lazy val cirisEnum       = ciris("ciris-enumeratum")
-    lazy val cirisRefined    = ciris("ciris-refined")
+    lazy val cirisCore    = ciris("ciris")
+    lazy val cirisEnum    = ciris("ciris-enumeratum")
+    lazy val cirisRefined = ciris("ciris-refined")
 
     lazy val http4sDsl    = http4s("http4s-dsl")
     lazy val http4sServer = http4s("http4s-blaze-server")
@@ -77,7 +77,7 @@ object Dependencies {
 
     // Compiler plugins
     lazy val betterMonadicFor = "com.olegpy"    %% "better-monadic-for" % Versions.betterMonadicFor
-    lazy val kindProjector    = "org.typelevel" %% "kind-projector"     % Versions.kindProjector
+    lazy val kindProjector    = "org.typelevel" % "kind-projector"      % Versions.kindProjector
 
     // Runtime
     lazy val logback = "ch.qos.logback" % "logback-classic" % Versions.logback

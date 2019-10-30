@@ -6,7 +6,7 @@ import shop.domain.auth.UserId
 import shop.domain.cart._
 import shop.domain.item.ItemId
 
-case class TestCart() extends ShoppingCart[IO] {
+class TestCart() extends ShoppingCart[IO] {
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): IO[Unit] = ???
   def get(userId: UserId): IO[CartTotal]                                = ???
   def delete(userId: UserId): IO[Unit]                                  = ???

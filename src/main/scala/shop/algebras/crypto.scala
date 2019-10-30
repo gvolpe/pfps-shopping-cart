@@ -34,7 +34,7 @@ object LiveCrypto {
       }
 }
 
-class LiveCrypto private (
+final class LiveCrypto private (
     eCipher: EncryptCipher,
     dCipher: DecryptCipher
 ) extends Crypto {

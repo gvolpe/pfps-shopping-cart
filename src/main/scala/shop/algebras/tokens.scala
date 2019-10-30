@@ -24,7 +24,7 @@ object LiveTokens {
     }
 }
 
-class LiveTokens[F[_]: GenUUID: Sync] private (
+final class LiveTokens[F[_]: GenUUID: Sync] private (
     config: JwtSecretKeyConfig,
     exp: FiniteDuration
 )(implicit val ev: java.time.Clock)

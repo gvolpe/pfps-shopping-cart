@@ -35,7 +35,7 @@ object LiveAuth {
     new LiveAuth(authData, tokens, users, redis).pure[F].widen
 }
 
-class LiveAuth[F[_]: GenUUID: MonadThrow] private (
+final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
     authData: AuthData,
     tokens: Tokens[F],
     users: Users[F],

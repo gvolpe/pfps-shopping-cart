@@ -18,7 +18,7 @@ object Programs {
     new Programs[F](checkoutConfig, algebras, clients).pure[F]
 }
 
-class Programs[F[_]: Background: Logger: MonadThrow: Timer] private (
+final class Programs[F[_]: Background: Logger: MonadThrow: Timer] private (
     cfg: CheckoutConfig,
     algebras: Algebras[F],
     clients: HttpClients[F]

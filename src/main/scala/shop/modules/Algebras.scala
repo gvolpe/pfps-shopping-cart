@@ -27,7 +27,7 @@ object Algebras {
     } yield new Algebras[F](cart, brands, categories, items, orders, health)
 }
 
-class Algebras[F[_]] private (
+final class Algebras[F[_]] private (
     val cart: ShoppingCart[F],
     val brands: Brands[F],
     val categories: Categories[F],

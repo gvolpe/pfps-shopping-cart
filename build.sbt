@@ -1,8 +1,8 @@
 import Dependencies._
 
-ThisBuild / scalaVersion     := "2.13.0"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "dev.profunktor"
+ThisBuild / scalaVersion := "2.13.0"
+ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / organization := "dev.profunktor"
 ThisBuild / organizationName := "ProfunKtor"
 
 resolvers += Resolver.sonatypeRepo("snapshots")
@@ -12,7 +12,7 @@ lazy val root = (project in file("."))
     name := "shopping-cart",
     scalacOptions += "-Ymacro-annotations",
     libraryDependencies ++= Seq(
-      compilerPlugin(Libraries.kindProjector),
+      compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
       compilerPlugin(Libraries.betterMonadicFor),
       Libraries.cats,
       Libraries.catsEffect,

@@ -22,7 +22,7 @@ object LiveBrands {
     new LiveBrands[F](sessionPool).pure[F].widen
 }
 
-class LiveBrands[F[_]: BracketThrow: GenUUID] private (
+final class LiveBrands[F[_]: BracketThrow: GenUUID] private (
     sessionPool: Resource[F, Session[F]]
 ) extends Brands[F] {
   import BrandQueries._

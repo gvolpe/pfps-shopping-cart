@@ -19,7 +19,7 @@ trait PaymentClient[F[_]] {
   def process(userId: UserId, total: USD, card: Card): F[PaymentId]
 }
 
-class LivePaymentClient[F[_]: Sync](
+final class LivePaymentClient[F[_]: Sync](
     cfg: PaymentConfig,
     client: Client[F]
 ) extends PaymentClient[F] {

@@ -28,7 +28,7 @@ object LiveItems {
     new LiveItems[F](sessionPool).pure[F].widen
 }
 
-class LiveItems[F[_]: Sync] private (
+final class LiveItems[F[_]: Sync] private (
     sessionPool: Resource[F, Session[F]]
 ) extends Items[F] {
   import ItemQueries._

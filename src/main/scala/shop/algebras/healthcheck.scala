@@ -23,7 +23,7 @@ object LiveHealthCheck {
     new LiveHealthCheck[F](sessionPool, redis).pure[F].widen
 }
 
-class LiveHealthCheck[F[_]: Concurrent: Parallel: Timer] private (
+final class LiveHealthCheck[F[_]: Concurrent: Parallel: Timer] private (
     sessionPool: Resource[F, Session[F]],
     redis: RedisCommands[F, String, String]
 ) extends HealthCheck[F] {

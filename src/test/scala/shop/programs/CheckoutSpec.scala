@@ -24,7 +24,7 @@ import shop.ext.refined._
 import shop.http.clients._
 import scala.concurrent.duration._
 
-class CheckoutSpec extends PureTestSuite {
+final class CheckoutSpec extends PureTestSuite {
 
   val MaxRetries = 3
 

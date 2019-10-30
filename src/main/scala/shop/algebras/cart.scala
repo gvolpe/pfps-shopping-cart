@@ -31,7 +31,7 @@ object LiveShoppingCart {
     new LiveShoppingCart(items, redis, exp).pure[F].widen
 }
 
-class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
+final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
     items: Items[F],
     redis: RedisCommands[F, String, String],
     exp: ShoppingCartExpiration
@@ -39,9 +39,8 @@ class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
 
   private def calcTotal(items: List[CartItem]): USD =
     items
-      .foldLeft(0: BigDecimal) {
-        case (acc, i) =>
-          acc + (i.item.price.value * i.quantity.value)
+      .foldMap { i =>
+        i.item.price.value * i.quantity.value
       }
       .coerce[USD]
 
@@ -75,7 +74,7 @@ class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
       it.toList.traverse_ {
         case (k, _) =>
           GenUUID[F].read[ItemId](k).flatMap { id =>
-            cart.items.get(id).fold(().pure[F]) { q =>
+            cart.items.get(id).traverse_ { q =>
               redis.hSet(userId.value.toString, k, q.value.toString)
             }
           }

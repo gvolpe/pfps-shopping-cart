@@ -30,7 +30,7 @@ object HttpApi {
     }
 }
 
-class HttpApi[F[_]: Concurrent: Timer] private (
+final class HttpApi[F[_]: Concurrent: Timer] private (
     auth: Auth[F],
     algebras: Algebras[F],
     programs: Programs[F],
