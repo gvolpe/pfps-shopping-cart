@@ -9,6 +9,7 @@ import environments._
 import environments.AppEnvironment._
 import eu.timepit.refined.api._
 import eu.timepit.refined.auto._
+import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
 import scala.concurrent.duration._
@@ -39,11 +40,11 @@ object load {
       paymentUri: NonEmptyString
   ): ConfigValue[AppConfig] =
     (
-      env("SC_JWT_SECRET_KEY").as[Secret[JwtSecretKeyConfig]],
-      env("SC_JWT_CLAIM").as[Secret[JwtClaimConfig]],
-      env("SC_ACCESS_TOKEN_SECRET_KEY").as[Secret[JwtSecretKeyConfig]],
-      env("SC_ADMIN_USER_TOKEN").as[Secret[AdminUserTokenConfig]],
-      env("SC_PASSWORD_SALT").as[Secret[PasswordSalt]]
+      env("SC_JWT_SECRET_KEY").as[JwtSecretKeyConfig].secret,
+      env("SC_JWT_CLAIM").as[JwtClaimConfig].secret,
+      env("SC_ACCESS_TOKEN_SECRET_KEY").as[JwtSecretKeyConfig].secret,
+      env("SC_ADMIN_USER_TOKEN").as[AdminUserTokenConfig].secret,
+      env("SC_PASSWORD_SALT").as[PasswordSalt].secret
     ).parMapN { (secretKey, claimStr, tokenKey, adminToken, salt) =>
       AppConfig(
         AdminJwtConfig(secretKey, claimStr, adminToken),

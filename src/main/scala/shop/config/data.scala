@@ -19,14 +19,14 @@ object data {
   implicit def coercibleConfigDecoder[A: Coercible[String, ?]]: ConfigDecoder[String, A] =
     ConfigDecoder[String, String].map(_.coerce[A])
 
-  implicit def showCoercible[A: Coercible[NonEmptyString, ?]]: Show[A] =
+  implicit def showCoercible[A: Coercible[B, ?], B: Show]: Show[A] =
     new Show[A] {
-      def show(t: A): String = t.repr.asInstanceOf[NonEmptyString].value
+      def show(t: A): String = Show[B].show(t.repr.asInstanceOf[B])
     }
 
-  implicit def coercibleNonEmptyStringConfigDecoder[A: Coercible[NonEmptyString, ?]: Show]: ConfigDecoder[String, Secret[A]] =
+  implicit def coercibleNonEmptyStringConfigDecoder[A: Coercible[NonEmptyString, ?]: Show]: ConfigDecoder[String, A] =
     ConfigDecoder[String, String].mapEither(
-      (_, x) => refineV[NonEmpty](x).map(s => Secret(s.coerce[A])).leftMap(e => ConfigError(e))
+      (_, x) => refineV[NonEmpty](x).map(_.coerce[A]).leftMap(e => ConfigError(e))
     )
 
   @newtype case class AdminUserTokenConfig(value: NonEmptyString)
