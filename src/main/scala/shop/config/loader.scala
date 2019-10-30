@@ -40,16 +40,22 @@ object load {
       paymentUri: NonEmptyString
   ): ConfigValue[AppConfig] =
     (
-      env("SC_JWT_SECRET_KEY").as[JwtSecretKeyConfig].secret,
-      env("SC_JWT_CLAIM").as[JwtClaimConfig].secret,
-      env("SC_ACCESS_TOKEN_SECRET_KEY").as[JwtSecretKeyConfig].secret,
-      env("SC_ADMIN_USER_TOKEN").as[AdminUserTokenConfig].secret,
-      env("SC_PASSWORD_SALT").as[PasswordSalt].secret
+      env("SC_JWT_SECRET_KEY").as[NonEmptyString].secret,
+      env("SC_JWT_CLAIM").as[NonEmptyString].secret,
+      env("SC_ACCESS_TOKEN_SECRET_KEY").as[NonEmptyString].secret,
+      env("SC_ADMIN_USER_TOKEN").as[NonEmptyString].secret,
+      env("SC_PASSWORD_SALT").as[NonEmptyString].secret
     ).parMapN { (secretKey, claimStr, tokenKey, adminToken, salt) =>
       AppConfig(
-        AdminJwtConfig(secretKey, claimStr, adminToken),
-        tokenKey.coerce[TokenConfig],
-        salt.coerce[PasswordConfig],
+        AdminJwtConfig(
+          secretKey.coerce[JwtSecretKeyConfig],
+          claimStr.coerce[JwtClaimConfig],
+          adminToken.coerce[AdminUserTokenConfig]
+        ),
+        tokenKey.coerce[JwtSecretKeyConfig],
+        PasswordConfig(
+          secret = salt.coerce[PasswordSalt]
+        ),
         30.minutes.coerce[TokenExpiration],
         30.minutes.coerce[ShoppingCartExpiration],
         CheckoutConfig(

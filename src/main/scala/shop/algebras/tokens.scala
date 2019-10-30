@@ -16,7 +16,7 @@ trait Tokens[F[_]] {
 
 object LiveTokens {
   def make[F[_]: Sync](
-      tokenConfig: TokenConfig,
+      tokenConfig: JwtSecretKeyConfig,
       tokenExpiration: TokenExpiration
   ): F[Tokens[F]] =
     Sync[F].delay(java.time.Clock.systemUTC).map { implicit jClock =>
@@ -25,7 +25,7 @@ object LiveTokens {
 }
 
 class LiveTokens[F[_]: GenUUID: Sync] private (
-    config: TokenConfig,
+    config: JwtSecretKeyConfig,
     exp: FiniteDuration
 )(implicit val ev: java.time.Clock)
     extends Tokens[F] {
@@ -33,7 +33,7 @@ class LiveTokens[F[_]: GenUUID: Sync] private (
     for {
       uuid <- GenUUID[F].make
       claim <- Sync[F].delay(JwtClaim(uuid.asJson.noSpaces).issuedNow.expiresIn(exp.toMillis))
-      secretKey = JwtSecretKey(config.secretKey.value.value.value)
+      secretKey = JwtSecretKey(config.value.value.value)
       token <- jwtEncode[F](claim, secretKey, JwtAlgorithm.HS256)
     } yield token
 }

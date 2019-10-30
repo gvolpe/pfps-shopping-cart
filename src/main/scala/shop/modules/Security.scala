@@ -32,7 +32,7 @@ object Security {
     val userJwtAuth: UserJwtAuth =
       JwtAuth
         .hmac(
-          cfg.tokenConfig.secretKey.value.value.value,
+          cfg.tokenConfig.value.value.value,
           JwtAlgorithm.HS256
         )
         .coerce[UserJwtAuth]
@@ -44,9 +44,9 @@ object Security {
       content = adminClaim.content.replace("{", "0").replace("}", "c")
       adminId <- ApThrow[F].catchNonFatal(ju.UUID.fromString(content).coerce[UserId])
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
-      authData = AuthData(adminToken, adminUser, adminJwtAuth, userJwtAuth, cfg.tokenExpiration)
+      authData  = AuthData(adminToken, adminUser, adminJwtAuth, userJwtAuth, cfg.tokenExpiration)
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
-      crypto <- LiveCrypto.make[F](cfg.passwordSalt.secret.value)
+      crypto <- LiveCrypto.make[F](cfg.passwordSalt.secret)
       users <- LiveUsers.make[F](sessionPool, crypto)
       auth <- LiveAuth.make[F](authData, tokens, users, redis)
     } yield new Security[F](auth)
