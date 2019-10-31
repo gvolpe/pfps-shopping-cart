@@ -26,7 +26,7 @@ We need to run both `PostgreSQL` and `Redis` in order to make our application wo
 ### PostgreSQL
 
 ```
-docker run --rm --name psql -e POSTGRES_DB=store -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres
+docker run --rm --name psql -e POSTGRES_DB=store -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres:11.1-alpine
 ```
 
 #### Connect using PSQL
