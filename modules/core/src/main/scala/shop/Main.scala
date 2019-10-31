@@ -12,6 +12,7 @@ import org.http4s.client.Client
 import org.http4s.server.blaze.BlazeServerBuilder
 import scala.concurrent.ExecutionContext
 import shop.config.data.AppConfig
+import shop.effects.Background
 
 object Main extends IOApp {
 
@@ -36,7 +37,7 @@ object Main extends IOApp {
 
 object Server {
 
-  def httpApi[F[_]: Concurrent: ContextShift: Logger: Parallel: Timer](
+  def httpApi[F[_]: Concurrent: ContextShift: Background: Logger: Parallel: Timer](
       cfg: AppConfig,
       res: AppResources[F]
   ): F[HttpApi[F]] =
