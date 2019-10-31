@@ -8,7 +8,6 @@ import retry._
 import retry.CatsEffect._
 import retry.RetryDetails._
 import scala.concurrent.duration._
-import scala.util.control.NonFatal
 import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart._
@@ -42,7 +41,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     )(paymentClient.process(userId, total, card))
 
     action.adaptError {
-      case NonFatal(e) => PaymentError(e.getMessage)
+      case e => PaymentError(e.getMessage)
     }
   }
 
@@ -54,7 +53,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
 
     action
       .adaptError {
-        case NonFatal(e) => OrderError(e.getMessage)
+        case e => OrderError(e.getMessage)
       }
       .onError {
         case _ =>
@@ -64,15 +63,16 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
   }
 
   def checkout(userId: UserId, card: Card): F[OrderId] =
-    shoppingCart.get(userId).flatMap {
-      case CartTotal(items, _) if items.isEmpty =>
-        EmptyCartError.raiseError[F, OrderId]
-      case CartTotal(items, total) =>
-        for {
-          pid <- processPayment(userId, total, card)
-          order <- createOrder(userId, pid, items, total)
-          _ <- shoppingCart.delete(userId).attempt.void
-        } yield order
-    }
+    shoppingCart
+      .get(userId)
+      .ensure(EmptyCartError)(_.items.nonEmpty)
+      .flatMap {
+        case CartTotal(items, total) =>
+          for {
+            pid <- processPayment(userId, total, card)
+            order <- createOrder(userId, pid, items, total)
+            _ <- shoppingCart.delete(userId).attempt
+          } yield order
+      }
 
 }
