@@ -34,13 +34,15 @@ final class LiveHealthCheck[F[_]: Concurrent: Parallel: Timer] private (
   val redisHealth: F[Boolean] =
     redis.ping
       .map(_.nonEmpty)
-      .timeoutTo(1.second, false.pure[F])
+      .timeout(1.second)
+      .orElse(false.pure[F])
 
   val postgresHealth: F[Boolean] =
     sessionPool
       .use(_.execute(q))
       .map(_.nonEmpty)
-      .timeoutTo(1.second, false.pure[F])
+      .timeout(1.second)
+      .orElse(false.pure[F])
 
   val status: F[AppStatus] =
     (redisHealth, postgresHealth).parMapN(AppStatus)
