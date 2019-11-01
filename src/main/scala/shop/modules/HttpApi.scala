@@ -81,13 +81,14 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
     version.v1 + "/admin" -> adminRoutes
   )
 
-  private val middleware: HttpRoutes[F] => HttpRoutes[F] = { http =>
-    Timeout(60.seconds)(
-      CORS(
-        AutoSlash(http),
-        CORS.DefaultCORSConfig
-      )
-    )
+  private val middleware: HttpRoutes[F] => HttpRoutes[F] = {
+    { http: HttpRoutes[F] =>
+      AutoSlash(http)
+    } andThen { http: HttpRoutes[F] =>
+      CORS(http, CORS.DefaultCORSConfig)
+    } andThen { http: HttpRoutes[F] =>
+      Timeout(60.seconds)(http)
+    }
   }
 
   private val loggers: HttpApp[F] => HttpApp[F] = {
