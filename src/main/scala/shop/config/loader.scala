@@ -53,9 +53,7 @@ object load {
           adminToken.coerce[AdminUserTokenConfig]
         ),
         tokenKey.coerce[JwtSecretKeyConfig],
-        PasswordConfig(
-          secret = salt.coerce[PasswordSalt]
-        ),
+        salt.coerce[PasswordSalt],
         30.minutes.coerce[TokenExpiration],
         30.minutes.coerce[ShoppingCartExpiration],
         CheckoutConfig(

@@ -46,7 +46,7 @@ object Security {
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
       authData  = AuthData(adminToken, adminUser, adminJwtAuth, userJwtAuth, cfg.tokenExpiration)
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
-      crypto <- LiveCrypto.make[F](cfg.passwordSalt.secret)
+      crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](sessionPool, crypto)
       auth <- LiveAuth.make[F](authData, tokens, users, redis)
     } yield new Security[F](auth)

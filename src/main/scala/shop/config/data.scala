@@ -15,7 +15,6 @@ object data {
   @newtype case class TokenExpiration(value: FiniteDuration)
 
   @newtype case class PasswordSalt(value: Secret[NonEmptyString])
-  @newtype case class PasswordConfig(secret: PasswordSalt)
 
   @newtype case class ShoppingCartExpiration(value: FiniteDuration)
 
@@ -27,7 +26,7 @@ object data {
   case class AppConfig(
       adminJwtConfig: AdminJwtConfig,
       tokenConfig: JwtSecretKeyConfig,
-      passwordSalt: PasswordConfig,
+      passwordSalt: PasswordSalt,
       tokenExpiration: TokenExpiration,
       cartExpiration: ShoppingCartExpiration,
       checkoutConfig: CheckoutConfig,
