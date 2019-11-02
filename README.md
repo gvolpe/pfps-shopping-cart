@@ -1,6 +1,8 @@
 shopping-cart
 =============
 
+![CI Status](https://github.com/gvolpe/pfps-shopping-cart/workflows/Build/badge.svg)
+
 ### Authentication Data
 
 For didactic purposes this information is made available to the readers but in a real application *THIS SHOULD NEVER BE MADE PUBLIC*.
