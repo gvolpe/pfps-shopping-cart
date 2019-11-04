@@ -94,7 +94,7 @@ private object OrderQueries {
     sql"""
         SELECT * FROM orders
         WHERE user_id = ${coercibleUuid[UserId]}
-        AND order_id = ${coercibleUuid[OrderId]}
+        AND uuid = ${coercibleUuid[OrderId]}
        """.query(decoder)
 
   val insertOrder: Command[UserId ~ Order] =

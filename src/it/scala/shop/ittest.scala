@@ -1,6 +1,9 @@
 package shop
 
 import cats.effect._
+import io.estatico.newtype.Coercible
+import io.estatico.newtype.ops._
+import java.{util => ju}
 import natchez.Trace.Implicits.noop // needed for skunk
 import org.scalatest.AsyncFunSuite
 import org.scalatest.compatible.Assertion
@@ -15,6 +18,8 @@ trait ItTestSuite extends AsyncFunSuite {
 
   def spec(testName: String)(f: IO[Assertion])(implicit pos: Position): Unit =
     test(testName)(f.unsafeToFuture())
+
+  def randomId[A: Coercible[ju.UUID, ?]]: A = ju.UUID.randomUUID().coerce[A]
 
   val sessionPool =
     Session.pooled[IO](

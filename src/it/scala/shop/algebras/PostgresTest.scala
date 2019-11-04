@@ -5,8 +5,12 @@ import cats.implicits._
 import io.estatico.newtype.ops._
 import org.scalatest.FunSuite
 import shop.ItTestSuite
+import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.category._
+import shop.domain.cart._
+import shop.domain.item._
+import shop.domain.order._
 
 class PostgreSQLTest extends ItTestSuite {
 
@@ -35,6 +39,38 @@ class PostgreSQLTest extends ItTestSuite {
         } yield
           assert(
             x.isEmpty && y.exists(_.name.value == "Foo")
+          )
+      }
+    }
+  }
+
+  spec("Orders") {
+    val orderId = randomId[OrderId]
+    val userId  = randomId[UserId]
+    //val paymentId = randomId[PaymentId]
+
+    //val item = CartItem(
+    //  Item(
+    //    randomId[ItemId],
+    //    "baz".coerce[ItemName],
+    //    "foo".coerce[ItemDescription],
+    //    USD(100),
+    //    brand = Brand(randomId[BrandId], "Fender".coerce[BrandName]),
+    //    category = Category(randomId[CategoryId], "Guitars".coerce[CategoryName])
+    //  ),
+    //  1.coerce[Quantity]
+    //)
+
+    sessionPool.use { pool =>
+      LiveOrders.make[IO](pool).flatMap { o =>
+        for {
+          x <- o.findBy(userId)
+          y <- o.get(userId, orderId)
+          // TODO: See https://github.com/tpolecat/skunk/issues/83
+          //i <- o.create(userId, paymentId, List(item), USD(100))
+        } yield
+          assert(
+            x.isEmpty && y.isEmpty //&& i.value.toString.nonEmpty
           )
       }
     }
