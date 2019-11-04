@@ -23,7 +23,7 @@ For password encryption:
 
 ## Requirements
 
-We need to run both `PostgreSQL` and `Redis`. Get started quicky using `docker-compose`:
+We need to run both `PostgreSQL` and `Redis`. Get started quickly using `docker-compose`:
 
 ```
 docker-compose up
