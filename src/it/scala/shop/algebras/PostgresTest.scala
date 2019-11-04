@@ -44,6 +44,29 @@ class PostgreSQLTest extends ItTestSuite {
     }
   }
 
+  spec("Items") {
+    //val newItem = CreateItem(
+    //  name = "item".coerce[ItemName],
+    //  description = "desc".coerce[ItemDescription],
+    //  price = USD(12),
+    //  brandId = randomId[BrandId],
+    //  categoryId = randomId[CategoryId]
+    //)
+
+    sessionPool.use { pool =>
+      LiveItems.make[IO](pool).flatMap { i =>
+        for {
+          x <- i.findAll
+          //_ <- i.create(newItem)
+          //y <- i.findAll
+        } yield
+          assert(
+            x.isEmpty //&& y.exists(_.name.value == "item")
+          )
+      }
+    }
+  }
+
   spec("Orders") {
     val orderId = randomId[OrderId]
     val userId  = randomId[UserId]
