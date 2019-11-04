@@ -1,0 +1,28 @@
+package shop
+
+import cats.effect._
+import natchez.Trace.Implicits.noop // needed for skunk
+import org.scalatest.AsyncFunSuite
+import org.scalatest.compatible.Assertion
+import org.scalactic.source.Position
+import scala.concurrent.ExecutionContext
+import skunk._
+
+trait ItTestSuite extends AsyncFunSuite {
+
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  implicit val timer: Timer[IO]     = IO.timer(ExecutionContext.global)
+
+  def spec(testName: String)(f: IO[Assertion])(implicit pos: Position): Unit =
+    test(testName)(f.unsafeToFuture())
+
+  val sessionPool =
+    Session.pooled[IO](
+      host = "localhost",
+      port = 5432,
+      user = "postgres",
+      database = "store",
+      max = 10L
+    )
+
+}
