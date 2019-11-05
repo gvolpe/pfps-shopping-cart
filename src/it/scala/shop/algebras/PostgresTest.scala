@@ -79,6 +79,26 @@ class PostgreSQLTest extends ItTestSuite {
     }
   }
 
+  spec("Users") {
+    val username = "einar".coerce[UserName]
+    val password = "123456".coerce[Password]
+    val salt     = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
+
+    sessionPool.use { pool =>
+      for {
+        c <- LiveCrypto.make[IO](salt)
+        u <- LiveUsers.make[IO](pool, c)
+        d <- u.create(username, password)
+        x <- u.find(username, password)
+        y <- u.find(username, "foo".coerce[Password])
+        z <- u.create(username, password).attempt
+      } yield
+        assert(
+          x.exists(_.id == d) && y.isEmpty && z.isLeft
+        )
+    }
+  }
+
   spec("Orders") {
     val orderId   = randomId[OrderId]
     val paymentId = randomId[PaymentId]
@@ -102,7 +122,7 @@ class PostgreSQLTest extends ItTestSuite {
         o <- LiveOrders.make[IO](pool)
         c <- LiveCrypto.make[IO](salt)
         u <- LiveUsers.make[IO](pool, c)
-        d <- u.create("einar".coerce[UserName], "123456".coerce[Password])
+        d <- u.create("gvolpe".coerce[UserName], "123456".coerce[Password])
         x <- o.findBy(d)
         y <- o.get(d, orderId)
         i <- o.create(d, paymentId, List(item), USD(100))
