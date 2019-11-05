@@ -76,32 +76,31 @@ class PostgreSQLTest extends ItTestSuite {
   }
 
   spec("Orders") {
-    val orderId = randomId[OrderId]
-    val userId  = randomId[UserId]
-    //val paymentId = randomId[PaymentId]
+    val orderId   = randomId[OrderId]
+    val userId    = randomId[UserId] // TODO: User ID should exist in Postgres (add constraint)
+    val paymentId = randomId[PaymentId]
 
-    //val item = CartItem(
-    //  Item(
-    //    randomId[ItemId],
-    //    "baz".coerce[ItemName],
-    //    "foo".coerce[ItemDescription],
-    //    USD(100),
-    //    brand = Brand(randomId[BrandId], "Fender".coerce[BrandName]),
-    //    category = Category(randomId[CategoryId], "Guitars".coerce[CategoryName])
-    //  ),
-    //  1.coerce[Quantity]
-    //)
+    val item = CartItem(
+      Item(
+        randomId[ItemId],
+        "baz".coerce[ItemName],
+        "foo".coerce[ItemDescription],
+        USD(100),
+        brand = Brand(randomId[BrandId], "Fender".coerce[BrandName]),
+        category = Category(randomId[CategoryId], "Guitars".coerce[CategoryName])
+      ),
+      1.coerce[Quantity]
+    )
 
     sessionPool.use { pool =>
       LiveOrders.make[IO](pool).flatMap { o =>
         for {
           x <- o.findBy(userId)
           y <- o.get(userId, orderId)
-          // TODO: See https://github.com/tpolecat/skunk/issues/83
-          //i <- o.create(userId, paymentId, List(item), USD(100))
+          i <- o.create(userId, paymentId, List(item), USD(100))
         } yield
           assert(
-            x.isEmpty && y.isEmpty //&& i.value.toString.nonEmpty
+            x.isEmpty && y.isEmpty && i.value.toString.nonEmpty
           )
       }
     }
