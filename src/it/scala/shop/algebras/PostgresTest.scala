@@ -2,9 +2,13 @@ package shop.algebras
 
 import cats.effect._
 import cats.implicits._
+import ciris._
+import eu.timepit.refined.auto._
+import eu.timepit.refined.cats._
+import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
-import org.scalatest.FunSuite
 import shop.ItTestSuite
+import shop.config.data.PasswordSalt
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.category._
@@ -77,7 +81,6 @@ class PostgreSQLTest extends ItTestSuite {
 
   spec("Orders") {
     val orderId   = randomId[OrderId]
-    val userId    = randomId[UserId] // TODO: User ID should exist in Postgres (add constraint)
     val paymentId = randomId[PaymentId]
 
     val item = CartItem(
@@ -92,17 +95,21 @@ class PostgreSQLTest extends ItTestSuite {
       1.coerce[Quantity]
     )
 
+    val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
+
     sessionPool.use { pool =>
-      LiveOrders.make[IO](pool).flatMap { o =>
-        for {
-          x <- o.findBy(userId)
-          y <- o.get(userId, orderId)
-          i <- o.create(userId, paymentId, List(item), USD(100))
-        } yield
-          assert(
-            x.isEmpty && y.isEmpty && i.value.toString.nonEmpty
-          )
-      }
+      for {
+        o <- LiveOrders.make[IO](pool)
+        c <- LiveCrypto.make[IO](salt)
+        u <- LiveUsers.make[IO](pool, c)
+        d <- u.create("einar".coerce[UserName], "123456".coerce[Password])
+        x <- o.findBy(d)
+        y <- o.get(d, orderId)
+        i <- o.create(d, paymentId, List(item), USD(100))
+      } yield
+        assert(
+          x.isEmpty && y.isEmpty && i.value.toString.nonEmpty
+        )
     }
   }
 
