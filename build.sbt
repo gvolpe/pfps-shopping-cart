@@ -8,9 +8,11 @@ ThisBuild / organizationName := "ProfunKtor"
 resolvers += Resolver.sonatypeRepo("snapshots")
 
 lazy val root = (project in file("."))
+  .configs(IntegrationTest)
   .settings(
     name := "shopping-cart",
     scalacOptions += "-Ymacro-annotations",
+    Defaults.itSettings,
     libraryDependencies ++= Seq(
       compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
       compilerPlugin(Libraries.betterMonadicFor),
@@ -42,9 +44,8 @@ lazy val root = (project in file("."))
       Libraries.refinedCore,
       Libraries.refinedCats,
       Libraries.skunkCore,
-      Libraries.skunkGeneric,
       //Libraries.squants, // TODO: Re-enable when there's a release for 2.13.x
-      Libraries.scalaTest      % Test,
+      Libraries.scalaTest      % "it, test",
       Libraries.scalaCheck     % Test,
       Libraries.catsEffectLaws % Test
     )

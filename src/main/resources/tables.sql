@@ -34,5 +34,8 @@ CREATE TABLE orders (
   user_id VARCHAR UNIQUE NOT NULL,
   payment_id VARCHAR UNIQUE NOT NULL,
   items VARCHAR NOT NULL,
-  total NUMERIC
+  total NUMERIC,
+  CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES users (uuid) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
 );

@@ -84,6 +84,12 @@ private object OrderQueries {
         )
     }
 
+  val encoder: Encoder[UserId ~ Order] =
+    (varchar ~ varchar ~ varchar ~ varchar ~ numeric).contramap {
+      case id ~ o =>
+        o.id.value.toString ~ id.value.toString ~ o.paymentId.value.toString ~ o.items.asJson.noSpaces ~ o.total.value
+    }
+
   val selectByUserId: Query[UserId, Order] =
     sql"""
         SELECT * FROM orders
@@ -94,16 +100,13 @@ private object OrderQueries {
     sql"""
         SELECT * FROM orders
         WHERE user_id = ${coercibleUuid[UserId]}
-        AND order_id = ${coercibleUuid[OrderId]}
+        AND uuid = ${coercibleUuid[OrderId]}
        """.query(decoder)
 
   val insertOrder: Command[UserId ~ Order] =
     sql"""
         INSERT INTO orders
-        VALUES ($varchar, $varchar, $varchar, $varchar, $numeric)
-       """.command.contramap {
-      case id ~ o =>
-        o.id.value.toString ~ id.value.toString ~ o.paymentId.value.toString ~ o.items.asJson.noSpaces ~ o.total.value
-    }
+        VALUES ($encoder)
+       """.command
 
 }

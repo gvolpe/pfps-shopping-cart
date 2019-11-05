@@ -23,29 +23,31 @@ For password encryption:
 
 ## Requirements
 
-We need to run both `PostgreSQL` and `Redis` in order to make our application work. Get started quickly using Docker.
-
-### PostgreSQL
+We need to run both `PostgreSQL` and `Redis`. Get started quickly using `docker-compose`:
 
 ```
-docker run --rm --name psql -e POSTGRES_DB=store -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres:12.0-alpine
+docker-compose up
 ```
 
-#### Connect using PSQL
+## Tests
+
+To run Unit Tests:
 
 ```
-psql -h localhost -U postgres
+sbt test
 ```
 
-### Redis
+To run Integration Tests:
 
 ```
-docker run --rm --name cache -p 6379:6379 redis:5.0.0
+docker-compose up
+sbt it:test
+docker-compose down
 ```
 
 ## Deploying
 
-Set the proper environment variable ("test" or "prod"):
+Set the proper environment variable (`test` or `prod`):
 
 ```
 export SC_APP_ENV="test"

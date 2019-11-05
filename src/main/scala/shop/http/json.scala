@@ -37,7 +37,7 @@ object json {
     KeyDecoder[B].map(_.coerce[A])
 
   implicit def coercibleKeyEncoder[A: Coercible[B, ?], B: KeyEncoder]: KeyEncoder[A] =
-    KeyEncoder[A].contramap(_.repr)
+    KeyEncoder[B].contramap[A](_.repr.asInstanceOf[B])
 
   // ----- Domain codecs -----
 
