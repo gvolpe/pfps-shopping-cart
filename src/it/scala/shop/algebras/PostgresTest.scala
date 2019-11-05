@@ -45,25 +45,33 @@ class PostgreSQLTest extends ItTestSuite {
   }
 
   spec("Items") {
-    //val newItem = CreateItem(
-    //  name = "item".coerce[ItemName],
-    //  description = "desc".coerce[ItemDescription],
-    //  price = USD(12),
-    //  brandId = randomId[BrandId],
-    //  categoryId = randomId[CategoryId]
-    //)
+    def newItem(
+        bid: Option[BrandId],
+        cid: Option[CategoryId]
+    ) = CreateItem(
+      name = "item".coerce[ItemName],
+      description = "desc".coerce[ItemDescription],
+      price = USD(12),
+      brandId = bid.getOrElse(randomId[BrandId]),
+      categoryId = cid.getOrElse(randomId[CategoryId])
+    )
 
     sessionPool.use { pool =>
-      LiveItems.make[IO](pool).flatMap { i =>
-        for {
-          x <- i.findAll
-          //_ <- i.create(newItem)
-          //y <- i.findAll
-        } yield
-          assert(
-            x.isEmpty //&& y.exists(_.name.value == "item")
-          )
-      }
+      for {
+        b <- LiveBrands.make[IO](pool)
+        c <- LiveCategories.make[IO](pool)
+        i <- LiveItems.make[IO](pool)
+        x <- i.findAll
+        _ <- b.create("bla".coerce[BrandName])
+        d <- b.findAll.map(_.headOption.map(_.uuid))
+        _ <- c.create("tzy".coerce[CategoryName])
+        e <- c.findAll.map(_.headOption.map(_.uuid))
+        _ <- i.create(newItem(d, e))
+        y <- i.findAll
+      } yield
+        assert(
+          x.isEmpty && y.exists(_.name.value == "item")
+        )
     }
   }
 
