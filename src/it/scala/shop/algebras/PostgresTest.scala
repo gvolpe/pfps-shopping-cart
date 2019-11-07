@@ -20,14 +20,16 @@ class PostgreSQLTest extends ItTestSuite {
 
   spec("Brands") {
     sessionPool.use { pool =>
+      val brand = "Foo".coerce[BrandName]
       LiveBrands.make[IO](pool).flatMap { b =>
         for {
           x <- b.findAll
-          _ <- b.create("Foo".coerce[BrandName])
+          _ <- b.create(brand)
           y <- b.findAll
+          z <- b.create(brand).attempt
         } yield
           assert(
-            x.isEmpty && y.exists(_.name.value == "Foo")
+            x.isEmpty && y.count(_.name == brand) == 1 && z.isLeft
           )
       }
     }
@@ -35,14 +37,16 @@ class PostgreSQLTest extends ItTestSuite {
 
   spec("Categories") {
     sessionPool.use { pool =>
+      val category = "Foo".coerce[CategoryName]
       LiveCategories.make[IO](pool).flatMap { c =>
         for {
           x <- c.findAll
-          _ <- c.create("Foo".coerce[CategoryName])
+          _ <- c.create(category)
           y <- c.findAll
+          z <- c.create(category).attempt
         } yield
           assert(
-            x.isEmpty && y.exists(_.name.value == "Foo")
+            x.isEmpty && y.count(_.name == category) == 1 && z.isLeft
           )
       }
     }
@@ -74,7 +78,7 @@ class PostgreSQLTest extends ItTestSuite {
         y <- i.findAll
       } yield
         assert(
-          x.isEmpty && y.exists(_.name.value == "item")
+          x.isEmpty && y.count(_.name.value == "item") == 1
         )
     }
   }
@@ -94,7 +98,7 @@ class PostgreSQLTest extends ItTestSuite {
         z <- u.create(username, password).attempt
       } yield
         assert(
-          x.exists(_.id == d) && y.isEmpty && z.isLeft
+          x.count(_.id == d) == 1 && y.isEmpty && z.isLeft
         )
     }
   }
