@@ -63,7 +63,7 @@ final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
       case AdminRole =>
         (token == authData.adminToken)
           .guard[Option]
-          .as(authData.adminUser.asInstanceOf[A])
+          .as(authData.adminUser.value.coerce[A])
           .pure[F]
     }
 
