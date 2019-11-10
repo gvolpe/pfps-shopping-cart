@@ -6,7 +6,6 @@ import io.estatico.newtype.ops._
 import java.{ util => ju }
 import org.http4s._
 import org.http4s.client._
-import scala.util.control.NonFatal
 import shop.config.data.PaymentConfig
 import shop.domain.auth.UserId
 import shop.domain.cart.Cart
