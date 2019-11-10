@@ -9,7 +9,7 @@ import java.{ util => ju }
 object skunkx {
 
   def coercibleVarchar[A: Coercible[String, ?]]: Codec[A] =
-    varchar.imap(_.coerce[A])(_.repr.toString)
+    varchar.imap(_.coerce[A])(_.repr.asInstanceOf[String])
 
   def coercibleUuid[A: Coercible[ju.UUID, ?]]: Codec[A] =
     varchar.imap(s => ju.UUID.fromString(s).coerce[A])(_.repr.toString)
