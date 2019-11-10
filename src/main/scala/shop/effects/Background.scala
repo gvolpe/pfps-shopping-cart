@@ -22,7 +22,7 @@ object Background {
           fa: F[A],
           duration: FiniteDuration
       ): F[Unit] =
-        (Timer[F].sleep(duration) *> fa).start.void
+        (Timer[F].sleep(duration) *> fa).start.bracket(_ => Concurrent[F].never[Unit])(_.cancel)
 
     }
 
