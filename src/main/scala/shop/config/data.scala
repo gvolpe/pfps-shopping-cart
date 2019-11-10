@@ -2,7 +2,7 @@ package shop.config
 
 import ciris._
 import eu.timepit.refined.types.net.UserPortNumber
-import eu.timepit.refined.types.numeric.{ PosInt, PosLong }
+import eu.timepit.refined.types.numeric.PosInt
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import scala.concurrent.duration._
@@ -47,7 +47,7 @@ object data {
       port: UserPortNumber,
       user: NonEmptyString,
       database: NonEmptyString,
-      max: PosLong
+      max: PosInt
   )
 
   @newtype case class RedisConfig(uri: NonEmptyString)

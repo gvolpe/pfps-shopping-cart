@@ -27,7 +27,7 @@ trait ItTestSuite extends AsyncFunSuite {
       port = 5432,
       user = "postgres",
       database = "store",
-      max = 10L
+      max = 10
     )
 
 }

@@ -70,7 +70,7 @@ object load {
           port = 5432,
           user = "postgres",
           database = "store",
-          max = 10L
+          max = 10
         ),
         RedisConfig(redisUri)
       )
