@@ -2,8 +2,6 @@ package shop.algebras
 
 import cats.effect._
 import cats.implicits._
-import io.circe.parser.decode
-import io.circe.syntax._
 import io.estatico.newtype.ops._
 import shop.domain.auth._
 import shop.domain.cart._
@@ -12,9 +10,9 @@ import shop.domain.order._
 import shop.http.json._
 import shop.ext.skunkx._
 import skunk._
+import skunk.circe.codec.all._
 import skunk.codec.all._
 import skunk.implicits._
-import java.{ util => ju }
 
 trait Orders[F[_]] {
   def get(userId: UserId, orderId: OrderId): F[Option[Order]]
@@ -74,33 +72,28 @@ private class LiveOrders[F[_]: Sync](
 private object OrderQueries {
 
   val decoder: Decoder[Order] =
-    (varchar ~ varchar ~ varchar ~ varchar ~ numeric).map {
+    (uuid ~ varchar ~ uuid ~ jsonb[Map[ItemId, Quantity]] ~ numeric).map {
       case o ~ _ ~ p ~ i ~ t =>
-        Order(
-          ju.UUID.fromString(o).coerce[OrderId],
-          ju.UUID.fromString(p).coerce[PaymentId],
-          decode[Map[ItemId, Quantity]](i).getOrElse(Map.empty),
-          t.coerce[USD]
-        )
+        Order(o.coerce[OrderId], p.coerce[PaymentId], i, t.coerce[USD])
     }
 
   val encoder: Encoder[UserId ~ Order] =
-    (varchar ~ varchar ~ varchar ~ varchar ~ numeric).contramap {
+    (uuid ~ uuid ~ uuid ~ jsonb[Map[ItemId, Quantity]] ~ numeric).contramap {
       case id ~ o =>
-        o.id.value.toString ~ id.value.toString ~ o.paymentId.value.toString ~ o.items.asJson.noSpaces ~ o.total.value
+        o.id.value ~ id.value ~ o.paymentId.value ~ o.items ~ o.total.value
     }
 
   val selectByUserId: Query[UserId, Order] =
     sql"""
         SELECT * FROM orders
-        WHERE user_id = ${coercibleUuid[UserId]}
+        WHERE user_id = ${uuid.cimap[UserId]}
        """.query(decoder)
 
   val selectByUserIdAndOrderId: Query[UserId ~ OrderId, Order] =
     sql"""
         SELECT * FROM orders
-        WHERE user_id = ${coercibleUuid[UserId]}
-        AND uuid = ${coercibleUuid[OrderId]}
+        WHERE user_id = ${uuid.cimap[UserId]}
+        AND uuid = ${uuid.cimap[OrderId]}
        """.query(decoder)
 
   val insertOrder: Command[UserId ~ Order] =

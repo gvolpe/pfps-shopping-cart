@@ -3,7 +3,6 @@ package shop.algebras
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.estatico.newtype.ops._
-import java.{ util => ju }
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.category._

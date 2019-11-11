@@ -3,9 +3,9 @@ package shop.algebras
 import cats.effect.Resource
 import cats.implicits._
 import io.estatico.newtype.ops._
-import java.{ util => ju }
 import shop.domain.brand._
 import shop.effects._
+import shop.ext.skunkx._
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._
@@ -43,13 +43,9 @@ final class LiveBrands[F[_]: BracketThrow: GenUUID] private (
 private object BrandQueries {
 
   val codec: Codec[Brand] =
-    (varchar ~ varchar).imap {
-      case i ~ n =>
-        Brand(
-          ju.UUID.fromString(i).coerce[BrandId],
-          n.coerce[BrandName]
-        )
-    }(b => b.uuid.value.toString ~ b.name.value)
+    (uuid.cimap[BrandId] ~ varchar.cimap[BrandName]).imap {
+      case i ~ n => Brand(i, n)
+    }(b => b.uuid ~ b.name)
 
   val selectAll: Query[Void, Brand] =
     sql"""
