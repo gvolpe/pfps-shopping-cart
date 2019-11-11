@@ -3,7 +3,6 @@ package shop.algebras
 import cats.effect._
 import cats.implicits._
 import io.estatico.newtype.ops._
-import java.{ util => ju }
 import shop.domain.brand.Brand
 import shop.domain.category._
 import shop.domain.brand._
@@ -72,15 +71,15 @@ final class LiveItems[F[_]: Sync] private (
 private object ItemQueries {
 
   val decoder: Decoder[Item] =
-    (varchar ~ varchar ~ varchar ~ numeric ~ varchar ~ varchar ~ varchar ~ varchar).map {
+    (uuid ~ varchar ~ varchar ~ numeric ~ uuid ~ varchar ~ uuid ~ varchar).map {
       case i ~ n ~ d ~ p ~ bi ~ bn ~ ci ~ cn =>
         Item(
-          ju.UUID.fromString(i).coerce[ItemId],
+          i.coerce[ItemId],
           n.coerce[ItemName],
           d.coerce[ItemDescription],
           p.coerce[USD],
-          Brand(ju.UUID.fromString(bi).coerce[BrandId], bn.coerce[BrandName]),
-          Category(ju.UUID.fromString(ci).coerce[CategoryId], cn.coerce[CategoryName])
+          Brand(bi.coerce[BrandId], bn.coerce[BrandName]),
+          Category(ci.coerce[CategoryId], cn.coerce[CategoryName])
         )
     }
 
@@ -96,31 +95,31 @@ private object ItemQueries {
         SELECT i.uuid, i.name, i.description, i.price, b.uuid, b.name, c.uuid, c.name
         FROM items AS i, brands AS b, categories AS c
         WHERE i.brand_id = b.uuid AND i.category_id = c.uuid
-        AND b.name LIKE ${coercibleVarchar[BrandName]}
+        AND b.name LIKE ${varchar.cimap[BrandName]}
        """.query(decoder)
 
   val selectById: Query[ItemId, Item] =
     sql"""
         SELECT i.uuid, i.name, i.description, i.price, b.uuid, b.name, c.uuid, c.name
         FROM items AS i, brands AS b, categories AS c
-        WHERE i.uuid = ${coercibleUuid[ItemId]}
+        WHERE i.uuid = ${uuid.cimap[ItemId]}
         AND i.brand_id = b.uuid AND i.category_id = c.uuid
        """.query(decoder)
 
   val insertItem: Command[ItemId ~ CreateItem] =
     sql"""
         INSERT INTO items
-        VALUES ($varchar, $varchar, $varchar, $numeric, $varchar, $varchar)
+        VALUES ($uuid, $varchar, $varchar, $numeric, $uuid, $uuid)
        """.command.contramap {
       case id ~ i =>
-        id.value.toString ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brandId.value.toString ~ i.categoryId.value.toString
+        id.value ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brandId.value ~ i.categoryId.value
     }
 
   val updateItem: Command[UpdateItem] =
     sql"""
         UPDATE items
         SET price = $numeric
-        WHERE uuid = $varchar
-       """.command.contramap(i => i.price.value ~ i.id.value.toString)
+        WHERE uuid = ${uuid.cimap[ItemId]}
+       """.command.contramap(i => i.price.value ~ i.id)
 
 }

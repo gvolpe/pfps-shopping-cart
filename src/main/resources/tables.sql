@@ -1,26 +1,26 @@
 CREATE TABLE users (
-  uuid VARCHAR PRIMARY KEY,
+  uuid UUID PRIMARY KEY,
   name VARCHAR UNIQUE NOT NULL,
   password VARCHAR NOT NULL
 );
 
 CREATE TABLE brands (
-  uuid VARCHAR PRIMARY KEY,
+  uuid UUID PRIMARY KEY,
   name VARCHAR UNIQUE NOT NULL
 );
 
 CREATE TABLE categories (
-  uuid VARCHAR PRIMARY KEY,
+  uuid UUID PRIMARY KEY,
   name VARCHAR UNIQUE NOT NULL
 );
 
 CREATE TABLE items (
-  uuid VARCHAR PRIMARY KEY,
+  uuid UUID PRIMARY KEY,
   name VARCHAR UNIQUE NOT NULL,
   description VARCHAR NOT NULL,
   price NUMERIC NOT NULL,
-  brand_id VARCHAR NOT NULL,
-  category_id VARCHAR NOT NULL,
+  brand_id UUID NOT NULL,
+  category_id UUID NOT NULL,
   CONSTRAINT brand_id_fkey FOREIGN KEY (brand_id)
     REFERENCES brands (uuid) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -30,10 +30,10 @@ CREATE TABLE items (
 );
 
 CREATE TABLE orders (
-  uuid VARCHAR PRIMARY KEY,
-  user_id VARCHAR UNIQUE NOT NULL,
-  payment_id VARCHAR UNIQUE NOT NULL,
-  items VARCHAR NOT NULL,
+  uuid UUID PRIMARY KEY,
+  user_id UUID UNIQUE NOT NULL,
+  payment_id UUID UNIQUE NOT NULL,
+  items JSONB NOT NULL,
   total NUMERIC,
   CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
     REFERENCES users (uuid) MATCH SIMPLE

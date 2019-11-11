@@ -17,7 +17,7 @@ object Dependencies {
     val newtype       = "0.4.3"
     val refined       = "0.9.10"
     val redis4cats    = "0.9.1"
-    val skunk         = "0.0.5+6-1979b651-SNAPSHOT"
+    val skunk         = "0.0.5+9-615457d4-SNAPSHOT"
     val squants       = "1.5.0"
 
     val betterMonadicFor = "0.3.1"
@@ -71,7 +71,8 @@ object Dependencies {
     val redis4catsEffects  = "dev.profunktor" %% "redis4cats-effects"  % Versions.redis4cats
     val redis4catsLog4cats = "dev.profunktor" %% "redis4cats-log4cats" % Versions.redis4cats
 
-    val skunkCore = "org.tpolecat" %% "skunk-core" % Versions.skunk
+    val skunkCore  = "org.tpolecat" %% "skunk-core"  % Versions.skunk
+    val skunkCirce = "org.tpolecat" %% "skunk-circe" % Versions.skunk
 
     // Compiler plugins
     val betterMonadicFor = "com.olegpy"    %% "better-monadic-for" % Versions.betterMonadicFor

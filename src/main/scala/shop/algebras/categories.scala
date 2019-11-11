@@ -3,7 +3,6 @@ package shop.algebras
 import cats.effect.Resource
 import cats.implicits._
 import io.estatico.newtype.ops._
-import java.{ util => ju }
 import shop.domain.category._
 import shop.effects._
 import skunk._
@@ -44,13 +43,13 @@ final class LiveCategories[F[_]: BracketThrow: GenUUID] private (
 private object CategoryQueries {
 
   val codec: Codec[Category] =
-    (varchar ~ varchar).imap {
+    (uuid ~ varchar).imap {
       case i ~ n =>
         Category(
-          ju.UUID.fromString(i).coerce[CategoryId],
+          i.coerce[CategoryId],
           n.coerce[CategoryName]
         )
-    }(c => c.uuid.value.toString ~ c.name.value)
+    }(c => c.uuid.value ~ c.name.value)
 
   val selectAll: Query[Void, Category] =
     sql"""
