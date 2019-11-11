@@ -86,24 +86,27 @@ private object ItemQueries {
   val selectAll: Query[Void, Item] =
     sql"""
         SELECT i.uuid, i.name, i.description, i.price, b.uuid, b.name, c.uuid, c.name
-        FROM items AS i, brands AS b, categories AS c
-        WHERE i.brand_id = b.uuid AND i.category_id = c.uuid
+        FROM items AS i
+        INNER JOIN brands AS b ON i.brand_id = b.uuid
+        INNER JOIN categories AS c ON i.category_id = c.uuid
        """.query(decoder)
 
   val selectByBrand: Query[BrandName, Item] =
     sql"""
         SELECT i.uuid, i.name, i.description, i.price, b.uuid, b.name, c.uuid, c.name
-        FROM items AS i, brands AS b, categories AS c
-        WHERE i.brand_id = b.uuid AND i.category_id = c.uuid
-        AND b.name LIKE ${varchar.cimap[BrandName]}
+        FROM items AS i
+        INNER JOIN brands AS b ON i.brand_id = b.uuid
+        INNER JOIN categories AS c ON i.category_id = c.uuid
+        WHERE b.name LIKE ${varchar.cimap[BrandName]}
        """.query(decoder)
 
   val selectById: Query[ItemId, Item] =
     sql"""
         SELECT i.uuid, i.name, i.description, i.price, b.uuid, b.name, c.uuid, c.name
-        FROM items AS i, brands AS b, categories AS c
+        FROM items AS i
+        INNER JOIN brands AS b ON i.brand_id = b.uuid
+        INNER JOIN categories AS c ON i.category_id = c.uuid
         WHERE i.uuid = ${uuid.cimap[ItemId]}
-        AND i.brand_id = b.uuid AND i.category_id = c.uuid
        """.query(decoder)
 
   val insertItem: Command[ItemId ~ CreateItem] =
