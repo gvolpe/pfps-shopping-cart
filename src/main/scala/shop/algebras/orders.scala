@@ -72,15 +72,21 @@ private class LiveOrders[F[_]: Sync](
 private object OrderQueries {
 
   val decoder: Decoder[Order] =
-    (uuid ~ varchar ~ uuid ~ jsonb[Map[ItemId, Quantity]] ~ numeric).map {
+    (
+      uuid.cimap[OrderId] ~ varchar ~ uuid.cimap[PaymentId] ~
+        jsonb[Map[ItemId, Quantity]] ~ numeric.cimap[USD]
+    ).map {
       case o ~ _ ~ p ~ i ~ t =>
-        Order(o.coerce[OrderId], p.coerce[PaymentId], i, t.coerce[USD])
+        Order(o, p, i, t)
     }
 
   val encoder: Encoder[UserId ~ Order] =
-    (uuid ~ uuid ~ uuid ~ jsonb[Map[ItemId, Quantity]] ~ numeric).contramap {
+    (
+      uuid.cimap[OrderId] ~ uuid.cimap[UserId] ~ uuid.cimap[PaymentId] ~
+        jsonb[Map[ItemId, Quantity]] ~ numeric.cimap[USD]
+    ).contramap {
       case id ~ o =>
-        o.id.value ~ id.value ~ o.paymentId.value ~ o.items ~ o.total.value
+        o.id ~ id ~ o.paymentId ~ o.items ~ o.total
     }
 
   val selectByUserId: Query[UserId, Order] =
