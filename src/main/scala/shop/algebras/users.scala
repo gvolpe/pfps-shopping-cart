@@ -2,7 +2,6 @@ package shop.algebras
 
 import cats.effect.Resource
 import cats.implicits._
-import io.estatico.newtype.ops._
 import shop.domain.auth._
 import shop.effects._
 import shop.http.auth.roles._
@@ -60,15 +59,12 @@ final class LiveUsers[F[_]: BracketThrow: GenUUID] private (
 private object UserQueries {
 
   val codec: Codec[User ~ EncryptedPassword] =
-    (uuid ~ varchar ~ varchar).imap {
+    (uuid.cimap[UserId] ~ varchar.cimap[UserName] ~ varchar.cimap[EncryptedPassword]).imap {
       case i ~ n ~ p =>
-        User(
-          i.coerce[UserId],
-          n.coerce[UserName]
-        ) ~ p.coerce[EncryptedPassword]
+        User(i, n) ~ p
     } {
       case u ~ p =>
-        u.id.value ~ u.name.value ~ p.value
+        u.id ~ u.name ~ p
     }
 
   val selectUser: Query[UserName, User ~ EncryptedPassword] =

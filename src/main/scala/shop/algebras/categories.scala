@@ -5,6 +5,7 @@ import cats.implicits._
 import io.estatico.newtype.ops._
 import shop.domain.category._
 import shop.effects._
+import shop.ext.skunkx._
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._
@@ -43,13 +44,9 @@ final class LiveCategories[F[_]: BracketThrow: GenUUID] private (
 private object CategoryQueries {
 
   val codec: Codec[Category] =
-    (uuid ~ varchar).imap {
-      case i ~ n =>
-        Category(
-          i.coerce[CategoryId],
-          n.coerce[CategoryName]
-        )
-    }(c => c.uuid.value ~ c.name.value)
+    (uuid.cimap[CategoryId] ~ varchar.cimap[CategoryName]).imap {
+      case i ~ n => Category(i, n)
+    }(c => c.uuid ~ c.name)
 
   val selectAll: Query[Void, Category] =
     sql"""
