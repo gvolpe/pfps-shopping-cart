@@ -2,7 +2,6 @@ package shop.algebras
 
 import cats.effect._
 import cats.implicits._
-import io.estatico.newtype.ops._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._

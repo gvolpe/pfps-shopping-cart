@@ -2,7 +2,6 @@ package shop.algebras
 
 import cats.effect.Resource
 import cats.implicits._
-import io.estatico.newtype.ops._
 import shop.domain.category._
 import shop.effects._
 import shop.ext.skunkx._

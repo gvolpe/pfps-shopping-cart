@@ -4,8 +4,6 @@ import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt._
 import io.circe.syntax._
-import io.estatico.newtype.macros.newtype
-import io.estatico.newtype.ops._
 import pdi.jwt._
 import scala.concurrent.duration.FiniteDuration
 import shop.config.data._
