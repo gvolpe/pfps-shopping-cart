@@ -38,19 +38,19 @@ final class CheckoutSpec extends PureTestSuite {
 
   val successfulClient: PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(testUserId: UserId, total: USD, card: Card): IO[PaymentId] =
+      def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
         IO.pure(testPaymentId)
     }
 
   val unreachableClient: PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(testUserId: UserId, total: USD, card: Card): IO[PaymentId] =
+      def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
         IO.raiseError(PaymentError(""))
     }
 
   def recoveringClient(ref: Ref[IO, Int]): PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(testUserId: UserId, total: USD, card: Card): IO[PaymentId] =
+      def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
         ref.get.flatMap {
           case n if n == 1 => IO.pure(testPaymentId)
           case _           => ref.update(_ + 1) *> IO.raiseError(PaymentError(""))
@@ -58,28 +58,28 @@ final class CheckoutSpec extends PureTestSuite {
     }
 
   val failingOrders: Orders[IO] = new TestOrders {
-    override def create(testUserId: UserId, testPaymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
+    override def create(userId: UserId, testPaymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
       IO.raiseError(OrderError(""))
   }
 
   val emptyCart: ShoppingCart[IO] = new TestCart {
-    override def get(testUserId: UserId): IO[CartTotal] =
+    override def get(userId: UserId): IO[CartTotal] =
       IO.pure(CartTotal(List.empty, USD(0)))
   }
 
   val failingCart: ShoppingCart[IO] = new TestCart {
-    override def get(testUserId: UserId): IO[CartTotal] =
+    override def get(userId: UserId): IO[CartTotal] =
       IO.pure(CartTotal(List(CartItem(testItem, 1.coerce[Quantity])), USD(100)))
     override def delete(userId: UserId): IO[Unit] = IO.raiseError(new Exception(""))
   }
   val successfulCart: ShoppingCart[IO] = new TestCart {
-    override def get(testUserId: UserId): IO[CartTotal] =
+    override def get(userId: UserId): IO[CartTotal] =
       IO.pure(CartTotal(List(CartItem(testItem, 1.coerce[Quantity])), USD(100)))
     override def delete(userId: UserId): IO[Unit] = IO.unit
   }
 
   val successfulOrders: Orders[IO] = new TestOrders {
-    override def create(testUserId: UserId, testPaymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
+    override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
       IO.pure(testOrderId)
   }
 
