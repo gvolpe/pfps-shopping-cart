@@ -6,10 +6,11 @@ import io.estatico.newtype.ops._
 import java.{ util => ju }
 import org.scalatest.AsyncFunSuite
 import org.scalatest.compatible.Assertion
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalactic.source.Position
 import scala.concurrent.ExecutionContext
 
-trait PureTestSuite extends AsyncFunSuite {
+trait PureTestSuite extends AsyncFunSuite with ScalaCheckPropertyChecks {
 
   implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
 

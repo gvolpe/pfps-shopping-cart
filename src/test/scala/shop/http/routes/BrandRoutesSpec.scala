@@ -4,11 +4,13 @@ import cats.effect._
 import cats.implicits._
 import io.circe.syntax._
 import io.estatico.newtype.ops._
+import java.util.UUID
 import org.http4s._
 import org.http4s.Method._
 import org.http4s.client.dsl.io._
 import shop.suite.HttpTestSuite
 import shop.algebras.Brands
+import shop.arbitraries._
 import shop.domain.brand._
 import shop.http.json._
 
@@ -16,34 +18,32 @@ class BrandRoutesSpec extends HttpTestSuite {
 
   val testData = List(Brand(randomId[BrandId], "foo".coerce[BrandName]))
 
-  val dataBrands = new TestBrands {
+  def dataBrands(brands: List[Brand]) = new TestBrands {
     override def findAll: IO[List[Brand]] =
-      IO.pure(testData)
+      IO.pure(brands)
   }
 
-  val failingBrands = new TestBrands {
+  def failingBrands(brands: List[Brand]) = new TestBrands {
     override def findAll: IO[List[Brand]] =
-      IO.raiseError(new Exception("boom"))
+      IO.raiseError(new Exception("boom")) *>
+        IO.pure(brands)
   }
 
-  spec("GET brands (no data)") {
-    GET(Uri.uri("/brands")).flatMap { req =>
-      val routes = new BrandRoutes[IO](new TestBrands).routes
-      assertHttp(routes, req)(Status.Ok, "[]")
+  forAll { (b: List[Brand], id: UUID) =>
+    spec(s"GET brands [OK] - $id") {
+      GET(Uri.uri("/brands")).flatMap { req =>
+        val routes = new BrandRoutes[IO](dataBrands(b)).routes
+        assertHttp(routes, req)(Status.Ok, b.asJson.noSpaces)
+      }
     }
   }
 
-  spec("GET brands (json data)") {
-    GET(Uri.uri("/brands")).flatMap { req =>
-      val routes = new BrandRoutes[IO](dataBrands).routes
-      assertHttp(routes, req)(Status.Ok, testData.asJson.noSpaces)
-    }
-  }
-
-  spec("GET brands (failing)") {
-    GET(Uri.uri("/brands")).flatMap { req =>
-      val routes = new BrandRoutes[IO](failingBrands).routes
-      assertHttpFailure(routes, req)
+  forAll { (b: List[Brand], id: UUID) =>
+    spec(s"GET brands [ERROR] - $id") {
+      GET(Uri.uri("/brands")).flatMap { req =>
+        val routes = new BrandRoutes[IO](failingBrands(b)).routes
+        assertHttpFailure(routes, req)
+      }
     }
   }
 
