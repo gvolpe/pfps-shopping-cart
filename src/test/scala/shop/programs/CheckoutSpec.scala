@@ -3,14 +3,11 @@ package shop.programs
 import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.implicits._
-import eu.timepit.refined.auto._
-import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
-import java.{ util => ju }
+import eu.timepit.refined.auto._
 import org.scalatest.AsyncFunSuite
 import retry.RetryPolicy
 import retry.RetryPolicies._
-import shop.PureTestSuite
 import shop.algebras._
 import shop.domain.auth._
 import shop.domain.brand._
@@ -22,6 +19,7 @@ import shop.domain.order._
 import shop.effects.Background
 import shop.ext.refined._
 import shop.http.clients._
+import shop.suite.PureTestSuite
 import scala.concurrent.duration._
 
 final class CheckoutSpec extends PureTestSuite {
@@ -29,8 +27,6 @@ final class CheckoutSpec extends PureTestSuite {
   val MaxRetries = 3
 
   val retryPolicy: RetryPolicy[IO] = limitRetries[IO](MaxRetries)
-
-  def randomId[A: Coercible[ju.UUID, ?]]: A = ju.UUID.randomUUID().coerce[A]
 
   val testPaymentId = randomId[PaymentId]
   val testOrderId   = randomId[OrderId]
