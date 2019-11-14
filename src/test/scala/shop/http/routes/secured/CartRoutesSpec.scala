@@ -21,7 +21,7 @@ import shop.http.json._
 
 class CartRoutesSpec extends HttpTestSuite {
 
-  val authUser = User(randomId[UserId], "user".coerce[UserName]).coerce[CommonUser]
+  val authUser = User(UUID.randomUUID.coerce[UserId], "user".coerce[UserName]).coerce[CommonUser]
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] =
     AuthMiddleware(Kleisli(_ => OptionT.pure[IO](authUser)))

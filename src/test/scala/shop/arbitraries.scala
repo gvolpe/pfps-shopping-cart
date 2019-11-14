@@ -16,6 +16,9 @@ import shop.domain.item._
 
 object arbitraries {
 
+  implicit def arbCoercibleUUID[A: Coercible[UUID, ?]]: Arbitrary[A] =
+    Arbitrary(cbUuid[A])
+
   implicit val arbBrand: Arbitrary[Brand] =
     Arbitrary(brandGen)
 

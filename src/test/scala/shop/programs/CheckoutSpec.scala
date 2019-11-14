@@ -29,14 +29,10 @@ final class CheckoutSpec extends PureTestSuite {
 
   val retryPolicy: RetryPolicy[IO] = limitRetries[IO](MaxRetries)
 
-  val testPaymentId = randomId[PaymentId]
-  val testOrderId   = randomId[OrderId]
-  val testUserId    = randomId[UserId]
-
-  val successfulClient: PaymentClient[IO] =
+  def successfulClient(paymentId: PaymentId): PaymentClient[IO] =
     new PaymentClient[IO] {
       def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
-        IO.pure(testPaymentId)
+        IO.pure(paymentId)
     }
 
   val unreachableClient: PaymentClient[IO] =
@@ -45,11 +41,11 @@ final class CheckoutSpec extends PureTestSuite {
         IO.raiseError(PaymentError(""))
     }
 
-  def recoveringClient(ref: Ref[IO, Int]): PaymentClient[IO] =
+  def recoveringClient(ref: Ref[IO, Int], paymentId: PaymentId): PaymentClient[IO] =
     new PaymentClient[IO] {
       def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
         ref.get.flatMap {
-          case n if n == 1 => IO.pure(testPaymentId)
+          case n if n == 1 => IO.pure(paymentId)
           case _           => ref.update(_ + 1) *> IO.raiseError(PaymentError(""))
         }
     }
@@ -76,17 +72,17 @@ final class CheckoutSpec extends PureTestSuite {
     override def delete(userId: UserId): IO[Unit] = IO.unit
   }
 
-  val successfulOrders: Orders[IO] = new TestOrders {
+  def successfulOrders(orderId: OrderId): Orders[IO] = new TestOrders {
     override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
-      IO.pure(testOrderId)
+      IO.pure(orderId)
   }
 
-  forAll { (card: Card, id: UUID) =>
+  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, card: Card, id: UUID) =>
     spec(s"empty cart - $id") {
       implicit val bg = shop.background.NoOp
       import shop.logger.NoOp
-      new CheckoutProgram[IO](successfulClient, emptyCart, successfulOrders, retryPolicy)
-        .checkout(testUserId, card)
+      new CheckoutProgram[IO](successfulClient(pid), emptyCart, successfulOrders(oid), retryPolicy)
+        .checkout(uid, card)
         .attempt
         .map {
           case Left(EmptyCartError) => assert(true)
@@ -95,13 +91,13 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (ct: CartTotal, card: Card, id: UUID) =>
+  forAll { (uid: UserId, oid: OrderId, ct: CartTotal, card: Card, id: UUID) =>
     spec(s"unreachable payment client - $id") {
       Ref.of[IO, List[String]](List.empty).flatMap { logs =>
         implicit val bg     = shop.background.NoOp
         implicit val logger = shop.logger.acc(logs)
-        new CheckoutProgram[IO](unreachableClient, successfulCart(ct), successfulOrders, retryPolicy)
-          .checkout(testUserId, card)
+        new CheckoutProgram[IO](unreachableClient, successfulCart(ct), successfulOrders(oid), retryPolicy)
+          .checkout(uid, card)
           .attempt
           .flatMap {
             case Left(PaymentError(_)) =>
@@ -115,19 +111,19 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (ct: CartTotal, card: Card, id: UUID) =>
+  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card, id: UUID) =>
     spec(s"failing payment client succeeds after one retry - $id") {
       Ref.of[IO, List[String]](List.empty).flatMap { logs =>
         Ref.of[IO, Int](0).flatMap { ref =>
           implicit val bg     = shop.background.NoOp
           implicit val logger = shop.logger.acc(logs)
-          new CheckoutProgram[IO](recoveringClient(ref), successfulCart(ct), successfulOrders, retryPolicy)
-            .checkout(testUserId, card)
+          new CheckoutProgram[IO](recoveringClient(ref, pid), successfulCart(ct), successfulOrders(oid), retryPolicy)
+            .checkout(uid, card)
             .attempt
             .flatMap {
-              case Right(oid) =>
+              case Right(id) =>
                 logs.get.map { xs =>
-                  assert(oid == testOrderId && xs.size == 1)
+                  assert(id == oid && xs.size == 1)
                 }
               case Left(_) => fail("Expected Payment Id")
             }
@@ -136,14 +132,14 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (ct: CartTotal, card: Card, id: UUID) =>
+  forAll { (uid: UserId, pid: PaymentId, ct: CartTotal, card: Card, id: UUID) =>
     spec(s"cannot create order, run in the background - $id") {
       Ref.of[IO, Int](0).flatMap { ref =>
         Ref.of[IO, List[String]](List.empty).flatMap { logs =>
           implicit val bg     = shop.background.counter(ref)
           implicit val logger = shop.logger.acc(logs)
-          new CheckoutProgram[IO](successfulClient, successfulCart(ct), failingOrders, retryPolicy)
-            .checkout(testUserId, card)
+          new CheckoutProgram[IO](successfulClient(pid), successfulCart(ct), failingOrders, retryPolicy)
+            .checkout(uid, card)
             .attempt
             .flatMap {
               case Left(OrderError(_)) =>
@@ -165,26 +161,26 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (ct: CartTotal, card: Card, id: UUID) =>
+  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card, id: UUID) =>
     spec(s"failing to delete cart does not affect checkout - $id") {
       implicit val bg = shop.background.NoOp
       import shop.logger.NoOp
-      new CheckoutProgram[IO](successfulClient, failingCart(ct), successfulOrders, retryPolicy)
-        .checkout(testUserId, card)
-        .map { oid =>
-          assert(oid == testOrderId)
+      new CheckoutProgram[IO](successfulClient(pid), failingCart(ct), successfulOrders(oid), retryPolicy)
+        .checkout(uid, card)
+        .map { id =>
+          assert(id == oid)
         }
     }
   }
 
-  forAll { (ct: CartTotal, card: Card, id: UUID) =>
+  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card, id: UUID) =>
     spec(s"successful checkout - $id") {
       implicit val bg = shop.background.NoOp
       import shop.logger.NoOp
-      new CheckoutProgram[IO](successfulClient, successfulCart(ct), successfulOrders, retryPolicy)
-        .checkout(testUserId, card)
-        .map { oid =>
-          assert(oid == testOrderId)
+      new CheckoutProgram[IO](successfulClient(pid), successfulCart(ct), successfulOrders(oid), retryPolicy)
+        .checkout(uid, card)
+        .map { id =>
+          assert(id == oid)
         }
     }
   }
