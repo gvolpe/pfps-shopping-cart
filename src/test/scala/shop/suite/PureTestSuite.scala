@@ -3,11 +3,11 @@ package shop.suite
 import cats.effect._
 import org.scalatest.AsyncFunSuite
 import org.scalatest.compatible.Assertion
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalactic.source.Position
 import scala.concurrent.ExecutionContext
 
-trait PureTestSuite extends AsyncFunSuite with ScalaCheckPropertyChecks {
+trait PureTestSuite extends AsyncFunSuite with ScalaCheckDrivenPropertyChecks {
 
   implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
 

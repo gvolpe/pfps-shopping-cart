@@ -40,7 +40,7 @@ class ItemRoutesSpec extends HttpTestSuite {
 
   forAll { (it: List[Item], b: Brand, id: UUID) =>
     spec(s"GET items by brand [OK] - $id") {
-      GET(Uri.unsafeFromString(s"/items?brands=${b.name.value}")).flatMap { req =>
+      GET(Uri.uri("/items").withQueryParam(b.name.value)).flatMap { req =>
         val routes = new ItemRoutes[IO](dataItems(it)).routes
         assertHttp(routes, req)(Status.Ok, it.asJson.noSpaces)
       }

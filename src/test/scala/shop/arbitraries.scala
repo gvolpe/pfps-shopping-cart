@@ -43,6 +43,9 @@ object arbitraries {
   private def cbStr[A: Coercible[String, ?]]: Gen[A] =
     Gen.alphaStr.map(_.coerce[A])
 
+  private def cbInt[A: Coercible[Int, ?]]: Gen[A] =
+    Gen.posNum[Int].map(_.coerce[A])
+
   private def cbBigDecimal[A: Coercible[BigDecimal, ?]]: Gen[A] =
     Gen.posNum[Long].map(n => BigDecimal(n).coerce[A])
 
@@ -71,7 +74,7 @@ object arbitraries {
   private val cartItemGen: Gen[CartItem] =
     for {
       i <- itemGen
-      q <- Gen.posNum[Int].map(_.coerce[Quantity])
+      q <- cbInt[Quantity]
     } yield CartItem(i, q)
 
   private val cartTotalGen: Gen[CartTotal] =
@@ -83,7 +86,7 @@ object arbitraries {
   private val itemMapGen: Gen[(ItemId, Quantity)] =
     for {
       i <- cbUuid[ItemId]
-      q <- Gen.posNum[Int].map(_.coerce[Quantity])
+      q <- cbInt[Quantity]
     } yield i -> q
 
   private val cartGen: Gen[Cart] =
