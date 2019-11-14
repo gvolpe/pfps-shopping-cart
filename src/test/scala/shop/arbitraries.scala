@@ -28,6 +28,9 @@ object arbitraries {
   implicit val arbCartTotal: Arbitrary[CartTotal] =
     Arbitrary(cartTotalGen)
 
+  implicit val arbCart: Arbitrary[Cart] =
+    Arbitrary(cartGen)
+
   implicit val arbCard: Arbitrary[Card] =
     Arbitrary(cardGen)
 
@@ -73,6 +76,15 @@ object arbitraries {
       i <- Gen.nonEmptyListOf(cartItemGen)
       t <- cbBigDecimal[USD]
     } yield CartTotal(i, t)
+
+  private val itemMapGen: Gen[(ItemId, Quantity)] =
+    for {
+      i <- cbUuid[ItemId]
+      q <- Gen.posNum[Int].map(_.coerce[Quantity])
+    } yield i -> q
+
+  private val cartGen: Gen[Cart] =
+    Gen.nonEmptyMap(itemMapGen).map(Cart.apply)
 
   private val cardGen: Gen[Card] =
     for {

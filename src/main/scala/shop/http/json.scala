@@ -65,6 +65,9 @@ object json {
   implicit val tokenEncoder: Encoder[JwtToken] =
     Encoder.forProduct1("access_token")(_.value)
 
+  implicit val cartEncoder: Encoder[Cart] =
+    Encoder.forProduct1("items")(_.items)
+
   implicit val cartDecoder: Decoder[Cart] =
     Decoder.forProduct1("items")(Cart.apply)
 
