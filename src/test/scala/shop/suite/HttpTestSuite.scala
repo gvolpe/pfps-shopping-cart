@@ -4,8 +4,11 @@ import cats.effect.IO
 import cats.implicits._
 import org.http4s._
 import org.scalatest.compatible.Assertion
+import scala.util.control.NoStackTrace
 
 trait HttpTestSuite extends PureTestSuite {
+
+  case object DummyError extends NoStackTrace
 
   def assertHttp(routes: HttpRoutes[IO], req: Request[IO])(
       expectedStatus: Status,

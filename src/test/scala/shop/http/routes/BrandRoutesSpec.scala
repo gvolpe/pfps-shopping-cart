@@ -16,8 +16,6 @@ import shop.http.json._
 
 class BrandRoutesSpec extends HttpTestSuite {
 
-  val testData = List(Brand(randomId[BrandId], "foo".coerce[BrandName]))
-
   def dataBrands(brands: List[Brand]) = new TestBrands {
     override def findAll: IO[List[Brand]] =
       IO.pure(brands)
@@ -25,8 +23,7 @@ class BrandRoutesSpec extends HttpTestSuite {
 
   def failingBrands(brands: List[Brand]) = new TestBrands {
     override def findAll: IO[List[Brand]] =
-      IO.raiseError(new Exception("boom")) *>
-        IO.pure(brands)
+      IO.raiseError(DummyError) *> IO.pure(brands)
   }
 
   forAll { (b: List[Brand], id: UUID) =>
