@@ -96,9 +96,11 @@ class RedisTest extends PureTestSuite {
           f <- jwtDecode[IO](k, userJwtAuth.value).attempt
           _ <- a.logout(k, un2)
           y <- a.findUser[CommonUser](UserRole)(k)(jwtClaim)
+          w <- a.findUser[CommonUser](UserRole)(j)(jwtClaim)
         } yield
           assert(
-            x.isEmpty && e.isRight && f.isRight && y.isEmpty
+            x.isEmpty && e.isRight && f.isRight && y.isEmpty &&
+            w.fold(false)(_.value.name == un1)
           )
       }
     }
