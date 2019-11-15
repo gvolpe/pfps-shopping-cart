@@ -72,7 +72,7 @@ private object OrderQueries {
 
   val decoder: Decoder[Order] =
     (
-      uuid.cimap[OrderId] ~ varchar ~ uuid.cimap[PaymentId] ~
+      uuid.cimap[OrderId] ~ uuid ~ uuid.cimap[PaymentId] ~
         jsonb[Map[ItemId, Quantity]] ~ numeric.cimap[USD]
     ).map {
       case o ~ _ ~ p ~ i ~ t =>

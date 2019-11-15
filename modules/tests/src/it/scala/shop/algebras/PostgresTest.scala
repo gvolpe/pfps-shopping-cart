@@ -123,7 +123,7 @@ class PostgreSQLTest extends PureTestSuite {
     }
   }
 
-  forAll(MaxTests) { (oid: OrderId, pid: PaymentId, item: CartItem, usd: USD) =>
+  forAll(MaxTests) { (oid: OrderId, pid: PaymentId, un: UserName, pw: Password, items: List[CartItem], usd: USD) =>
     spec("Orders") {
       val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
@@ -132,13 +132,13 @@ class PostgreSQLTest extends PureTestSuite {
           o <- LiveOrders.make[IO](pool)
           c <- LiveCrypto.make[IO](salt)
           u <- LiveUsers.make[IO](pool, c)
-          d <- u.create("gvolpe".coerce[UserName], "123456".coerce[Password])
+          d <- u.create(un, pw)
           x <- o.findBy(d)
           y <- o.get(d, oid)
-          i <- o.create(d, pid, List(item), usd)
+          i <- o.create(d, pid, items, usd)
         } yield
           assert(
-            x.isEmpty && y.isEmpty && i.value.toString.nonEmpty
+            x.isEmpty && y.isEmpty && i.value.version == 4
           )
       }
     }
