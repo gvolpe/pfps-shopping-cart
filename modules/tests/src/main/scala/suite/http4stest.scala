@@ -1,4 +1,4 @@
-package shop.suite
+package suite
 
 import cats.effect.IO
 import cats.implicits._

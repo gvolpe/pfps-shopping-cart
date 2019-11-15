@@ -8,11 +8,11 @@ import java.util.UUID
 import org.http4s._
 import org.http4s.Method._
 import org.http4s.client.dsl.io._
-import shop.suite.HttpTestSuite
 import shop.algebras.Brands
 import shop.arbitraries._
 import shop.domain.brand._
 import shop.http.json._
+import suite.HttpTestSuite
 
 class BrandRoutesSpec extends HttpTestSuite {
 

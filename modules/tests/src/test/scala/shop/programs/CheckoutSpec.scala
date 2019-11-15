@@ -20,8 +20,8 @@ import shop.domain.order._
 import shop.effects.Background
 import shop.ext.refined._
 import shop.http.clients._
-import shop.suite.PureTestSuite
 import scala.concurrent.duration._
+import suite.PureTestSuite
 
 final class CheckoutSpec extends PureTestSuite {
 
@@ -185,4 +185,18 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
+}
+
+protected class TestOrders() extends Orders[IO] {
+  def get(userId: UserId, orderId: OrderId): IO[Option[Order]]                                     = ???
+  def findBy(userId: UserId): IO[List[Order]]                                                      = ???
+  def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] = ???
+}
+
+protected class TestCart() extends ShoppingCart[IO] {
+  def add(userId: UserId, itemId: ItemId, quantity: Quantity): IO[Unit] = ???
+  def get(userId: UserId): IO[CartTotal]                                = ???
+  def delete(userId: UserId): IO[Unit]                                  = ???
+  def removeItem(userId: UserId, itemId: ItemId): IO[Unit]              = ???
+  def update(userId: UserId, cart: Cart): IO[Unit]                      = ???
 }

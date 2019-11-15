@@ -8,10 +8,31 @@ ThisBuild / organizationName := "ProfunKtor"
 resolvers += Resolver.sonatypeRepo("snapshots")
 
 lazy val root = (project in file("."))
+  .settings(
+    name := "shopping-cart"
+  )
+  .aggregate(core, tests)
+
+lazy val tests = (project in file("modules/tests"))
   .configs(IntegrationTest)
   .settings(
-    name := "shopping-cart",
+    name := "shopping-cart-test-suite",
     scalacOptions += "-Ymacro-annotations",
+    Defaults.itSettings,
+    libraryDependencies ++= Seq(
+      compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
+      compilerPlugin(Libraries.betterMonadicFor),
+      Libraries.scalaTest,
+      Libraries.scalaCheck
+    )
+  )
+  .dependsOn(core)
+
+lazy val core = (project in file("modules/core"))
+  .settings(
+    name := "shopping-cart-core",
+    scalacOptions += "-Ymacro-annotations",
+    resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
     libraryDependencies ++= Seq(
       compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
@@ -43,10 +64,7 @@ lazy val root = (project in file("."))
       Libraries.refinedCore,
       Libraries.refinedCats,
       Libraries.skunkCore,
-      Libraries.skunkCirce,
+      Libraries.skunkCirce
       //Libraries.squants, // TODO: Re-enable when there's a release for 2.13.x
-      Libraries.scalaTest      % "it, test",
-      Libraries.scalaCheck     % Test,
-      Libraries.catsEffectLaws % Test
     )
   )

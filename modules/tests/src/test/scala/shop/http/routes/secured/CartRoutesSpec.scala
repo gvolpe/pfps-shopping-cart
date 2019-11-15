@@ -10,7 +10,6 @@ import org.http4s._
 import org.http4s.Method._
 import org.http4s.client.dsl.io._
 import org.http4s.server.AuthMiddleware
-import shop.suite.HttpTestSuite
 import shop.algebras.ShoppingCart
 import shop.arbitraries._
 import shop.domain.auth._
@@ -18,6 +17,7 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.http.auth.roles._
 import shop.http.json._
+import suite.HttpTestSuite
 
 class CartRoutesSpec extends HttpTestSuite {
 

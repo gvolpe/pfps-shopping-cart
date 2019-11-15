@@ -7,61 +7,40 @@ import eu.timepit.refined.string.{ MatchesRegex, ValidInt }
 import io.estatico.newtype.ops._
 import io.estatico.newtype.Coercible
 import java.util.UUID
-import org.scalacheck.{ Arbitrary, Gen }
+import org.scalacheck.Gen
 import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 
-object arbitraries {
+object generators {
 
-  implicit def arbCoercibleUUID[A: Coercible[UUID, ?]]: Arbitrary[A] =
-    Arbitrary(cbUuid[A])
-
-  implicit val arbBrand: Arbitrary[Brand] =
-    Arbitrary(brandGen)
-
-  implicit val arbCategory: Arbitrary[Category] =
-    Arbitrary(categoryGen)
-
-  implicit val arbItem: Arbitrary[Item] =
-    Arbitrary(itemGen)
-
-  implicit val arbCartTotal: Arbitrary[CartTotal] =
-    Arbitrary(cartTotalGen)
-
-  implicit val arbCart: Arbitrary[Cart] =
-    Arbitrary(cartGen)
-
-  implicit val arbCard: Arbitrary[Card] =
-    Arbitrary(cardGen)
-
-  private def cbUuid[A: Coercible[UUID, ?]]: Gen[A] =
+  def cbUuid[A: Coercible[UUID, ?]]: Gen[A] =
     Gen.uuid.map(_.coerce[A])
 
-  private def cbStr[A: Coercible[String, ?]]: Gen[A] =
-    Gen.alphaStr.map(_.coerce[A])
+  def cbStr[A: Coercible[String, ?]]: Gen[A] =
+    Gen.alphaStr.suchThat(_.nonEmpty).map(_.coerce[A])
 
-  private def cbInt[A: Coercible[Int, ?]]: Gen[A] =
+  def cbInt[A: Coercible[Int, ?]]: Gen[A] =
     Gen.posNum[Int].map(_.coerce[A])
 
-  private def cbBigDecimal[A: Coercible[BigDecimal, ?]]: Gen[A] =
+  def cbBigDecimal[A: Coercible[BigDecimal, ?]]: Gen[A] =
     Gen.posNum[Long].map(n => BigDecimal(n).coerce[A])
 
-  private val brandGen: Gen[Brand] =
+  val brandGen: Gen[Brand] =
     for {
       i <- cbUuid[BrandId]
       n <- cbStr[BrandName]
     } yield Brand(i, n)
 
-  private val categoryGen: Gen[Category] =
+  val categoryGen: Gen[Category] =
     for {
       i <- cbUuid[CategoryId]
       n <- cbStr[CategoryName]
     } yield Category(i, n)
 
-  private val itemGen: Gen[Item] =
+  val itemGen: Gen[Item] =
     for {
       i <- cbUuid[ItemId]
       n <- cbStr[ItemName]
@@ -71,30 +50,30 @@ object arbitraries {
       c <- categoryGen
     } yield Item(i, n, d, p, b, c)
 
-  private val cartItemGen: Gen[CartItem] =
+  val cartItemGen: Gen[CartItem] =
     for {
       i <- itemGen
       q <- cbInt[Quantity]
     } yield CartItem(i, q)
 
-  private val cartTotalGen: Gen[CartTotal] =
+  val cartTotalGen: Gen[CartTotal] =
     for {
       i <- Gen.nonEmptyListOf(cartItemGen)
       t <- cbBigDecimal[USD]
     } yield CartTotal(i, t)
 
-  private val itemMapGen: Gen[(ItemId, Quantity)] =
+  val itemMapGen: Gen[(ItemId, Quantity)] =
     for {
       i <- cbUuid[ItemId]
       q <- cbInt[Quantity]
     } yield i -> q
 
-  private val cartGen: Gen[Cart] =
+  val cartGen: Gen[Cart] =
     Gen.nonEmptyMap(itemMapGen).map(Cart.apply)
 
-  private val cardGen: Gen[Card] =
+  val cardGen: Gen[Card] =
     for {
-      n <- Gen.alphaStr.filter(_.nonEmpty).map(Refined.unsafeApply[String, MatchesRegex[Rgx]])
+      n <- Gen.alphaStr.suchThat(_.nonEmpty).map(Refined.unsafeApply[String, MatchesRegex[Rgx]])
       u <- Gen.posNum[Long].map(Refined.unsafeApply[Long, Size[16]])
       x <- Gen.posNum[Int].map(x => Refined.unsafeApply[String, (Size[4] And ValidInt)](x.toString))
       c <- Gen.posNum[Int].map(_.toInt).map(Refined.unsafeApply[Int, Size[3]])
