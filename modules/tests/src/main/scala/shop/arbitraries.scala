@@ -1,8 +1,9 @@
 package shop
 
 import io.estatico.newtype.Coercible
+import io.estatico.newtype.ops._
 import java.util.UUID
-import org.scalacheck.Arbitrary
+import org.scalacheck.{ Arbitrary, Gen }
 import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.category._
@@ -14,6 +15,9 @@ object arbitraries {
 
   implicit def arbCoercibleBigDecimal[A: Coercible[BigDecimal, ?]]: Arbitrary[A] =
     Arbitrary(cbBigDecimal[A])
+
+  implicit def arbCoercibleInt[A: Coercible[Int, ?]]: Arbitrary[A] =
+    Arbitrary(Gen.posNum[Int].map(_.coerce[A]))
 
   implicit def arbCoercibleStr[A: Coercible[String, ?]]: Arbitrary[A] =
     Arbitrary(cbStr[A])
