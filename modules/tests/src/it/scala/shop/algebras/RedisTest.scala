@@ -3,14 +3,21 @@ package shop.algebras
 import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.implicits._
+import ciris.Secret
+import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
 import dev.profunktor.redis4cats.domain.RedisCodec
 import dev.profunktor.redis4cats.interpreter.Redis
 import dev.profunktor.redis4cats.log4cats._
+import eu.timepit.refined.api._
+import eu.timepit.refined.auto._
+import eu.timepit.refined.cats._
+import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
 import java.util.UUID
 import org.scalacheck.Test.Parameters
+import pdi.jwt._
 import scala.concurrent.duration._
 import shop.arbitraries._
 import shop.config.data._
@@ -22,6 +29,7 @@ import shop.domain.item._
 import shop.domain.order._
 import shop.logger.NoOp
 import suite.PureTestSuite
+import shop.http.auth.roles._
 
 class RedisTest extends PureTestSuite {
 
@@ -66,6 +74,43 @@ class RedisTest extends PureTestSuite {
     }
   }
 
+  val tokenConfig = Secret("bar": NonEmptyString).coerce[JwtSecretKeyConfig]
+  val tokenExp    = 30.seconds.coerce[TokenExpiration]
+  val jwtClaim    = JwtClaim("test")
+
+  val adminUser    = User(UUID.randomUUID.coerce[UserId], "admin".coerce[UserName]).coerce[AdminUser]
+  val adminJwtAuth = JwtAuth.hmac("foo", JwtAlgorithm.HS256).coerce[AdminJwtAuth]
+  val userJwtAuth  = JwtAuth.hmac("bar", JwtAlgorithm.HS256).coerce[UserJwtAuth]
+  val authData     = AuthData(JwtToken("admin"), adminUser, adminJwtAuth, userJwtAuth, tokenExp)
+
+  forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
+    spec("Authentication") {
+      mkRedis.use { cmd =>
+        for {
+          t <- LiveTokens.make[IO](tokenConfig, tokenExp)
+          a <- LiveAuth.make(authData, t, new TestUsers(un2), cmd)
+          x <- a.findUser[CommonUser](UserRole)(JwtToken("invalid"))(jwtClaim)
+          j <- a.newUser(un1, pw, UserRole)
+          e <- jwtDecode[IO](j, userJwtAuth.value).attempt
+          k <- a.login(un2, pw)
+          f <- jwtDecode[IO](k, userJwtAuth.value).attempt
+          _ <- a.logout(k, un2)
+          y <- a.findUser[CommonUser](UserRole)(k)(jwtClaim)
+        } yield
+          assert(
+            x.isEmpty && e.isRight && f.isRight && y.isEmpty
+          )
+      }
+    }
+  }
+
+}
+
+protected class TestUsers(un: UserName) extends Users[IO] {
+  def find(username: UserName, password: Password): IO[Option[User]] =
+    (username == un).guard[Option].as(User(UUID.randomUUID.coerce[UserId], un)).pure[IO]
+  def create(username: UserName, password: Password): IO[UserId] =
+    GenUUID[IO].make[UserId]
 }
 
 protected class TestItems(ref: Ref[IO, Map[ItemId, Item]]) extends Items[IO] {
