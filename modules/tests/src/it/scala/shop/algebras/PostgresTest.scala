@@ -23,7 +23,7 @@ import suite.PureTestSuite
 class PostgreSQLTest extends PureTestSuite {
 
   // For it:tests, one test is more than enough
-  val MinTests: PropertyCheckConfigParam = MinSuccessful(1)
+  val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
 
   private val sessionPool =
     Session.pooled[IO](
@@ -34,7 +34,7 @@ class PostgreSQLTest extends PureTestSuite {
       max = 10
     )
 
-  forAll(MinTests) { (brand: Brand) =>
+  forAll(MaxTests) { (brand: Brand) =>
     spec("Brands") {
       sessionPool.use { pool =>
         LiveBrands.make[IO](pool).flatMap { b =>
@@ -52,7 +52,7 @@ class PostgreSQLTest extends PureTestSuite {
     }
   }
 
-  forAll(MinTests) { (category: Category) =>
+  forAll(MaxTests) { (category: Category) =>
     spec("Categories") {
       sessionPool.use { pool =>
         LiveCategories.make[IO](pool).flatMap { c =>
@@ -70,7 +70,7 @@ class PostgreSQLTest extends PureTestSuite {
     }
   }
 
-  forAll(MinTests) { (item: Item) =>
+  forAll(MaxTests) { (item: Item) =>
     spec("Items") {
       def newItem(
           bid: Option[BrandId],
@@ -103,7 +103,7 @@ class PostgreSQLTest extends PureTestSuite {
     }
   }
 
-  forAll(MinTests) { (username: UserName, password: Password) =>
+  forAll(MaxTests) { (username: UserName, password: Password) =>
     spec("Users") {
       val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
@@ -123,7 +123,7 @@ class PostgreSQLTest extends PureTestSuite {
     }
   }
 
-  forAll(MinTests) { (oid: OrderId, pid: PaymentId, item: CartItem, usd: USD) =>
+  forAll(MaxTests) { (oid: OrderId, pid: PaymentId, item: CartItem, usd: USD) =>
     spec("Orders") {
       val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
