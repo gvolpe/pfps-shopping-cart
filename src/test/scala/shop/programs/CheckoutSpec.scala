@@ -51,7 +51,7 @@ final class CheckoutSpec extends PureTestSuite {
     }
 
   val failingOrders: Orders[IO] = new TestOrders {
-    override def create(userId: UserId, testPaymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
+    override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
       IO.raiseError(OrderError(""))
   }
 

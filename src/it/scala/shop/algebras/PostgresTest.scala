@@ -18,6 +18,7 @@ import shop.domain.order._
 
 class PostgreSQLTest extends ItTestSuite {
 
+  // TODO : Use PBTs (how to share tests with it/tests?
   spec("Brands") {
     sessionPool.use { pool =>
       val brand = "Foo".coerce[BrandName]
