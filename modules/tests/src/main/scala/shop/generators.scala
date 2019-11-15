@@ -1,9 +1,6 @@
 package shop
 
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.boolean.And
-import eu.timepit.refined.collection.Size
-import eu.timepit.refined.string.{ MatchesRegex, ValidInt }
 import io.estatico.newtype.ops._
 import io.estatico.newtype.Coercible
 import java.util.UUID
@@ -20,13 +17,20 @@ object generators {
     Gen.uuid.map(_.coerce[A])
 
   def cbStr[A: Coercible[String, ?]]: Gen[A] =
-    Gen.alphaStr.suchThat(_.nonEmpty).map(_.coerce[A])
+    genNonEmptyString.map(_.coerce[A])
 
   def cbInt[A: Coercible[Int, ?]]: Gen[A] =
     Gen.posNum[Int].map(_.coerce[A])
 
   def cbBigDecimal[A: Coercible[BigDecimal, ?]]: Gen[A] =
     Gen.posNum[Long].map(n => BigDecimal(n).coerce[A])
+
+  val genNonEmptyString: Gen[String] =
+    Gen
+      .chooseNum(21, 40)
+      .flatMap { n =>
+        Gen.buildableOfN[String, Char](n, Gen.alphaChar)
+      }
 
   val brandGen: Gen[Brand] =
     for {
@@ -73,10 +77,10 @@ object generators {
 
   val cardGen: Gen[Card] =
     for {
-      n <- Gen.alphaStr.suchThat(_.nonEmpty).map(Refined.unsafeApply[String, MatchesRegex[Rgx]])
-      u <- Gen.posNum[Long].map(Refined.unsafeApply[Long, Size[16]])
-      x <- Gen.posNum[Int].map(x => Refined.unsafeApply[String, (Size[4] And ValidInt)](x.toString))
-      c <- Gen.posNum[Int].map(_.toInt).map(Refined.unsafeApply[Int, Size[3]])
+      n <- genNonEmptyString.map(x => Refined.unsafeApply(x): CardNamePred)
+      u <- Gen.posNum[Long].map(x => Refined.unsafeApply(x): CardNumberPred)
+      x <- Gen.posNum[Int].map(x => Refined.unsafeApply(x.toString): CardExpirationPred)
+      c <- Gen.posNum[Int].map(x => Refined.unsafeApply(x.toInt): CardCCVPred)
     } yield Card(n.coerce[CardName], u.coerce[CardNumber], x.coerce[CardExpiration], c.coerce[CardCCV])
 
 }
