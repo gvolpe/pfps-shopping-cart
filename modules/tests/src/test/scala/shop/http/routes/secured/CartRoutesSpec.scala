@@ -31,8 +31,8 @@ class CartRoutesSpec extends HttpTestSuite {
       IO.pure(cartTotal)
   }
 
-  forAll { (ct: CartTotal, id: UUID) =>
-    spec(s"GET shopping cart [OK] - $id") {
+  forAll { (ct: CartTotal) =>
+    spec("GET shopping cart [OK]") {
       GET(Uri.uri("/cart")).flatMap { req =>
         val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
         assertHttp(routes, req)(Status.Ok, ct.asJson.noSpaces)
@@ -40,8 +40,8 @@ class CartRoutesSpec extends HttpTestSuite {
     }
   }
 
-  forAll { (c: Cart, id: UUID) =>
-    spec(s"POST add item to shopping cart [OK] - $id") {
+  forAll { (c: Cart) =>
+    spec("POST add item to shopping cart [OK]") {
       POST(c, Uri.uri("/cart")).flatMap { req =>
         val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
         assertHttpStatus(routes, req)(Status.Created)

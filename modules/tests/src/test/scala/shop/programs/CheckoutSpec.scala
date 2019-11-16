@@ -4,8 +4,6 @@ import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.implicits._
 import io.estatico.newtype.ops._
-import java.util.UUID
-import org.scalatest.AsyncFunSuite
 import retry.RetryPolicy
 import retry.RetryPolicies._
 import shop.algebras._
@@ -77,8 +75,8 @@ final class CheckoutSpec extends PureTestSuite {
       IO.pure(orderId)
   }
 
-  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, card: Card, id: UUID) =>
-    spec(s"empty cart - $id") {
+  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, card: Card) =>
+    spec("empty cart") {
       implicit val bg = shop.background.NoOp
       import shop.logger.NoOp
       new CheckoutProgram[IO](successfulClient(pid), emptyCart, successfulOrders(oid), retryPolicy)
@@ -91,8 +89,8 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (uid: UserId, oid: OrderId, ct: CartTotal, card: Card, id: UUID) =>
-    spec(s"unreachable payment client - $id") {
+  forAll { (uid: UserId, oid: OrderId, ct: CartTotal, card: Card) =>
+    spec("unreachable payment client") {
       Ref.of[IO, List[String]](List.empty).flatMap { logs =>
         implicit val bg     = shop.background.NoOp
         implicit val logger = shop.logger.acc(logs)
@@ -111,8 +109,8 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card, id: UUID) =>
-    spec(s"failing payment client succeeds after one retry - $id") {
+  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card) =>
+    spec("failing payment client succeeds after one retry") {
       Ref.of[IO, List[String]](List.empty).flatMap { logs =>
         Ref.of[IO, Int](0).flatMap { ref =>
           implicit val bg     = shop.background.NoOp
@@ -132,8 +130,8 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (uid: UserId, pid: PaymentId, ct: CartTotal, card: Card, id: UUID) =>
-    spec(s"cannot create order, run in the background - $id") {
+  forAll { (uid: UserId, pid: PaymentId, ct: CartTotal, card: Card) =>
+    spec("cannot create order, run in the background") {
       Ref.of[IO, Int](0).flatMap { ref =>
         Ref.of[IO, List[String]](List.empty).flatMap { logs =>
           implicit val bg     = shop.background.counter(ref)
@@ -161,8 +159,8 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card, id: UUID) =>
-    spec(s"failing to delete cart does not affect checkout - $id") {
+  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card) =>
+    spec("failing to delete cart does not affect checkout") {
       implicit val bg = shop.background.NoOp
       import shop.logger.NoOp
       new CheckoutProgram[IO](successfulClient(pid), failingCart(ct), successfulOrders(oid), retryPolicy)
@@ -173,8 +171,8 @@ final class CheckoutSpec extends PureTestSuite {
     }
   }
 
-  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card, id: UUID) =>
-    spec(s"successful checkout - $id") {
+  forAll { (uid: UserId, pid: PaymentId, oid: OrderId, ct: CartTotal, card: Card) =>
+    spec(s"successful checkout") {
       implicit val bg = shop.background.NoOp
       import shop.logger.NoOp
       new CheckoutProgram[IO](successfulClient(pid), successfulCart(ct), successfulOrders(oid), retryPolicy)

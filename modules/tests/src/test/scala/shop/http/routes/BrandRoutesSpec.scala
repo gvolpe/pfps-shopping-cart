@@ -4,7 +4,6 @@ import cats.effect._
 import cats.implicits._
 import io.circe.syntax._
 import io.estatico.newtype.ops._
-import java.util.UUID
 import org.http4s._
 import org.http4s.Method._
 import org.http4s.client.dsl.io._
@@ -26,8 +25,8 @@ class BrandRoutesSpec extends HttpTestSuite {
       IO.raiseError(DummyError) *> IO.pure(brands)
   }
 
-  forAll { (b: List[Brand], id: UUID) =>
-    spec(s"GET brands [OK] - $id") {
+  forAll { (b: List[Brand]) =>
+    spec("GET brands [OK]") {
       GET(Uri.uri("/brands")).flatMap { req =>
         val routes = new BrandRoutes[IO](dataBrands(b)).routes
         assertHttp(routes, req)(Status.Ok, b.asJson.noSpaces)
@@ -35,8 +34,8 @@ class BrandRoutesSpec extends HttpTestSuite {
     }
   }
 
-  forAll { (b: List[Brand], id: UUID) =>
-    spec(s"GET brands [ERROR] - $id") {
+  forAll { (b: List[Brand]) =>
+    spec("GET brands [ERROR]") {
       GET(Uri.uri("/brands")).flatMap { req =>
         val routes = new BrandRoutes[IO](failingBrands(b)).routes
         assertHttpFailure(routes, req)

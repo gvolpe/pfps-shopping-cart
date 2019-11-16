@@ -4,7 +4,6 @@ import cats.effect._
 import cats.implicits._
 import io.circe.syntax._
 import io.estatico.newtype.ops._
-import java.util.UUID
 import org.http4s._
 import org.http4s.Method._
 import org.http4s.client.dsl.io._
@@ -29,8 +28,8 @@ class ItemRoutesSpec extends HttpTestSuite {
       findAll
   }
 
-  forAll { (it: List[Item], id: UUID) =>
-    spec(s"GET items [OK] - $id") {
+  forAll { (it: List[Item]) =>
+    spec("GET items [OK]") {
       GET(Uri.uri("/items")).flatMap { req =>
         val routes = new ItemRoutes[IO](dataItems(it)).routes
         assertHttp(routes, req)(Status.Ok, it.asJson.noSpaces)
@@ -38,8 +37,8 @@ class ItemRoutesSpec extends HttpTestSuite {
     }
   }
 
-  forAll { (it: List[Item], b: Brand, id: UUID) =>
-    spec(s"GET items by brand [OK] - $id") {
+  forAll { (it: List[Item], b: Brand) =>
+    spec("GET items by brand [OK]") {
       GET(Uri.uri("/items").withQueryParam(b.name.value)).flatMap { req =>
         val routes = new ItemRoutes[IO](dataItems(it)).routes
         assertHttp(routes, req)(Status.Ok, it.asJson.noSpaces)
@@ -47,8 +46,8 @@ class ItemRoutesSpec extends HttpTestSuite {
     }
   }
 
-  forAll { (it: List[Item], id: UUID) =>
-    spec(s"GET items [ERROR] - $id") {
+  forAll { (it: List[Item]) =>
+    spec("GET items [ERROR]") {
       GET(Uri.uri("/items")).flatMap { req =>
         val routes = new ItemRoutes[IO](failingItems(it)).routes
         assertHttpFailure(routes, req)
