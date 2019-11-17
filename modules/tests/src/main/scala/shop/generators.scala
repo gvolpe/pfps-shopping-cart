@@ -21,16 +21,16 @@ object generators {
     Gen.nonEmptyListOf(Gen.oneOf(values)).map(_.mkString.coerce[Password])
   }
 
-  def cbUuid[A: Coercible[UUID, ?]]: Gen[A] =
+  def cbUuid[A: Coercible[UUID, *]]: Gen[A] =
     Gen.uuid.map(_.coerce[A])
 
-  def cbStr[A: Coercible[String, ?]]: Gen[A] =
+  def cbStr[A: Coercible[String, *]]: Gen[A] =
     genNonEmptyString.map(_.coerce[A])
 
-  def cbInt[A: Coercible[Int, ?]]: Gen[A] =
+  def cbInt[A: Coercible[Int, *]]: Gen[A] =
     Gen.posNum[Int].map(_.coerce[A])
 
-  def cbBigDecimal[A: Coercible[BigDecimal, ?]]: Gen[A] =
+  def cbBigDecimal[A: Coercible[BigDecimal, *]]: Gen[A] =
     Gen.posNum[Long].map(n => BigDecimal(n).coerce[A])
 
   val genNonEmptyString: Gen[String] =

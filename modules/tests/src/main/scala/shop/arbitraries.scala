@@ -13,16 +13,16 @@ import shop.generators._
 
 object arbitraries {
 
-  implicit def arbCoercibleBigDecimal[A: Coercible[BigDecimal, ?]]: Arbitrary[A] =
+  implicit def arbCoercibleBigDecimal[A: Coercible[BigDecimal, *]]: Arbitrary[A] =
     Arbitrary(cbBigDecimal[A])
 
-  implicit def arbCoercibleInt[A: Coercible[Int, ?]]: Arbitrary[A] =
+  implicit def arbCoercibleInt[A: Coercible[Int, *]]: Arbitrary[A] =
     Arbitrary(Gen.posNum[Int].map(_.coerce[A]))
 
-  implicit def arbCoercibleStr[A: Coercible[String, ?]]: Arbitrary[A] =
+  implicit def arbCoercibleStr[A: Coercible[String, *]]: Arbitrary[A] =
     Arbitrary(cbStr[A])
 
-  implicit def arbCoercibleUUID[A: Coercible[UUID, ?]]: Arbitrary[A] =
+  implicit def arbCoercibleUUID[A: Coercible[UUID, *]]: Arbitrary[A] =
     Arbitrary(cbUuid[A])
 
   implicit val arbBrand: Arbitrary[Brand] =

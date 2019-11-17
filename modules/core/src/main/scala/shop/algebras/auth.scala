@@ -19,7 +19,7 @@ import shop.http.json._
 trait Auth[F[_]] {
   def adminJwtAuth: F[AdminJwtAuth]
   def userJwtAuth: F[UserJwtAuth]
-  def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
+  def findUser[A: Coercible[User, *]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken]
   def login(username: UserName, password: Password): F[JwtToken]
   def logout(token: JwtToken, username: UserName): F[Unit]
@@ -47,7 +47,7 @@ final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
   def adminJwtAuth: F[AdminJwtAuth] = authData.adminJwtAuth.pure[F]
   def userJwtAuth: F[UserJwtAuth]   = authData.userJwtAuth.pure[F]
 
-  private def findUserByToken[A: Coercible[User, ?]](
+  private def findUserByToken[A: Coercible[User, *]](
       token: JwtToken
   ): F[Option[A]] =
     redis
@@ -56,7 +56,7 @@ final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
         decode[User](u).toOption.map(_.coerce[A])
       })
 
-  def findUser[A: Coercible[User, ?]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
+  def findUser[A: Coercible[User, *]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
     role match {
       case UserRole =>
         findUserByToken[A](token)
