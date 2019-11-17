@@ -49,15 +49,14 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
   def get(userId: UserId): F[CartTotal] =
     redis.hGetAll(userId.value.toString).flatMap { it =>
       it.toList
-        .traverse {
+        .traverseFilter {
           case (k, v) =>
             for {
               id <- GenUUID[F].read[ItemId](k)
               qt <- ApThrow[F].catchNonFatal(v.toInt.coerce[Quantity])
-              rs <- items.findById(id).map(_.toList.map(i => CartItem(i, qt)))
+              rs <- items.findById(id).map(_.map(i => CartItem(i, qt)))
             } yield rs
         }
-        .map(_.flatten)
         .map(items => CartTotal(items, calcTotal(items)))
     }
 
