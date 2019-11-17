@@ -1,6 +1,6 @@
 package shop.http.routes.secured
 
-import cats.data.{ Kleisli, OptionT }
+import cats.data.Kleisli
 import cats.effect._
 import cats.implicits._
 import io.circe.syntax._
@@ -24,7 +24,7 @@ class CartRoutesSpec extends HttpTestSuite {
   val authUser = User(UUID.randomUUID.coerce[UserId], "user".coerce[UserName]).coerce[CommonUser]
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] =
-    AuthMiddleware(Kleisli(_ => OptionT.pure[IO](authUser)))
+    AuthMiddleware(Kleisli.pure(authUser))
 
   def dataCart(cartTotal: CartTotal) = new TestShoppingCart {
     override def get(userId: UserId): IO[CartTotal] =
@@ -35,7 +35,7 @@ class CartRoutesSpec extends HttpTestSuite {
     spec("GET shopping cart [OK]") {
       GET(Uri.uri("/cart")).flatMap { req =>
         val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
-        assertHttp(routes, req)(Status.Ok, ct.asJson.noSpaces)
+        assertHttp(routes, req)(Status.Ok, ct.asJson)
       }
     }
   }

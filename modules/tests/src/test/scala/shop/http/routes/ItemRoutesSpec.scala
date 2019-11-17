@@ -32,7 +32,7 @@ class ItemRoutesSpec extends HttpTestSuite {
     spec("GET items [OK]") {
       GET(Uri.uri("/items")).flatMap { req =>
         val routes = new ItemRoutes[IO](dataItems(it)).routes
-        assertHttp(routes, req)(Status.Ok, it.asJson.noSpaces)
+        assertHttp(routes, req)(Status.Ok, it.asJson)
       }
     }
   }
@@ -41,7 +41,7 @@ class ItemRoutesSpec extends HttpTestSuite {
     spec("GET items by brand [OK]") {
       GET(Uri.uri("/items").withQueryParam(b.name.value)).flatMap { req =>
         val routes = new ItemRoutes[IO](dataItems(it)).routes
-        assertHttp(routes, req)(Status.Ok, it.asJson.noSpaces)
+        assertHttp(routes, req)(Status.Ok, it.asJson)
       }
     }
   }
