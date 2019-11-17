@@ -2,7 +2,6 @@ package shop.http.routes
 
 import cats.effect._
 import cats.implicits._
-import io.circe.syntax._
 import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.Method._
@@ -32,7 +31,7 @@ class ItemRoutesSpec extends HttpTestSuite {
     spec("GET items [OK]") {
       GET(Uri.uri("/items")).flatMap { req =>
         val routes = new ItemRoutes[IO](dataItems(it)).routes
-        assertHttp(routes, req)(Status.Ok, it.asJson)
+        assertHttp(routes, req)(Status.Ok, it)
       }
     }
   }
@@ -41,7 +40,7 @@ class ItemRoutesSpec extends HttpTestSuite {
     spec("GET items by brand [OK]") {
       GET(Uri.uri("/items").withQueryParam(b.name.value)).flatMap { req =>
         val routes = new ItemRoutes[IO](dataItems(it)).routes
-        assertHttp(routes, req)(Status.Ok, it.asJson)
+        assertHttp(routes, req)(Status.Ok, it)
       }
     }
   }
