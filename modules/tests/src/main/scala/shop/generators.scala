@@ -88,7 +88,7 @@ object generators {
       n <- genNonEmptyString.map[CardNamePred](Refined.unsafeApply)
       u <- Gen.posNum[Long].map[CardNumberPred](Refined.unsafeApply)
       x <- Gen.posNum[Int].map[CardExpirationPred](x => Refined.unsafeApply(x.toString))
-      c <- Gen.posNum[Int].map[CardCCVPred](x => Refined.unsafeApply(x.toInt))
+      c <- Gen.posNum[Int].map[CardCCVPred](Refined.unsafeApply)
     } yield Card(n.coerce[CardName], u.coerce[CardNumber], x.coerce[CardExpiration], c.coerce[CardCCV])
 
 }
