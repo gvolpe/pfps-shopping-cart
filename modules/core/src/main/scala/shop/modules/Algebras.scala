@@ -4,7 +4,6 @@ import cats.Parallel
 import cats.effect._
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
-import java.{ util => ju }
 import shop.algebras._
 import shop.config.data._
 import shop.domain.auth._

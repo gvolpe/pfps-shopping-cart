@@ -1,6 +1,6 @@
 package shop.algebras
 
-import cats.{ Monad, Parallel }
+import cats.Parallel
 import cats.effect._
 import cats.effect.implicits._
 import cats.implicits._

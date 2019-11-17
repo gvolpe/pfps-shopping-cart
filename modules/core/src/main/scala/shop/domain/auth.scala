@@ -3,13 +3,13 @@ package shop.domain
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
-import java.{ util => ju }
+import java.util.UUID
 import javax.crypto.Cipher
 import scala.util.control.NoStackTrace
 
 object auth {
 
-  @newtype case class UserId(value: ju.UUID)
+  @newtype case class UserId(value: UUID)
   @newtype case class UserName(value: String)
   @newtype case class Password(value: String)
 

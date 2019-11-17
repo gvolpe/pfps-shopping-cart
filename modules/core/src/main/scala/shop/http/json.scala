@@ -7,7 +7,6 @@ import io.circe.generic.semiauto._
 import io.circe.refined._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
-import java.{ util => ju }
 import org.http4s.{ EntityDecoder, EntityEncoder }
 import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import shop.domain.auth._

@@ -3,11 +3,11 @@ package shop.domain
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
-import java.{ util => ju }
+import java.util.UUID
 import scala.util.control.NoStackTrace
 
 object brand {
-  @newtype case class BrandId(value: ju.UUID)
+  @newtype case class BrandId(value: UUID)
 
   @newtype case class BrandName(value: String) {
     def toBrand(brandId: BrandId): Brand =
