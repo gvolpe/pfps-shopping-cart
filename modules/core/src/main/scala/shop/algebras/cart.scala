@@ -3,6 +3,7 @@ package shop.algebras
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.estatico.newtype.ops._
+import scala.concurrent.duration._
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.category._
@@ -10,7 +11,6 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.config.data.ShoppingCartExpiration
 import shop.effects._
-import scala.concurrent.duration._
 
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit]
