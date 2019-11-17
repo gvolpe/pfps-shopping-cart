@@ -29,7 +29,7 @@ class BrandRoutesSpec extends HttpTestSuite {
     spec("GET brands [OK]") {
       GET(Uri.uri("/brands")).flatMap { req =>
         val routes = new BrandRoutes[IO](dataBrands(b)).routes
-        assertHttp(routes, req)(Status.Ok, b.asJson.noSpaces)
+        assertHttp(routes, req)(Status.Ok, b.asJson)
       }
     }
   }

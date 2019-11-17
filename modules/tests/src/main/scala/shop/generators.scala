@@ -5,6 +5,7 @@ import io.estatico.newtype.ops._
 import io.estatico.newtype.Coercible
 import java.util.UUID
 import org.scalacheck.Gen
+import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.category._
@@ -12,6 +13,13 @@ import shop.domain.checkout._
 import shop.domain.item._
 
 object generators {
+
+  // PostgreSQL with Skunk does not seem to accept some characters using UTF-8
+  // TODO: Maybe fix Crypto impl?
+  val passwordGen: Gen[Password] = {
+    val values = ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9')
+    Gen.nonEmptyListOf(Gen.oneOf(values)).map(_.mkString.coerce[Password])
+  }
 
   def cbUuid[A: Coercible[UUID, ?]]: Gen[A] =
     Gen.uuid.map(_.coerce[A])
@@ -77,10 +85,10 @@ object generators {
 
   val cardGen: Gen[Card] =
     for {
-      n <- genNonEmptyString.map(x => Refined.unsafeApply(x): CardNamePred)
-      u <- Gen.posNum[Long].map(x => Refined.unsafeApply(x): CardNumberPred)
-      x <- Gen.posNum[Int].map(x => Refined.unsafeApply(x.toString): CardExpirationPred)
-      c <- Gen.posNum[Int].map(x => Refined.unsafeApply(x.toInt): CardCCVPred)
+      n <- genNonEmptyString.map[CardNamePred](Refined.unsafeApply)
+      u <- Gen.posNum[Long].map[CardNumberPred](Refined.unsafeApply)
+      x <- Gen.posNum[Int].map[CardExpirationPred](x => Refined.unsafeApply(x.toString))
+      c <- Gen.posNum[Int].map[CardCCVPred](x => Refined.unsafeApply(x.toInt))
     } yield Card(n.coerce[CardName], u.coerce[CardNumber], x.coerce[CardExpiration], c.coerce[CardCCV])
 
 }

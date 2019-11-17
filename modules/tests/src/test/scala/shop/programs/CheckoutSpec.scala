@@ -39,12 +39,12 @@ final class CheckoutSpec extends PureTestSuite {
         IO.raiseError(PaymentError(""))
     }
 
-  def recoveringClient(ref: Ref[IO, Int], paymentId: PaymentId): PaymentClient[IO] =
+  def recoveringClient(attemptsSoFar: Ref[IO, Int], paymentId: PaymentId): PaymentClient[IO] =
     new PaymentClient[IO] {
       def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
-        ref.get.flatMap {
+        attemptsSoFar.get.flatMap {
           case n if n == 1 => IO.pure(paymentId)
-          case _           => ref.update(_ + 1) *> IO.raiseError(PaymentError(""))
+          case _           => attemptsSoFar.update(_ + 1) *> IO.raiseError(PaymentError(""))
         }
     }
 

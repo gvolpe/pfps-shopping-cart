@@ -2,9 +2,11 @@ package suite
 
 import cats.effect.IO
 import cats.implicits._
+import io.circe.Json
 import org.http4s._
 import org.scalatest.compatible.Assertion
 import scala.util.control.NoStackTrace
+import shop.http.json._
 
 trait HttpTestSuite extends PureTestSuite {
 
@@ -12,12 +14,12 @@ trait HttpTestSuite extends PureTestSuite {
 
   def assertHttp(routes: HttpRoutes[IO], req: Request[IO])(
       expectedStatus: Status,
-      expectedBody: String
+      expectedBody: Json
   ) =
     routes.run(req).value.flatMap {
       case Some(resp) =>
-        resp.bodyAsText.compile.foldMonoid.map { json =>
-          assert(resp.status == expectedStatus && json == expectedBody)
+        resp.as[Json].map { json =>
+          assert(resp.status == expectedStatus && json.dropNullValues == expectedBody.dropNullValues)
         }
       case None => fail("route nout found")
     }
