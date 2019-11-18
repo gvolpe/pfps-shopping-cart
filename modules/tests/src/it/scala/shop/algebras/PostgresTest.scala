@@ -103,7 +103,7 @@ class PostgreSQLTest extends PureTestSuite {
     }
   }
 
-  forAll(MinSuccessful(10)) { (username: UserName, password: Password) =>
+  forAll(MaxTests) { (username: UserName, password: Password) =>
     spec("Users") {
       val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
