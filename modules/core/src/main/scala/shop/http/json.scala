@@ -25,6 +25,13 @@ object json {
   implicit def jsonDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
   implicit def jsonEncoder[F[_]: Sync, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
 
+  // ----- Overriding some Coercible codecs ----
+  implicit val brandParamDecoder: Decoder[BrandParam] =
+    Decoder.forProduct1("name")(BrandParam.apply)
+
+  implicit val categoryParamDecoder: Decoder[CategoryParam] =
+    Decoder.forProduct1("name")(CategoryParam.apply)
+
   // ----- Coercible codecs -----
   implicit def coercibleDecoder[A: Coercible[B, *], B: Decoder]: Decoder[A] =
     Decoder[B].map(_.coerce[A])
