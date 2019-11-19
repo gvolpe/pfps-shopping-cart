@@ -1,6 +1,6 @@
 package shop.algebras
 
-import cats.effect.Resource
+import cats.effect._
 import cats.implicits._
 import shop.domain.auth._
 import shop.effects._
@@ -16,11 +16,13 @@ trait Users[F[_]] {
 }
 
 object LiveUsers {
-  def make[F[_]: BracketThrow: GenUUID](
+  def make[F[_]: Sync](
       sessionPool: Resource[F, Session[F]],
       crypto: Crypto
   ): F[Users[F]] =
-    new LiveUsers[F](sessionPool, crypto).pure[F].widen
+    Sync[F].delay(
+      new LiveUsers[F](sessionPool, crypto)
+    )
 }
 
 final class LiveUsers[F[_]: BracketThrow: GenUUID] private (

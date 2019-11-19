@@ -21,7 +21,9 @@ object LiveHealthCheck {
       sessionPool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   ): F[HealthCheck[F]] =
-    new LiveHealthCheck[F](sessionPool, redis).pure[F].widen
+    Sync[F].delay(
+      new LiveHealthCheck[F](sessionPool, redis)
+    )
 }
 
 final class LiveHealthCheck[F[_]: Concurrent: Parallel: Timer] private (

@@ -1,6 +1,6 @@
 package shop.algebras
 
-import cats.effect.Resource
+import cats.effect._
 import cats.implicits._
 import shop.domain.category._
 import shop.effects._
@@ -15,10 +15,12 @@ trait Categories[F[_]] {
 }
 
 object LiveCategories {
-  def make[F[_]: BracketThrow: GenUUID](
+  def make[F[_]: Sync](
       sessionPool: Resource[F, Session[F]]
   ): F[Categories[F]] =
-    new LiveCategories[F](sessionPool).pure[F].widen
+    Sync[F].delay(
+      new LiveCategories[F](sessionPool)
+    )
 }
 
 final class LiveCategories[F[_]: BracketThrow: GenUUID] private (

@@ -28,7 +28,9 @@ object LiveOrders {
   def make[F[_]: Sync](
       sessionPool: Resource[F, Session[F]]
   ): F[Orders[F]] =
-    new LiveOrders[F](sessionPool).pure[F].widen
+    Sync[F].delay(
+      new LiveOrders[F](sessionPool)
+    )
 }
 
 private class LiveOrders[F[_]: Sync](

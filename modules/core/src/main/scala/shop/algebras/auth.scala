@@ -32,7 +32,9 @@ object LiveAuth {
       users: Users[F],
       redis: RedisCommands[F, String, String]
   ): F[Auth[F]] =
-    new LiveAuth(authData, tokens, users, redis).pure[F].widen
+    Sync[F].delay(
+      new LiveAuth(authData, tokens, users, redis)
+    )
 }
 
 final class LiveAuth[F[_]: GenUUID: MonadThrow] private (

@@ -1,5 +1,6 @@
 package shop.algebras
 
+import cats.effect._
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.estatico.newtype.ops._
@@ -21,12 +22,14 @@ trait ShoppingCart[F[_]] {
 }
 
 object LiveShoppingCart {
-  def make[F[_]: GenUUID: MonadThrow](
+  def make[F[_]: Sync](
       items: Items[F],
       redis: RedisCommands[F, String, String],
       exp: ShoppingCartExpiration
   ): F[ShoppingCart[F]] =
-    new LiveShoppingCart(items, redis, exp).pure[F].widen
+    Sync[F].delay(
+      new LiveShoppingCart(items, redis, exp)
+    )
 }
 
 final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (

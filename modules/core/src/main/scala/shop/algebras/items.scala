@@ -24,7 +24,9 @@ object LiveItems {
   def make[F[_]: Sync](
       sessionPool: Resource[F, Session[F]]
   ): F[Items[F]] =
-    new LiveItems[F](sessionPool).pure[F].widen
+    Sync[F].delay(
+      new LiveItems[F](sessionPool)
+    )
 }
 
 final class LiveItems[F[_]: Sync] private (

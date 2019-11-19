@@ -1,6 +1,6 @@
 package shop.algebras
 
-import cats.effect.Resource
+import cats.effect._
 import cats.implicits._
 import shop.domain.brand._
 import shop.effects._
@@ -15,10 +15,12 @@ trait Brands[F[_]] {
 }
 
 object LiveBrands {
-  def make[F[_]: BracketThrow: GenUUID](
+  def make[F[_]: Sync](
       sessionPool: Resource[F, Session[F]]
   ): F[Brands[F]] =
-    new LiveBrands[F](sessionPool).pure[F].widen
+    Sync[F].delay(
+      new LiveBrands[F](sessionPool)
+    )
 }
 
 final class LiveBrands[F[_]: BracketThrow: GenUUID] private (
