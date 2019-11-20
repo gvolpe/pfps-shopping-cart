@@ -22,8 +22,9 @@ object Main extends IOApp {
       Logger[IO].info(s"Loaded config $cfg") *>
         AppResources.make[IO](cfg).use { res =>
           Server.httpApi[IO](cfg, res).flatMap { api =>
+            val sc = cfg.httpServerConfig
             BlazeServerBuilder[IO]
-              .bindHttp(8080, "0.0.0.0")
+              .bindHttp(sc.port.value, sc.host.value)
               .withHttpApp(api.httpApp)
               .serve
               .compile

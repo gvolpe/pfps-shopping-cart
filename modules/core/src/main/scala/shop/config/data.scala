@@ -33,7 +33,8 @@ object data {
       paymentConfig: PaymentConfig,
       httpClientConfig: HttpClientConfig,
       postgreSQL: PostgreSQLConfig,
-      redis: RedisConfig
+      redis: RedisConfig,
+      httpServerConfig: HttpServerConfig
   )
 
   case class AdminJwtConfig(
@@ -53,6 +54,11 @@ object data {
   @newtype case class RedisConfig(uri: NonEmptyString)
 
   @newtype case class PaymentConfig(uri: NonEmptyString)
+
+  case class HttpServerConfig(
+    host: NonEmptyString,
+    port: UserPortNumber
+  )
 
   case class HttpClientConfig(
       connectTimeout: FiniteDuration,

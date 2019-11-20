@@ -72,7 +72,11 @@ object load {
           database = "store",
           max = 10
         ),
-        RedisConfig(redisUri)
+        RedisConfig(redisUri),
+        HttpServerConfig(
+          host = "0.0.0.0",
+          port = 8080
+        )
       )
     }
 
