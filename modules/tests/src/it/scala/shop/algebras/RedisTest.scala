@@ -29,7 +29,7 @@ import shop.domain.item._
 import shop.domain.order._
 import shop.logger.NoOp
 import suite.PureTestSuite
-import shop.http.auth.roles._
+import shop.http.auth.users._
 
 class RedisTest extends PureTestSuite {
 
@@ -89,15 +89,15 @@ class RedisTest extends PureTestSuite {
         for {
           t <- LiveTokens.make[IO](tokenConfig, tokenExp)
           a <- LiveAuth.make(authData, t, new TestUsers(un2), cmd)
-          u <- LiveUsersAuth.make[IO, CommonUser](authData, cmd)
-          x <- u.findUser(UserRole)(JwtToken("invalid"))(jwtClaim)
-          j <- a.newUser(un1, pw, UserRole)
+          u <- LiveUsersAuth.make[IO](cmd)
+          x <- u.findUser(JwtToken("invalid"))(jwtClaim)
+          j <- a.newUser(un1, pw)
           e <- jwtDecode[IO](j, userJwtAuth.value).attempt
           k <- a.login(un2, pw)
           f <- jwtDecode[IO](k, userJwtAuth.value).attempt
           _ <- a.logout(k, un2)
-          y <- u.findUser(UserRole)(k)(jwtClaim)
-          w <- u.findUser(UserRole)(j)(jwtClaim)
+          y <- u.findUser(k)(jwtClaim)
+          w <- u.findUser(j)(jwtClaim)
         } yield
           assert(
             x.isEmpty && e.isRight && f.isRight && y.isEmpty &&

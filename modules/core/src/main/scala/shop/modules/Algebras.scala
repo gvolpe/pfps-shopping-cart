@@ -7,7 +7,7 @@ import dev.profunktor.redis4cats.algebra.RedisCommands
 import shop.algebras._
 import shop.config.data._
 import shop.domain.auth._
-import shop.http.auth.roles._
+import shop.http.auth.users._
 import skunk._
 
 object Algebras {

@@ -13,7 +13,7 @@ import pdi.jwt._
 import scala.concurrent.duration._
 import shop.algebras._
 import shop.http.auth._
-import shop.http.auth.roles._
+import shop.http.auth.users._
 import shop.http.routes._
 import shop.http.routes.admin._
 import shop.http.routes.secured._
@@ -39,9 +39,9 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
     security: Security[F]
 ) {
   private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] =
-    t => c => security.adminAuth.findUser(AdminRole)(t)(c)
+    t => c => security.adminAuth.findUser(t)(c)
   private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] =
-    t => c => security.usersAuth.findUser(UserRole)(t)(c)
+    t => c => security.usersAuth.findUser(t)(c)
 
   private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](security.adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](security.userJwtAuth.value, usersAuth)

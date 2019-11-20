@@ -5,10 +5,7 @@ import io.estatico.newtype.macros.newtype
 import shop.config.data.TokenExpiration
 import shop.domain.auth._
 
-object roles {
-  sealed abstract class AuthRole
-  case object AdminRole extends AuthRole
-  case object UserRole extends AuthRole
+object users {
 
   @newtype case class AdminJwtAuth(value: JwtSymmetricAuth)
   @newtype case class UserJwtAuth(value: JwtSymmetricAuth)

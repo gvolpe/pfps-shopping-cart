@@ -8,7 +8,7 @@ import org.http4s.server._
 import shop.algebras.Items
 import shop.domain.item._
 import shop.http.auth._
-import shop.http.auth.roles.AdminUser
+import shop.http.auth.users.AdminUser
 import shop.http.decoder._
 import shop.http.json._
 

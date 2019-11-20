@@ -4,7 +4,7 @@ import cats.effect._
 import cats.implicits._
 import shop.domain.auth._
 import shop.effects._
-import shop.http.auth.roles._
+import shop.http.auth.users._
 import shop.ext.skunkx._
 import skunk._
 import skunk.codec.all._

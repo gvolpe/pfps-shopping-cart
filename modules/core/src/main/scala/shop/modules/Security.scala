@@ -9,7 +9,7 @@ import pdi.jwt._
 import shop.algebras._
 import shop.config.data._
 import shop.domain.auth._
-import shop.http.auth.roles._
+import shop.http.auth.users._
 import skunk.Session
 
 object Security {
@@ -47,8 +47,8 @@ object Security {
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](sessionPool, crypto)
       auth <- LiveAuth.make[F](authData, tokens, users, redis)
-      adminAuth <- LiveUsersAuth.make[F, AdminUser](authData, redis)
-      usersAuth <- LiveUsersAuth.make[F, CommonUser](authData, redis)
+      adminAuth <- LiveAdminAuth.make[F](authData)
+      usersAuth <- LiveUsersAuth.make[F](redis)
     } yield new Security[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)
 
   }
