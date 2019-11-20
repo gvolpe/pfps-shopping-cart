@@ -11,7 +11,7 @@ import org.http4s.server.middleware._
 import org.http4s.server.Router
 import pdi.jwt._
 import scala.concurrent.duration._
-import shop.algebras.Auth
+import shop.algebras._
 import shop.http.auth._
 import shop.http.auth.roles._
 import shop.http.routes._
@@ -24,31 +24,32 @@ object HttpApi {
       programs: Programs[F],
       security: Security[F]
   ): F[HttpApi[F]] =
-    (security.auth.adminJwtAuth, security.auth.userJwtAuth).mapN {
-      case (admin, users) =>
-        new HttpApi[F](security.auth, algebras, programs, admin, users)
-    }
+    Sync[F].delay(
+      new HttpApi[F](
+        algebras,
+        programs,
+        security
+      )
+    )
 }
 
 final class HttpApi[F[_]: Concurrent: Timer] private (
-    auth: Auth[F],
     algebras: Algebras[F],
     programs: Programs[F],
-    adminJwtAuth: AdminJwtAuth,
-    userJwtAuth: UserJwtAuth
+    security: Security[F]
 ) {
-  private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] = t =>
-    c => auth.findUser[AdminUser](AdminRole)(t)(c)
-  private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] = t =>
-    c => auth.findUser[CommonUser](UserRole)(t)(c)
+  private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] =
+    t => c => security.adminAuth.findUser(AdminRole)(t)(c)
+  private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] =
+    t => c => security.usersAuth.findUser(UserRole)(t)(c)
 
-  private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, adminAuth)
-  private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, usersAuth)
+  private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](security.adminJwtAuth.value, adminAuth)
+  private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](security.userJwtAuth.value, usersAuth)
 
   // Auth routes
-  private val loginRoutes  = new LoginRoutes[F](auth).routes
-  private val logoutRoutes = new LogoutRoutes[F](auth).routes(usersMiddleware)
-  private val userRoutes   = new UserRoutes[F](auth).routes
+  private val loginRoutes  = new LoginRoutes[F](security.auth).routes
+  private val logoutRoutes = new LogoutRoutes[F](security.auth).routes(usersMiddleware)
+  private val userRoutes   = new UserRoutes[F](security.auth).routes
 
   // Open routes
   private val healthRoutes   = new HealthRoutes[F](algebras.healthCheck).routes

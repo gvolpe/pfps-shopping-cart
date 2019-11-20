@@ -81,7 +81,7 @@ class RedisTest extends PureTestSuite {
   val adminUser    = User(UUID.randomUUID.coerce[UserId], "admin".coerce[UserName]).coerce[AdminUser]
   val adminJwtAuth = JwtAuth.hmac("foo", JwtAlgorithm.HS256).coerce[AdminJwtAuth]
   val userJwtAuth  = JwtAuth.hmac("bar", JwtAlgorithm.HS256).coerce[UserJwtAuth]
-  val authData     = AuthData(JwtToken("admin"), adminUser, adminJwtAuth, userJwtAuth, tokenExp)
+  val authData     = AuthData(JwtToken("admin"), adminUser, tokenExp)
 
   forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
     spec("Authentication") {
@@ -89,14 +89,15 @@ class RedisTest extends PureTestSuite {
         for {
           t <- LiveTokens.make[IO](tokenConfig, tokenExp)
           a <- LiveAuth.make(authData, t, new TestUsers(un2), cmd)
-          x <- a.findUser[CommonUser](UserRole)(JwtToken("invalid"))(jwtClaim)
+          u <- LiveUsersAuth.make[IO, CommonUser](authData, cmd)
+          x <- u.findUser(UserRole)(JwtToken("invalid"))(jwtClaim)
           j <- a.newUser(un1, pw, UserRole)
           e <- jwtDecode[IO](j, userJwtAuth.value).attempt
           k <- a.login(un2, pw)
           f <- jwtDecode[IO](k, userJwtAuth.value).attempt
           _ <- a.logout(k, un2)
-          y <- a.findUser[CommonUser](UserRole)(k)(jwtClaim)
-          w <- a.findUser[CommonUser](UserRole)(j)(jwtClaim)
+          y <- u.findUser(UserRole)(k)(jwtClaim)
+          w <- u.findUser(UserRole)(j)(jwtClaim)
         } yield
           assert(
             x.isEmpty && e.isRight && f.isRight && y.isEmpty &&

@@ -5,7 +5,6 @@ import cats.implicits._
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.estatico.newtype.ops._
-import java.util.UUID
 import pdi.jwt._
 import shop.algebras._
 import shop.config.data._
@@ -43,16 +42,22 @@ object Security {
       content = adminClaim.content.replace("{", "0").replace("}", "c")
       adminId <- GenUUID[F].read[UserId](content)
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
-      authData  = AuthData(adminToken, adminUser, adminJwtAuth, userJwtAuth, cfg.tokenExpiration)
+      authData  = AuthData(adminToken, adminUser, cfg.tokenExpiration)
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](sessionPool, crypto)
       auth <- LiveAuth.make[F](authData, tokens, users, redis)
-    } yield new Security[F](auth)
+      adminAuth <- LiveUsersAuth.make[F, AdminUser](authData, redis)
+      usersAuth <- LiveUsersAuth.make[F, CommonUser](authData, redis)
+    } yield new Security[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)
 
   }
 }
 
 final class Security[F[_]] private (
-    val auth: Auth[F]
+    val auth: Auth[F],
+    val adminAuth: UsersAuth[F, AdminUser],
+    val usersAuth: UsersAuth[F, CommonUser],
+    val adminJwtAuth: AdminJwtAuth,
+    val userJwtAuth: UserJwtAuth
 ) {}

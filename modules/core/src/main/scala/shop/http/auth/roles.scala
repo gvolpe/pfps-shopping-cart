@@ -21,8 +21,6 @@ object roles {
   case class AuthData(
       adminToken: JwtToken,
       adminUser: AdminUser,
-      adminJwtAuth: AdminJwtAuth,
-      userJwtAuth: UserJwtAuth,
       tokenExpiration: TokenExpiration
   )
 

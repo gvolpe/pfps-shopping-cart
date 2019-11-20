@@ -15,14 +15,53 @@ import shop.domain.auth._
 import shop.effects._
 import shop.http.auth.roles._
 import shop.http.json._
+import dev.profunktor.auth.jwt.JwtSymmetricAuth
 
 trait Auth[F[_]] {
-  def adminJwtAuth: F[AdminJwtAuth]
-  def userJwtAuth: F[UserJwtAuth]
-  def findUser[A: Coercible[User, *]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken]
   def login(username: UserName, password: Password): F[JwtToken]
   def logout(token: JwtToken, username: UserName): F[Unit]
+}
+
+trait UsersAuth[F[_], A] {
+  def findUser(role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
+}
+
+object LiveUsersAuth {
+  def make[F[_]: Sync, A: Coercible[User, *]](
+      authData: AuthData,
+      redis: RedisCommands[F, String, String]
+  ): F[UsersAuth[F, A]] =
+    Sync[F].delay(
+      new LiveUsersAuth(authData, redis)
+    )
+}
+
+class LiveUsersAuth[F[_]: Sync, A: Coercible[User, *]](
+    authData: AuthData,
+    redis: RedisCommands[F, String, String]
+) extends UsersAuth[F, A] {
+
+  def findUser(role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
+    role match {
+      case UserRole =>
+        findUserByToken(token)
+      case AdminRole =>
+        (token == authData.adminToken)
+          .guard[Option]
+          .as(authData.adminUser.value.coerce[A])
+          .pure[F]
+    }
+
+  private def findUserByToken(
+      token: JwtToken
+  ): F[Option[A]] =
+    redis
+      .get(token.value)
+      .map(_.flatMap { u =>
+        decode[User](u).toOption.map(_.coerce[A])
+      })
+
 }
 
 object LiveAuth {
@@ -45,29 +84,6 @@ final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
 ) extends Auth[F] {
 
   private val TokenExpiration = authData.tokenExpiration.value
-
-  def adminJwtAuth: F[AdminJwtAuth] = authData.adminJwtAuth.pure[F]
-  def userJwtAuth: F[UserJwtAuth]   = authData.userJwtAuth.pure[F]
-
-  private def findUserByToken[A: Coercible[User, *]](
-      token: JwtToken
-  ): F[Option[A]] =
-    redis
-      .get(token.value)
-      .map(_.flatMap { u =>
-        decode[User](u).toOption.map(_.coerce[A])
-      })
-
-  def findUser[A: Coercible[User, *]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
-    role match {
-      case UserRole =>
-        findUserByToken[A](token)
-      case AdminRole =>
-        (token == authData.adminToken)
-          .guard[Option]
-          .as(authData.adminUser.value.coerce[A])
-          .pure[F]
-    }
 
   def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken] =
     role match {
