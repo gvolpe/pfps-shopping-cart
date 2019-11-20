@@ -81,14 +81,14 @@ class RedisTest extends PureTestSuite {
   val adminUser    = User(UUID.randomUUID.coerce[UserId], "admin".coerce[UserName]).coerce[AdminUser]
   val adminJwtAuth = JwtAuth.hmac("foo", JwtAlgorithm.HS256).coerce[AdminJwtAuth]
   val userJwtAuth  = JwtAuth.hmac("bar", JwtAlgorithm.HS256).coerce[UserJwtAuth]
-  val authData     = AuthData(JwtToken("admin"), adminUser, tokenExp)
+  val adminToken   = JwtToken("admin")
 
   forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
     spec("Authentication") {
       mkRedis.use { cmd =>
         for {
           t <- LiveTokens.make[IO](tokenConfig, tokenExp)
-          a <- LiveAuth.make(authData, t, new TestUsers(un2), cmd)
+          a <- LiveAuth.make(tokenExp, t, new TestUsers(un2), cmd)
           u <- LiveUsersAuth.make[IO](cmd)
           x <- u.findUser(JwtToken("invalid"))(jwtClaim)
           j <- a.newUser(un1, pw)

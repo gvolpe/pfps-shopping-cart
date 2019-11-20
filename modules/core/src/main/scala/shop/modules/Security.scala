@@ -42,12 +42,11 @@ object Security {
       content = adminClaim.content.replace("{", "0").replace("}", "c")
       adminId <- GenUUID[F].read[UserId](content)
       adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
-      authData  = AuthData(adminToken, adminUser, cfg.tokenExpiration)
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](sessionPool, crypto)
-      auth <- LiveAuth.make[F](authData, tokens, users, redis)
-      adminAuth <- LiveAdminAuth.make[F](authData)
+      auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis)
+      adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
       usersAuth <- LiveUsersAuth.make[F](redis)
     } yield new Security[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)
 

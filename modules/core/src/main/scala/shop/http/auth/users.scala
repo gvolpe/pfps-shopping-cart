@@ -15,10 +15,4 @@ object users {
   @newtype case class CommonUser(value: User)
   @newtype case class AdminUser(value: User)
 
-  case class AuthData(
-      adminToken: JwtToken,
-      adminUser: AdminUser,
-      tokenExpiration: TokenExpiration
-  )
-
 }

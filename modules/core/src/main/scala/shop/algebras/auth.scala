@@ -1,6 +1,6 @@
 package shop.algebras
 
-import cats.MonadError
+import cats._
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
 import cats.implicits._
@@ -11,6 +11,7 @@ import io.circe.parser.decode
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import pdi.jwt.JwtClaim
+import shop.config.data.TokenExpiration
 import shop.domain.auth._
 import shop.effects._
 import shop.http.auth.users._
@@ -28,21 +29,23 @@ trait UsersAuth[F[_], A] {
 
 object LiveAdminAuth {
   def make[F[_]: Sync](
-      authData: AuthData
+      adminToken: JwtToken,
+      adminUser: AdminUser
   ): F[UsersAuth[F, AdminUser]] =
     Sync[F].delay(
-      new LiveAdminAuth(authData)
+      new LiveAdminAuth(adminToken, adminUser)
     )
 }
 
-class LiveAdminAuth[F[_]: Sync](
-    authData: AuthData
+class LiveAdminAuth[F[_]: Applicative](
+    adminToken: JwtToken,
+    adminUser: AdminUser
 ) extends UsersAuth[F, AdminUser] {
 
   def findUser(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
-    (token == authData.adminToken)
+    (token == adminToken)
       .guard[Option]
-      .as(authData.adminUser)
+      .as(adminUser)
       .pure[F]
 
 }
@@ -56,7 +59,7 @@ object LiveUsersAuth {
     )
 }
 
-class LiveUsersAuth[F[_]: Sync](
+class LiveUsersAuth[F[_]: Functor](
     redis: RedisCommands[F, String, String]
 ) extends UsersAuth[F, CommonUser] {
 
@@ -71,24 +74,24 @@ class LiveUsersAuth[F[_]: Sync](
 
 object LiveAuth {
   def make[F[_]: Sync](
-      authData: AuthData,
+      tokenExpiration: TokenExpiration,
       tokens: Tokens[F],
       users: Users[F],
       redis: RedisCommands[F, String, String]
   ): F[Auth[F]] =
     Sync[F].delay(
-      new LiveAuth(authData, tokens, users, redis)
+      new LiveAuth(tokenExpiration, tokens, users, redis)
     )
 }
 
 final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
-    authData: AuthData,
+    tokenExpiration: TokenExpiration,
     tokens: Tokens[F],
     users: Users[F],
     redis: RedisCommands[F, String, String]
 ) extends Auth[F] {
 
-  private val TokenExpiration = authData.tokenExpiration.value
+  private val TokenExpiration = tokenExpiration.value
 
   def newUser(username: UserName, password: Password): F[JwtToken] =
     users.find(username, password).flatMap {
