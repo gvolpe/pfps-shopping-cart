@@ -7,7 +7,7 @@ import org.scalactic.source.Position
 
 trait ResourceSuite[A] extends PureTestSuite with BeforeAndAfterAll {
 
-  def resource: Resource[IO, A]
+  def resources: Resource[IO, A]
 
   private[this] var res: A            = _
   private[this] var cleanUp: IO[Unit] = _

@@ -27,7 +27,7 @@ class ResourcePostgreSQLTest extends ResourceSuite[Resource[IO, Session[IO]]] {
   // For it:tests, one test is enough
   val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
 
-  override def resource =
+  override def resources =
     Session.pooled[IO](
       host = "localhost",
       port = 5432,
