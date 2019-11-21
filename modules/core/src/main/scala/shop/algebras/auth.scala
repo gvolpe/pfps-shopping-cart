@@ -1,6 +1,6 @@
 package shop.algebras
 
-import cats.MonadError
+import cats._
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
 import cats.implicits._
@@ -11,79 +11,99 @@ import io.circe.parser.decode
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import pdi.jwt.JwtClaim
+import shop.config.data.TokenExpiration
 import shop.domain.auth._
 import shop.effects._
-import shop.http.auth.roles._
+import shop.http.auth.users._
 import shop.http.json._
 
 trait Auth[F[_]] {
-  def adminJwtAuth: F[AdminJwtAuth]
-  def userJwtAuth: F[UserJwtAuth]
-  def findUser[A: Coercible[User, *]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]]
-  def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken]
+  def newUser(username: UserName, password: Password): F[JwtToken]
   def login(username: UserName, password: Password): F[JwtToken]
   def logout(token: JwtToken, username: UserName): F[Unit]
 }
 
+trait UsersAuth[F[_], A] {
+  def findUser(token: JwtToken)(claim: JwtClaim): F[Option[A]]
+}
+
+object LiveAdminAuth {
+  def make[F[_]: Sync](
+      adminToken: JwtToken,
+      adminUser: AdminUser
+  ): F[UsersAuth[F, AdminUser]] =
+    Sync[F].delay(
+      new LiveAdminAuth(adminToken, adminUser)
+    )
+}
+
+class LiveAdminAuth[F[_]: Applicative](
+    adminToken: JwtToken,
+    adminUser: AdminUser
+) extends UsersAuth[F, AdminUser] {
+
+  def findUser(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
+    (token == adminToken)
+      .guard[Option]
+      .as(adminUser)
+      .pure[F]
+
+}
+
+object LiveUsersAuth {
+  def make[F[_]: Sync](
+      redis: RedisCommands[F, String, String]
+  ): F[UsersAuth[F, CommonUser]] =
+    Sync[F].delay(
+      new LiveUsersAuth(redis)
+    )
+}
+
+class LiveUsersAuth[F[_]: Functor](
+    redis: RedisCommands[F, String, String]
+) extends UsersAuth[F, CommonUser] {
+
+  def findUser(token: JwtToken)(claim: JwtClaim): F[Option[CommonUser]] =
+    redis
+      .get(token.value)
+      .map(_.flatMap { u =>
+        decode[User](u).toOption.map(_.coerce[CommonUser])
+      })
+
+}
+
 object LiveAuth {
   def make[F[_]: Sync](
-      authData: AuthData,
+      tokenExpiration: TokenExpiration,
       tokens: Tokens[F],
       users: Users[F],
       redis: RedisCommands[F, String, String]
   ): F[Auth[F]] =
     Sync[F].delay(
-      new LiveAuth(authData, tokens, users, redis)
+      new LiveAuth(tokenExpiration, tokens, users, redis)
     )
 }
 
 final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
-    authData: AuthData,
+    tokenExpiration: TokenExpiration,
     tokens: Tokens[F],
     users: Users[F],
     redis: RedisCommands[F, String, String]
 ) extends Auth[F] {
 
-  private val TokenExpiration = authData.tokenExpiration.value
+  private val TokenExpiration = tokenExpiration.value
 
-  def adminJwtAuth: F[AdminJwtAuth] = authData.adminJwtAuth.pure[F]
-  def userJwtAuth: F[UserJwtAuth]   = authData.userJwtAuth.pure[F]
-
-  private def findUserByToken[A: Coercible[User, *]](
-      token: JwtToken
-  ): F[Option[A]] =
-    redis
-      .get(token.value)
-      .map(_.flatMap { u =>
-        decode[User](u).toOption.map(_.coerce[A])
-      })
-
-  def findUser[A: Coercible[User, *]](role: AuthRole)(token: JwtToken)(claim: JwtClaim): F[Option[A]] =
-    role match {
-      case UserRole =>
-        findUserByToken[A](token)
-      case AdminRole =>
-        (token == authData.adminToken)
-          .guard[Option]
-          .as(authData.adminUser.value.coerce[A])
-          .pure[F]
-    }
-
-  def newUser(username: UserName, password: Password, role: AuthRole): F[JwtToken] =
-    role match {
-      case AdminRole => UnsupportedOperation.raiseError[F, JwtToken]
-      case UserRole =>
-        users.find(username, password).flatMap {
-          case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
-          case None =>
-            for {
-              i <- users.create(username, password)
-              t <- tokens.create
-              u = User(i, username).asJson.noSpaces
-              _ <- redis.setEx(t.value, u, TokenExpiration)
-              _ <- redis.setEx(username.value, t.value, TokenExpiration)
-            } yield t
-        }
+  def newUser(username: UserName, password: Password): F[JwtToken] =
+    users.find(username, password).flatMap {
+      case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
+      case None =>
+        for {
+          i <- users.create(username, password)
+          t <- tokens.create
+          u = User(i, username).asJson.noSpaces
+          _ <- redis.setEx(t.value, u, TokenExpiration)
+          _ <- redis.setEx(username.value, t.value, TokenExpiration)
+        } yield t
     }
 
   def login(username: UserName, password: Password): F[JwtToken] =

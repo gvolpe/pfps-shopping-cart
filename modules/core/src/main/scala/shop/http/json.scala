@@ -18,7 +18,7 @@ import shop.domain.healthcheck._
 import shop.domain.item._
 import shop.domain.order._
 import shop.ext.refined._
-import shop.http.auth.roles._
+import shop.http.auth.users._
 
 object json {
 

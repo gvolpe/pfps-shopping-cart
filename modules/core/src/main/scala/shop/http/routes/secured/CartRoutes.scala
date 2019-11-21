@@ -7,7 +7,7 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.ShoppingCart
-import shop.http.auth.roles.CommonUser
+import shop.http.auth.users.CommonUser
 import shop.http.json._
 import shop.domain.cart._
 import shop.domain.item._

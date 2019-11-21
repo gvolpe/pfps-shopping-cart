@@ -27,9 +27,9 @@ import shop.domain.category._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
+import shop.http.auth.users._
 import shop.logger.NoOp
 import suite.PureTestSuite
-import shop.http.auth.roles._
 
 class RedisTest extends PureTestSuite {
 
@@ -81,22 +81,23 @@ class RedisTest extends PureTestSuite {
   val adminUser    = User(UUID.randomUUID.coerce[UserId], "admin".coerce[UserName]).coerce[AdminUser]
   val adminJwtAuth = JwtAuth.hmac("foo", JwtAlgorithm.HS256).coerce[AdminJwtAuth]
   val userJwtAuth  = JwtAuth.hmac("bar", JwtAlgorithm.HS256).coerce[UserJwtAuth]
-  val authData     = AuthData(JwtToken("admin"), adminUser, adminJwtAuth, userJwtAuth, tokenExp)
+  val adminToken   = JwtToken("admin")
 
   forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
     spec("Authentication") {
       mkRedis.use { cmd =>
         for {
           t <- LiveTokens.make[IO](tokenConfig, tokenExp)
-          a <- LiveAuth.make(authData, t, new TestUsers(un2), cmd)
-          x <- a.findUser[CommonUser](UserRole)(JwtToken("invalid"))(jwtClaim)
-          j <- a.newUser(un1, pw, UserRole)
+          a <- LiveAuth.make(tokenExp, t, new TestUsers(un2), cmd)
+          u <- LiveUsersAuth.make[IO](cmd)
+          x <- u.findUser(JwtToken("invalid"))(jwtClaim)
+          j <- a.newUser(un1, pw)
           e <- jwtDecode[IO](j, userJwtAuth.value).attempt
           k <- a.login(un2, pw)
           f <- jwtDecode[IO](k, userJwtAuth.value).attempt
           _ <- a.logout(k, un2)
-          y <- a.findUser[CommonUser](UserRole)(k)(jwtClaim)
-          w <- a.findUser[CommonUser](UserRole)(j)(jwtClaim)
+          y <- u.findUser(k)(jwtClaim)
+          w <- u.findUser(j)(jwtClaim)
         } yield
           assert(
             x.isEmpty && e.isRight && f.isRight && y.isEmpty &&

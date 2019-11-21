@@ -10,7 +10,7 @@ import shop.algebras.Auth
 import shop.domain.auth._
 import shop.http.decoder._
 import shop.http.json._
-import shop.http.auth.roles._
+import shop.http.auth.users._
 
 final class LoginRoutes[F[_]: Sync](
     auth: Auth[F]

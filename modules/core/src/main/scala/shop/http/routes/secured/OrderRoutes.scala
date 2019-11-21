@@ -8,7 +8,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.Orders
 import shop.domain.order._
-import shop.http.auth.roles.CommonUser
+import shop.http.auth.users.CommonUser
 import shop.http.json._
 
 final class OrderRoutes[F[_]: Sync](

@@ -6,7 +6,7 @@ import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
-import shop.http.auth.roles.CommonUser
+import shop.http.auth.users.CommonUser
 import shop.domain.cart._
 import shop.domain.checkout._
 import shop.domain.order._
