@@ -14,7 +14,7 @@ trait ResourceSuite[A] extends PureTestSuite with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val (r, h) = resource.allocated.unsafeRunSync()
+    val (r, h) = resources.allocated.unsafeRunSync()
     res = r
     cleanUp = h
   }
