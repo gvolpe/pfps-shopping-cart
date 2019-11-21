@@ -19,15 +19,15 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
 import skunk._
-import suite.PureTestSuite
+import suite.ResourceSuite
 
 // To see this in action, change `PostgreSQLTest` from class to object and this one to class
-object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
+class ResourcePostgreSQLTest extends ResourceSuite[Resource[IO, Session[IO]]] {
 
   // For it:tests, one test is enough
   val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
 
-  private val sessionPool =
+  override def resource =
     Session.pooled[IO](
       host = "localhost",
       port = 5432,
@@ -36,23 +36,8 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
       max = 10
     )
 
-  private[this] var pool: Resource[IO, Session[IO]] = _
-  private[this] var handle: IO[Unit]                = _
-
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    val (s, h) = sessionPool.allocated.unsafeRunSync()
-    pool = s
-    handle = h
-  }
-
-  override def afterAll(): Unit = {
-    super.afterAll()
-    handle.unsafeRunSync()
-  }
-
   forAll(MaxTests) { (brand: Brand) =>
-    spec("Brands") {
+    specR("Brands") { pool =>
       for {
         b <- LiveBrands.make[IO](pool)
         x <- b.findAll
@@ -67,7 +52,7 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
   }
 
   forAll(MaxTests) { (category: Category) =>
-    spec("Categories") {
+    specR("Categories") { pool =>
       for {
         c <- LiveCategories.make[IO](pool)
         x <- c.findAll
@@ -82,7 +67,7 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
   }
 
   forAll(MaxTests) { (item: Item) =>
-    spec("Items") {
+    specR("Items") { pool =>
       def newItem(
           bid: Option[BrandId],
           cid: Option[CategoryId]
@@ -113,7 +98,7 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
   }
 
   forAll(MaxTests) { (username: UserName, password: Password) =>
-    spec("Users") {
+    specR("Users") { pool =>
       val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
       for {
@@ -131,7 +116,7 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
   }
 
   forAll(MaxTests) { (oid: OrderId, pid: PaymentId, un: UserName, pw: Password, items: List[CartItem], usd: USD) =>
-    spec("Orders") {
+    specR("Orders") { pool =>
       val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
       for {

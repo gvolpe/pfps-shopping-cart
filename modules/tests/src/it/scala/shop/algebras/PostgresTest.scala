@@ -20,7 +20,7 @@ import shop.domain.order._
 import skunk._
 import suite.PureTestSuite
 
-class PostgreSQLTest extends PureTestSuite {
+object PostgreSQLTest extends PureTestSuite {
 
   // For it:tests, one test is more than enough
   val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
