@@ -27,9 +27,9 @@ import shop.domain.category._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
+import shop.http.auth.users._
 import shop.logger.NoOp
 import suite.PureTestSuite
-import shop.http.auth.users._
 
 class RedisTest extends PureTestSuite {
 

@@ -9,6 +9,7 @@ import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
 import natchez.Trace.Implicits.noop // needed for skunk
 import org.scalacheck.Test.Parameters
+import org.scalatest.BeforeAndAfterAll
 import shop.arbitraries._
 import shop.config.data.PasswordSalt
 import shop.domain.auth._
@@ -19,8 +20,6 @@ import shop.domain.item._
 import shop.domain.order._
 import skunk._
 import suite.PureTestSuite
-import org.scalatest.BeforeAndAfterAll
-import cats.effect.concurrent.Deferred
 
 // To see this in action, change `PostgreSQLTest` from class to object and this one to class
 object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
@@ -37,8 +36,6 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
       max = 10
     )
 
-  private[this] var flag = Deferred[IO, Unit].unsafeRunSync()
-
   private[this] var pool: Resource[IO, Session[IO]] = _
   private[this] var handle: IO[Unit]                = _
 
@@ -47,7 +44,6 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
     val (s, h) = sessionPool.allocated.unsafeRunSync()
     pool = s
     handle = h
-    flag.complete(()).unsafeRunSync()
   }
 
   override def afterAll(): Unit = {
@@ -58,7 +54,6 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
   forAll(MaxTests) { (brand: Brand) =>
     spec("Brands") {
       for {
-        _ <- flag.get
         b <- LiveBrands.make[IO](pool)
         x <- b.findAll
         _ <- b.create(brand.name)
@@ -74,7 +69,6 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
   forAll(MaxTests) { (category: Category) =>
     spec("Categories") {
       for {
-        _ <- flag.get
         c <- LiveCategories.make[IO](pool)
         x <- c.findAll
         _ <- c.create(category.name)
@@ -101,7 +95,6 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
       )
 
       for {
-        _ <- flag.get
         b <- LiveBrands.make[IO](pool)
         c <- LiveCategories.make[IO](pool)
         i <- LiveItems.make[IO](pool)
@@ -124,7 +117,6 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
       val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
       for {
-        _ <- flag.get
         c <- LiveCrypto.make[IO](salt)
         u <- LiveUsers.make[IO](pool, c)
         d <- u.create(username, password)
@@ -143,7 +135,6 @@ object UglyPostgreSQLTest extends PureTestSuite with BeforeAndAfterAll {
       val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
       for {
-        _ <- flag.get
         o <- LiveOrders.make[IO](pool)
         c <- LiveCrypto.make[IO](salt)
         u <- LiveUsers.make[IO](pool, c)
