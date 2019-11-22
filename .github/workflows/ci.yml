@@ -12,9 +12,7 @@ jobs:
     - uses: olafurpg/setup-scala@v5
     - name: Starting up Postgres and Redis
       run: docker-compose up -d
-    - name: Integration Tests
-      run: sbt -J-Xms4G -J-Xmx4G it:test
-    - name: Unit Tests
-      run: sbt -J-Xms4G -J-Xmx4G test
+    - name: Tests
+      run: sbt -J-Xms4G -J-Xmx4G test it:test
     - name: Shutting down Postgres and Redis
       run: docker-compose down
