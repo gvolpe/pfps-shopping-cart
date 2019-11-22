@@ -35,6 +35,7 @@ class ResourcePostgreSQLTest extends ResourceSuite[Resource[IO, Session[IO]]] {
     )
 
   withResources { pool =>
+
     forAll(MaxTests) { (brand: Brand) =>
       spec("Brands") {
         for {
