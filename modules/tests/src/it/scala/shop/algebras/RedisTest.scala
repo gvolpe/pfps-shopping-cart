@@ -28,7 +28,7 @@ import shop.logger.NoOp
 import shop.http.auth.users._
 import suite.ResourceSuite
 
-class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
+object RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
   // For it:tests, one test is enough
   val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
