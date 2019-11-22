@@ -1,11 +1,18 @@
 name: Build
+
 on:
   push:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v5
+    - name: Starting up Postgres and Redis
+      run: docker-compose up -d
     - name: Tests
-      run: sbt -J-Xms4G -J-Xmx4G test
+      run: sbt -J-Xms4G -J-Xmx4G test it:test
+    - name: Shutting down Postgres and Redis
+      run: docker-compose down
