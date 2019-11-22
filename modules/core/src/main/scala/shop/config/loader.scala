@@ -24,20 +24,20 @@ object load {
       .flatMap {
         case Test =>
           default(
-            redisUri = "redis://localhost",
-            paymentUri = "http://10.123.154.10/api"
+            redisUri = RedisURI("redis://localhost"),
+            paymentUri = PaymentURI("http://10.123.154.10/api")
           )
         case Prod =>
           default(
-            redisUri = "redis://10.123.154.176",
-            paymentUri = "https://payments.net/api"
+            redisUri = RedisURI("redis://10.123.154.176"),
+            paymentUri = PaymentURI("https://payments.net/api")
           )
       }
       .load[F]
 
   private def default(
-      redisUri: NonEmptyString,
-      paymentUri: NonEmptyString
+      redisUri: RedisURI,
+      paymentUri: PaymentURI
   ): ConfigValue[AppConfig] =
     (
       env("SC_JWT_SECRET_KEY").as[NonEmptyString].secret,

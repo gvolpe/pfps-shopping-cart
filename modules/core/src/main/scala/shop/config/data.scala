@@ -51,9 +51,11 @@ object data {
       max: PosInt
   )
 
-  @newtype case class RedisConfig(uri: NonEmptyString)
+  @newtype case class RedisURI(value: NonEmptyString)
+  @newtype case class RedisConfig(uri: RedisURI)
 
-  @newtype case class PaymentConfig(uri: NonEmptyString)
+  @newtype case class PaymentURI(value: NonEmptyString)
+  @newtype case class PaymentConfig(uri: PaymentURI)
 
   case class HttpServerConfig(
     host: NonEmptyString,

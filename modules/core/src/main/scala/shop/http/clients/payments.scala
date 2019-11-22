@@ -23,7 +23,7 @@ final class LivePaymentClient[F[_]: Sync](
 ) extends PaymentClient[F] {
 
   def process(userId: UserId, total: USD, card: Card): F[PaymentId] =
-    Uri.fromString(cfg.uri.value + "/payments").liftTo[F].flatMap { uri =>
+    Uri.fromString(cfg.uri.value.value + "/payments").liftTo[F].flatMap { uri =>
       client
         .get[PaymentId](uri) { r =>
           if (r.status == Status.Ok || r.status == Status.Conflict)
