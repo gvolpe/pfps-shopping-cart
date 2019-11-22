@@ -8,7 +8,6 @@ import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
 import natchez.Trace.Implicits.noop // needed for skunk
-import org.scalacheck.Test.Parameters
 import shop.arbitraries._
 import shop.config.data.PasswordSalt
 import shop.domain.auth._

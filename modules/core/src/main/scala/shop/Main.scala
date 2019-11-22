@@ -2,15 +2,11 @@ package shop
 
 import cats.Parallel
 import cats.effect._
-import cats.effect.implicits._
 import cats.implicits._
-import fs2.Stream
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import modules._
-import org.http4s.client.Client
 import org.http4s.server.blaze.BlazeServerBuilder
-import scala.concurrent.ExecutionContext
 import shop.config.data.AppConfig
 
 object Main extends IOApp {

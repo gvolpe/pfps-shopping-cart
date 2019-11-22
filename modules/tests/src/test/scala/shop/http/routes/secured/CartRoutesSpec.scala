@@ -2,7 +2,6 @@ package shop.http.routes.secured
 
 import cats.data.Kleisli
 import cats.effect._
-import cats.implicits._
 import io.estatico.newtype.ops._
 import java.util.UUID
 import org.http4s._

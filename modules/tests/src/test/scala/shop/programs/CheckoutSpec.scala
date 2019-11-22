@@ -3,22 +3,16 @@ package shop.programs
 import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.implicits._
-import io.estatico.newtype.ops._
 import retry.RetryPolicy
 import retry.RetryPolicies._
 import shop.algebras._
 import shop.arbitraries._
 import shop.domain.auth._
-import shop.domain.brand._
 import shop.domain.cart._
-import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
-import shop.effects.Background
-import shop.ext.refined._
 import shop.http.clients._
-import scala.concurrent.duration._
 import suite.PureTestSuite
 
 final class CheckoutSpec extends PureTestSuite {

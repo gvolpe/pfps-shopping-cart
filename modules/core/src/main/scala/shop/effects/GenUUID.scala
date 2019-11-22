@@ -1,12 +1,10 @@
 package shop.algebras
 
-import cats.Applicative
 import cats.effect.Sync
 import cats.implicits._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import java.util.UUID
-import shop.domain._
 import shop.effects._
 
 trait GenUUID[F[_]] {

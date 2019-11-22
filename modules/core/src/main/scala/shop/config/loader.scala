@@ -4,10 +4,8 @@ import cats.effect._
 import cats.implicits._
 import ciris._
 import ciris.refined._
-import enumeratum._
 import environments._
 import environments.AppEnvironment._
-import eu.timepit.refined.api._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString

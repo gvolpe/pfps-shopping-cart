@@ -2,7 +2,6 @@ package shop.http
 
 import cats.Monad
 import cats.implicits._
-import io.circe.Decoder
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 

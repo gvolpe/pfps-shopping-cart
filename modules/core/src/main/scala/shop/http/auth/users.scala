@@ -2,7 +2,6 @@ package shop.http.auth
 
 import dev.profunktor.auth.jwt._
 import io.estatico.newtype.macros.newtype
-import shop.config.data.TokenExpiration
 import shop.domain.auth._
 
 object users {
