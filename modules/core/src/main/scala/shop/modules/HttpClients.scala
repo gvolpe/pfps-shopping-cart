@@ -11,16 +11,13 @@ object HttpClients {
       cfg: PaymentConfig,
       client: Client[F]
   ): F[HttpClients[F]] =
-    new LiveHttpClients[F](cfg, client).pure[F].widen
+    Sync[F].delay(
+      new HttpClients[F] {
+        def payment: PaymentClient[F] = new LivePaymentClient[F](cfg, client)
+      }
+    )
 }
 
 trait HttpClients[F[_]] {
   def payment: PaymentClient[F]
-}
-
-final class LiveHttpClients[F[_]: Sync] private[modules] (
-    cfg: PaymentConfig,
-    client: Client[F]
-) extends HttpClients[F] {
-  def payment: PaymentClient[F] = new LivePaymentClient[F](cfg, client)
 }

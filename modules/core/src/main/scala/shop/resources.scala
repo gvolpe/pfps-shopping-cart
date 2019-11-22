@@ -1,6 +1,5 @@
 package shop
 
-import cats.Parallel
 import cats.effect._
 import cats.implicits._
 import config.data._
@@ -52,11 +51,12 @@ object AppResources {
         .withRequestTimeout(c.requestTimeout)
         .resource
 
-    for {
-      client <- mkHttpClient(cfg.httpClientConfig)
-      psql <- mkPostgreSqlResource(cfg.postgreSQL)
-      redis <- mkRedisResource(cfg.redis)
-    } yield AppResources[F](client, psql, redis)
+    (
+      mkHttpClient(cfg.httpClientConfig),
+      mkPostgreSqlResource(cfg.postgreSQL),
+      mkRedisResource(cfg.redis)
+    ).mapN(AppResources.apply[F])
+
   }
 
 }
