@@ -32,6 +32,9 @@ jobs:
     - uses: olafurpg/setup-scala@v5
     - name: Unit Tests
       run: sbt -J-Xms4G -J-Xmx4G test
-    - name: Integration Tests
+    - name: Postgres Tests
       working-directory: ./postgres
-      run: sbt -J-Xms4G -J-Xmx4G it:test
+      run: sbt -J-Xms4G -J-Xmx4G it:testOnly *PostgresTest
+    - name: Redis Tests
+      working-directory: ./redis
+      run: sbt -J-Xms4G -J-Xmx4G it:testOnly *RedisTest

@@ -19,7 +19,7 @@ import shop.domain.order._
 import skunk._
 import suite.ResourceSuite
 
-class PostgreSQLTest extends ResourceSuite[Resource[IO, Session[IO]]] {
+class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
 
   // For it:tests, one test is enough
   val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
