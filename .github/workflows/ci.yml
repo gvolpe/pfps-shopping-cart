@@ -14,20 +14,22 @@ jobs:
 
     services:
       postgres:
-        image: postgres:10.8
+        image: postgres:12.0-alpine
         env:
           POSTGRES_DB: store
         ports:
         - 5432:5432
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:5.0.0
+        ports:
+        - 6379:6379
 
     steps:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v5
     - name: Unit Tests
       run: sbt -J-Xms4G -J-Xmx4G test
-    - uses: docker://postgres:12.0-alpine
-    - uses: docker://redis:5.0.0
     - name: Integration Tests
       run: sbt -J-Xms4G -J-Xmx4G it:test
