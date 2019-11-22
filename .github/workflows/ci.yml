@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:
-  build:
+  container-job:
     runs-on: ubuntu-latest
 
     # runs all of the steps inside the specified container rather than on the VM host.
@@ -25,6 +25,7 @@ jobs:
         image: redis:5.0.0
         ports:
         - 6379:6379
+        options: --entrypoint redis-server
 
     steps:
     - uses: actions/checkout@v1
@@ -32,4 +33,5 @@ jobs:
     - name: Unit Tests
       run: sbt -J-Xms4G -J-Xmx4G test
     - name: Integration Tests
+      working-directory: ./postgres
       run: sbt -J-Xms4G -J-Xmx4G it:test
