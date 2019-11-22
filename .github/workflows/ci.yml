@@ -5,13 +5,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: docker://postgres:12.0-alpine
-    - uses: docker://redis:5.0.0
+      env: POSTGRES_DB=store
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v5
-    - name: Start up PostgreSQL
-      run: docker run --rm -e POSTGRES_DB=store -p 5432:5432
-    - name: Start up PostgreSQL
-      run: docker run --rm -p 6379:6379 redis:5.0.0
-    - name: Tests
-      run: sbt -J-Xms4G -J-Xmx4G test it:test
+    - name: Unit Tests
+      run: sbt -J-Xms4G -J-Xmx4G test
+    - uses: docker://postgres:12.0-alpine
+    - uses: docker://redis:5.0.0
+    - name: Integration Tests
+      run: sbt -J-Xms4G -J-Xmx4G it:test
