@@ -2,8 +2,6 @@ package suite
 
 import cats.effect._
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.compatible.Assertion
-import org.scalactic.source.Position
 import cats.effect.concurrent.Deferred
 
 trait ResourceSuite[A] extends PureTestSuite with BeforeAndAfterAll {
