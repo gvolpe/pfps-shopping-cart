@@ -7,30 +7,30 @@ jobs:
   buildb:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:12.0-alpine
-        env:
-          POSTGRES_DB: store
-        ports:
-        - 5432:5432
-        volumes:
-          - /home/runner/work/pfps-shopping-cart/pfps-shopping-cart/modules/core/src/main/resources/tables.sql:/docker-entrypoint-initdb.d/init.sql
-          #- ${{github.workspace}}/modules/core/src/main/resources/tables.sql:/docker-entrypoint-initdb.d/init.sql
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-      redis:
-        image: redis:5.0.0
-        ports:
-        - 6379:6379
-        options: --entrypoint redis-server
+    #services:
+    #  postgres:
+    #    image: postgres:12.0-alpine
+    #    env:
+    #      POSTGRES_DB: store
+    #    ports:
+    #    - 5432:5432
+    #    volumes:
+    #      - /home/runner/work/pfps-shopping-cart/pfps-shopping-cart/modules/core/src/main/resources/tables.sql:/docker-entrypoint-initdb.d/init.sql
+    #      #- ${{github.workspace}}/modules/core/src/main/resources/tables.sql:/docker-entrypoint-initdb.d/init.sql
+    #    # needed because the postgres container does not provide a healthcheck
+    #    options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    #  redis:
+    #    image: redis:5.0.0
+    #    ports:
+    #    - 6379:6379
+    #    options: --entrypoint redis-server
 
     steps:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v5
-    - name: Postgres Tests
-      run: sbt -J-Xms4G -J-Xmx4G "it:testOnly *PostgresTest"
-    - name: Redis Tests
-      run: sbt -J-Xms4G -J-Xmx4G "it:testOnly *RedisTest"
+    - name: Docker compose up
+      run: docker-compose up -d
+    - name: Integration Tests
+      run: sbt -J-Xms4G -J-Xmx4G it:test
     - name: Unit Tests
       run: sbt -J-Xms4G -J-Xmx4G test
