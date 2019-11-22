@@ -3,16 +3,13 @@ package shop.modules
 import cats.effect._
 import cats.implicits._
 import dev.profunktor.auth.JwtAuthMiddleware
-import dev.profunktor.auth.jwt.{ JwtAuth, JwtSecretKey, JwtToken }
-import io.estatico.newtype.ops._
+import dev.profunktor.auth.jwt.JwtToken
 import org.http4s._
 import org.http4s.implicits._
 import org.http4s.server.middleware._
 import org.http4s.server.Router
 import pdi.jwt._
 import scala.concurrent.duration._
-import shop.algebras._
-import shop.http.auth._
 import shop.http.auth.users._
 import shop.http.routes._
 import shop.http.routes.admin._

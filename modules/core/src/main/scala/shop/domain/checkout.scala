@@ -2,11 +2,9 @@ package shop.domain
 
 import eu.timepit.refined._
 import eu.timepit.refined.api._
-import eu.timepit.refined.auto._
 import eu.timepit.refined.boolean.And
 import eu.timepit.refined.collection.Size
 import eu.timepit.refined.string.{ MatchesRegex, ValidInt }
-import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 
 object checkout {

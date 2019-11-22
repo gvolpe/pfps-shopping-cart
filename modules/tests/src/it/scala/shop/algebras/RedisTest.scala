@@ -10,14 +10,11 @@ import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
 import dev.profunktor.redis4cats.domain.RedisCodec
 import dev.profunktor.redis4cats.interpreter.Redis
 import dev.profunktor.redis4cats.log4cats._
-import eu.timepit.refined.api._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
 import java.util.UUID
-import org.scalacheck.Test.Parameters
-import pdi.jwt._
 import scala.concurrent.duration._
 import shop.arbitraries._
 import shop.config.data._
@@ -26,10 +23,10 @@ import shop.domain.brand._
 import shop.domain.category._
 import shop.domain.cart._
 import shop.domain.item._
-import shop.domain.order._
-import shop.http.auth.users._
 import shop.logger.NoOp
 import suite.PureTestSuite
+import pdi.jwt._
+import shop.http.auth.users._
 
 class RedisTest extends PureTestSuite {
 

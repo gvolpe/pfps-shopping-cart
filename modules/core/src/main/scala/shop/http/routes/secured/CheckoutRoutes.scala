@@ -2,7 +2,6 @@ package shop.http.routes.secured
 
 import cats.effect.Sync
 import cats.implicits._
-import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._

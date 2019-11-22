@@ -2,12 +2,10 @@ package shop.http.clients
 
 import cats.effect.Sync
 import cats.implicits._
-import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.client._
 import shop.config.data.PaymentConfig
 import shop.domain.auth.UserId
-import shop.domain.cart.Cart
 import shop.domain.checkout.Card
 import shop.domain.item.USD
 import shop.domain.order._
