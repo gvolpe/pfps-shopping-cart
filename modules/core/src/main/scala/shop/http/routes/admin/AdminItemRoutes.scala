@@ -1,13 +1,11 @@
 package shop.http.routes.admin
 
 import cats.effect.Sync
-import cats.implicits._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.Items
 import shop.domain.item._
-import shop.http.auth._
 import shop.http.auth.users.AdminUser
 import shop.http.decoder._
 import shop.http.json._

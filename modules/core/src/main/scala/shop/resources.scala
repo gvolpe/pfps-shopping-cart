@@ -1,15 +1,12 @@
 package shop
 
-import cats.Parallel
 import cats.effect._
-import cats.implicits._
 import config.data._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
 import dev.profunktor.redis4cats.domain.RedisCodec
 import dev.profunktor.redis4cats.interpreter.Redis
 import dev.profunktor.redis4cats.log4cats._
-import fs2.Stream
 import io.chrisdavenport.log4cats.Logger
 import natchez.Trace.Implicits.noop // needed for skunk
 import org.http4s.client.Client

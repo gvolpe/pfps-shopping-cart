@@ -2,13 +2,11 @@ package shop.algebras
 
 import cats._
 import cats.effect.Sync
-import cats.effect.concurrent.Ref
 import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.circe.syntax._
 import io.circe.parser.decode
-import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import pdi.jwt.JwtClaim
 import shop.config.data.TokenExpiration

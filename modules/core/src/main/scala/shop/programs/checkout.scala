@@ -3,7 +3,6 @@ package shop.programs
 import cats.effect.Timer
 import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
-import io.estatico.newtype.ops._
 import retry._
 import retry.CatsEffect._
 import retry.RetryDetails._
