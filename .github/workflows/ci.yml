@@ -4,13 +4,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env: POSTGRES_DB=store
     steps:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v5
     - name: Unit Tests
       run: sbt -J-Xms4G -J-Xmx4G test
     steps:
-    - env: POSTGRES_DB=store
     - uses: docker://postgres:12.0-alpine
     - uses: docker://redis:5.0.0
     - name: Integration Tests
