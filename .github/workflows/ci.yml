@@ -33,8 +33,8 @@ jobs:
     - name: Unit Tests
       run: sbt -J-Xms4G -J-Xmx4G test
     - name: Postgres Tests
-      working-directory: ./postgres
+      working-directory: .postgres
       run: sbt -J-Xms4G -J-Xmx4G "it:testOnly *PostgresTest"
     - name: Redis Tests
-      working-directory: ./redis
+      working-directory: .redis
       run: sbt -J-Xms4G -J-Xmx4G "it:testOnly *RedisTest"
