@@ -28,9 +28,8 @@ trait ResourceSuite[A] extends PureTestSuite with BeforeAndAfterAll {
     super.afterAll()
   }
 
-  //if only this by-name could go away, I'd be much happier
   def withResources(f: (=> A) => Unit): Unit = f {
-    //just to ensure that the resource has actually been allocated (although it should have been, right?)
+    //to ensure that the resource has been allocated even before any spec(...) bodies
     latch.get.unsafeRunSync
     res
   }
