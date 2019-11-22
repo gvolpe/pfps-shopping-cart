@@ -15,6 +15,7 @@ import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
 import java.util.UUID
+import pdi.jwt._
 import scala.concurrent.duration._
 import shop.arbitraries._
 import shop.config.data._
@@ -24,27 +25,30 @@ import shop.domain.category._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.logger.NoOp
-import suite.PureTestSuite
-import pdi.jwt._
 import shop.http.auth.users._
+import suite.ResourceSuite
 
-class RedisTest extends PureTestSuite {
+class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
-  // For it:tests, one test is more than enough
+  // For it:tests, one test is enough
   val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
 
-  val Exp = 30.seconds.coerce[ShoppingCartExpiration]
-
-  val mkRedis: Resource[IO, RedisCommands[IO, String, String]] =
+  override def resources =
     for {
       uri <- Resource.liftF(RedisURI.make[IO]("redis://localhost"))
       client <- RedisClient[IO](uri)
       cmd <- Redis[IO, String, String](client, RedisCodec.Utf8, uri)
     } yield cmd
 
-  forAll(MaxTests) { (uid: UserId, it1: Item, it2: Item, q1: Quantity, q2: Quantity) =>
-    spec("Shopping Cart") {
-      mkRedis.use { cmd =>
+  lazy val Exp         = 30.seconds.coerce[ShoppingCartExpiration]
+  lazy val tokenConfig = Secret("bar": NonEmptyString).coerce[JwtSecretKeyConfig]
+  lazy val tokenExp    = 30.seconds.coerce[TokenExpiration]
+  lazy val jwtClaim    = JwtClaim("test")
+  lazy val userJwtAuth = JwtAuth.hmac("bar", JwtAlgorithm.HS256).coerce[UserJwtAuth]
+
+  withResources { cmd =>
+    forAll(MaxTests) { (uid: UserId, it1: Item, it2: Item, q1: Quantity, q2: Quantity) =>
+      spec("Shopping Cart") {
         Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
           val items = new TestItems(ref)
           LiveShoppingCart.make[IO](items, cmd, Exp).flatMap { c =>
@@ -69,20 +73,9 @@ class RedisTest extends PureTestSuite {
         }
       }
     }
-  }
 
-  val tokenConfig = Secret("bar": NonEmptyString).coerce[JwtSecretKeyConfig]
-  val tokenExp    = 30.seconds.coerce[TokenExpiration]
-  val jwtClaim    = JwtClaim("test")
-
-  val adminUser    = User(UUID.randomUUID.coerce[UserId], "admin".coerce[UserName]).coerce[AdminUser]
-  val adminJwtAuth = JwtAuth.hmac("foo", JwtAlgorithm.HS256).coerce[AdminJwtAuth]
-  val userJwtAuth  = JwtAuth.hmac("bar", JwtAlgorithm.HS256).coerce[UserJwtAuth]
-  val adminToken   = JwtToken("admin")
-
-  forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
-    spec("Authentication") {
-      mkRedis.use { cmd =>
+    forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
+      spec("Authentication") {
         for {
           t <- LiveTokens.make[IO](tokenConfig, tokenExp)
           a <- LiveAuth.make(tokenExp, t, new TestUsers(un2), cmd)
