@@ -4,7 +4,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env: POSTGRES_DB=store
+    #env: POSTGRES_DB=store
     steps:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v5
