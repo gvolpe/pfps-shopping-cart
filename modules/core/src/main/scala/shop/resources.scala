@@ -1,6 +1,7 @@
 package shop
 
 import cats.effect._
+import cats.implicits._
 import config.data._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }

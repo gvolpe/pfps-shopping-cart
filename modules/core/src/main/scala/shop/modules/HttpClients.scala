@@ -1,7 +1,6 @@
 package shop.modules
 
 import cats.effect._
-import cats.implicits._
 import org.http4s.client.Client
 import shop.config.data.PaymentConfig
 import shop.http.clients._
