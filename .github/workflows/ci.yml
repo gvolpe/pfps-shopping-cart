@@ -34,7 +34,7 @@ jobs:
       run: sbt -J-Xms4G -J-Xmx4G test
     - name: Postgres Tests
       working-directory: ./postgres
-      run: sbt -J-Xms4G -J-Xmx4G it:testOnly *PostgresTest
+      run: sbt -J-Xms4G -J-Xmx4G "it:testOnly *PostgresTest"
     - name: Redis Tests
       working-directory: ./redis
-      run: sbt -J-Xms4G -J-Xmx4G it:testOnly *RedisTest
+      run: sbt -J-Xms4G -J-Xmx4G "it:testOnly *RedisTest"
