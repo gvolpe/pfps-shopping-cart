@@ -10,8 +10,8 @@ jobs:
     - uses: olafurpg/setup-scala@v5
     - name: Unit Tests
       run: sbt -J-Xms4G -J-Xmx4G test
-    steps:
     - uses: docker://postgres:12.0-alpine
     - uses: docker://redis:5.0.0
     - name: Integration Tests
       run: sbt -J-Xms4G -J-Xmx4G it:test
+    #env: POSTGRES_DB=store
