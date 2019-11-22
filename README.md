@@ -53,6 +53,27 @@ Set the proper environment variable (`test` or `prod`):
 export SC_APP_ENV="test"
 ```
 
+### Build Docker image
+
+```
+sbt docker:stage
+docker build modules/core/target/docker/stage/ -t shopping-cart
+```
+
+Our image should now be built. We can check it by running the following command:
+
+```
+> docker images
+REPOSITORY                    TAG                 IMAGE ID            CREATED              SIZE
+shopping-cart                 latest              e836c97e5673        About a minute ago   541MB
+```
+
+To run our application using our Docker image, run the following command:
+
+```
+docker run --network="host" shopping-cart
+```
+
 ## HTTP API Resources
 
 If you use the [Insomnia](https://insomnia.rest/) REST Client, you can import the shopping cart resources using the [insomnia.json](insomnia.json) file.
