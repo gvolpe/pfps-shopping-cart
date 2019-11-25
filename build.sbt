@@ -30,21 +30,20 @@ lazy val tests = (project in file("modules/tests"))
 
 lazy val core = (project in file("modules/core"))
   .enablePlugins(JavaAppPackaging)
-  .enablePlugins(DockerPlugin)
+  .enablePlugins(GraalVMNativeImagePlugin)
   .settings(
     name := "shopping-cart-core",
     packageName := "shopping-cart",
     scalacOptions += "-Ymacro-annotations",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
-    dockerExposedPorts ++= Seq(8080),
-    dockerEnvVars ++= Map(
-      "SC_APP_ENV" -> System.getenv("SC_APP_ENV"),
-      "SC_JWT_CLAIM" -> System.getenv("SC_JWT_CLAIM"),
-      "SC_JWT_SECRET_KEY" -> System.getenv("SC_JWT_SECRET_KEY"),
-      "SC_PASSWORD_SALT" -> System.getenv("SC_PASSWORD_SALT"),
-      "SC_ACCESS_TOKEN_SECRET_KEY" -> System.getenv("SC_ACCESS_TOKEN_SECRET_KEY"),
-      "SC_ADMIN_USER_TOKEN" -> System.getenv("SC_ADMIN_USER_TOKEN")
+    graalVMNativeImageOptions ++= Seq(
+      "--initialize-at-build-time",
+      "--initialize-at-run-time=" +
+        "com.typesafe.config.impl.ConfigImpl$EnvVariablesHolder," +
+        "com.typesafe.config.impl.ConfigImpl$SystemPropertiesHolder",
+      "--no-fallback",
+      "--static"
     ),
     libraryDependencies ++= Seq(
       compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
