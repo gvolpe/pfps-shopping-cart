@@ -13,7 +13,7 @@ import shop.http.auth.users._
 import skunk.Session
 
 object Security {
-  def make[F[_]: GenUUID: Sync](
+  def make[F[_]: Sync](
       cfg: AppConfig,
       sessionPool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
