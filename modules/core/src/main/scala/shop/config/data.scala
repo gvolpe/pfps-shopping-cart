@@ -58,8 +58,8 @@ object data {
   @newtype case class PaymentConfig(uri: PaymentURI)
 
   case class HttpServerConfig(
-    host: NonEmptyString,
-    port: UserPortNumber
+      host: NonEmptyString,
+      port: UserPortNumber
   )
 
   case class HttpClientConfig(

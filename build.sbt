@@ -18,6 +18,7 @@ lazy val tests = (project in file("modules/tests"))
   .settings(
     name := "shopping-cart-test-suite",
     scalacOptions += "-Ymacro-annotations",
+    scalafmtOnCompile := true,
     Defaults.itSettings,
     libraryDependencies ++= Seq(
       compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
@@ -35,6 +36,7 @@ lazy val core = (project in file("modules/core"))
     name := "shopping-cart-core",
     packageName := "shopping-cart",
     scalacOptions += "-Ymacro-annotations",
+    scalafmtOnCompile := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
     dockerExposedPorts ++= Seq(8080),
