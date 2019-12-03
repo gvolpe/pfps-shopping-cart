@@ -2,7 +2,6 @@ package shop.domain
 
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
-import io.estatico.newtype.ops._
 import java.util.UUID
 import scala.util.control.NoStackTrace
 
@@ -15,7 +14,7 @@ object brand {
   }
 
   @newtype case class BrandParam(value: NonEmptyString) {
-    def toDomain: BrandName = value.value.toLowerCase.capitalize.coerce[BrandName]
+    def toDomain: BrandName = BrandName(value.value.toLowerCase.capitalize)
   }
 
   case class Brand(uuid: BrandId, name: BrandName)

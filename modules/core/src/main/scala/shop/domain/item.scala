@@ -4,7 +4,6 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
-import io.estatico.newtype.ops._
 import java.util.UUID
 //import squants.market.USD
 import shop.domain.brand._
@@ -40,8 +39,8 @@ object item {
   ) {
     def toDomain: CreateItem =
       CreateItem(
-        name.value.value.coerce[ItemName],
-        description.value.value.coerce[ItemDescription],
+        ItemName(name.value.value),
+        ItemDescription(description.value.value),
         price,
         brandId,
         categoryId
@@ -67,8 +66,8 @@ object item {
   ) {
     def toDomain: UpdateItem =
       UpdateItem(
-        UUID.fromString(id.value.value).coerce[ItemId],
-        BigDecimal(price.value.value).coerce[USD]
+        ItemId(UUID.fromString(id.value.value)),
+        USD(BigDecimal(price.value.value))
       )
   }
 

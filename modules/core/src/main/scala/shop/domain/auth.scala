@@ -2,7 +2,6 @@ package shop.domain
 
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
-import io.estatico.newtype.ops._
 import java.util.UUID
 import javax.crypto.Cipher
 import scala.util.control.NoStackTrace
@@ -21,11 +20,11 @@ object auth {
   // --------- user registration -----------
 
   @newtype case class UserNameParam(value: NonEmptyString) {
-    def toDomain: UserName = value.value.toLowerCase.coerce[UserName]
+    def toDomain: UserName = UserName(value.value.toLowerCase)
   }
 
   @newtype case class PasswordParam(value: NonEmptyString) {
-    def toDomain: Password = value.value.coerce[Password]
+    def toDomain: Password = Password(value.value)
   }
 
   case class CreateUser(

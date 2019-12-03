@@ -1,7 +1,6 @@
 package shop.http.routes.secured
 
 import cats.effect.Sync
-import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
@@ -22,7 +21,7 @@ final class OrderRoutes[F[_]: Sync](
       Ok(orders.findBy(user.value.id))
 
     case GET -> Root / UUIDVar(orderId) as user =>
-      Ok(orders.get(user.value.id, orderId.coerce[OrderId]))
+      Ok(orders.get(user.value.id, OrderId(orderId)))
 
   }
 

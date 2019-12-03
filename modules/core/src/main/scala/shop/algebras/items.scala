@@ -2,7 +2,6 @@ package shop.algebras
 
 import cats.effect._
 import cats.implicits._
-import io.estatico.newtype.ops._
 import shop.domain.brand.Brand
 import shop.domain.category._
 import shop.domain.brand._
@@ -76,12 +75,12 @@ private object ItemQueries {
     (uuid ~ varchar ~ varchar ~ numeric ~ uuid ~ varchar ~ uuid ~ varchar).map {
       case i ~ n ~ d ~ p ~ bi ~ bn ~ ci ~ cn =>
         Item(
-          i.coerce[ItemId],
-          n.coerce[ItemName],
-          d.coerce[ItemDescription],
-          p.coerce[USD],
-          Brand(bi.coerce[BrandId], bn.coerce[BrandName]),
-          Category(ci.coerce[CategoryId], cn.coerce[CategoryName])
+          ItemId(i),
+          ItemName(n),
+          ItemDescription(d),
+          USD(p),
+          Brand(BrandId(bi), BrandName(bn)),
+          Category(CategoryId(ci), CategoryName(cn))
         )
     }
 

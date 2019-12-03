@@ -5,7 +5,6 @@ import cats.effect._
 import cats.effect.implicits._
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
-import io.estatico.newtype.ops._
 import scala.concurrent.duration._
 import shop.domain.healthcheck._
 import skunk._
@@ -39,7 +38,7 @@ final class LiveHealthCheck[F[_]: Concurrent: Parallel: Timer] private (
       .map(_.nonEmpty)
       .timeout(1.second)
       .orElse(false.pure[F])
-      .map(_.coerce[RedisStatus])
+      .map(RedisStatus.apply)
 
   val postgresHealth: F[PostgresStatus] =
     sessionPool
@@ -47,7 +46,7 @@ final class LiveHealthCheck[F[_]: Concurrent: Parallel: Timer] private (
       .map(_.nonEmpty)
       .timeout(1.second)
       .orElse(false.pure[F])
-      .map(_.coerce[PostgresStatus])
+      .map(PostgresStatus.apply)
 
   val status: F[AppStatus] =
     (redisHealth, postgresHealth).parMapN(AppStatus)

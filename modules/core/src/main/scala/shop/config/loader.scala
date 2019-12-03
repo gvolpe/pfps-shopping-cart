@@ -9,7 +9,6 @@ import environments.AppEnvironment._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
-import io.estatico.newtype.ops._
 import scala.concurrent.duration._
 import shop.config.data._
 
@@ -46,14 +45,14 @@ object load {
     ).parMapN { (secretKey, claimStr, tokenKey, adminToken, salt) =>
       AppConfig(
         AdminJwtConfig(
-          secretKey.coerce[JwtSecretKeyConfig],
-          claimStr.coerce[JwtClaimConfig],
-          adminToken.coerce[AdminUserTokenConfig]
+          JwtSecretKeyConfig(secretKey),
+          JwtClaimConfig(claimStr),
+          AdminUserTokenConfig(adminToken)
         ),
-        tokenKey.coerce[JwtSecretKeyConfig],
-        salt.coerce[PasswordSalt],
-        30.minutes.coerce[TokenExpiration],
-        30.minutes.coerce[ShoppingCartExpiration],
+        JwtSecretKeyConfig(tokenKey),
+        PasswordSalt(salt),
+        TokenExpiration(30.minutes),
+        ShoppingCartExpiration(30.minutes),
         CheckoutConfig(
           retriesLimit = 3,
           retriesBackoff = 10.milliseconds

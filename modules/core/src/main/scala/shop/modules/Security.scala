@@ -4,7 +4,6 @@ import cats.effect._
 import cats.implicits._
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
-import io.estatico.newtype.ops._
 import pdi.jwt._
 import shop.algebras._
 import shop.config.data._
@@ -20,20 +19,22 @@ object Security {
   ): F[Security[F]] = {
 
     val adminJwtAuth: AdminJwtAuth =
-      JwtAuth
-        .hmac(
-          cfg.adminJwtConfig.secretKey.value.value.value,
-          JwtAlgorithm.HS256
-        )
-        .coerce[AdminJwtAuth]
+      AdminJwtAuth(
+        JwtAuth
+          .hmac(
+            cfg.adminJwtConfig.secretKey.value.value.value,
+            JwtAlgorithm.HS256
+          )
+      )
 
     val userJwtAuth: UserJwtAuth =
-      JwtAuth
-        .hmac(
-          cfg.tokenConfig.value.value.value,
-          JwtAlgorithm.HS256
-        )
-        .coerce[UserJwtAuth]
+      UserJwtAuth(
+        JwtAuth
+          .hmac(
+            cfg.tokenConfig.value.value.value,
+            JwtAlgorithm.HS256
+          )
+      )
 
     val adminToken = JwtToken(cfg.adminJwtConfig.adminToken.value.value.value)
 
@@ -41,7 +42,7 @@ object Security {
       adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
       content = adminClaim.content.replace("{", "0").replace("}", "c")
       adminId <- GenUUID[F].read[UserId](content)
-      adminUser = User(adminId, "admin".coerce[UserName]).coerce[AdminUser]
+      adminUser = AdminUser(User(adminId, UserName("admin")))
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](sessionPool, crypto)
