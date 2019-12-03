@@ -3,7 +3,6 @@ package shop.algebras
 import cats.effect._
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
-import io.estatico.newtype.ops._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
@@ -36,11 +35,12 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
 ) extends ShoppingCart[F] {
 
   private def calcTotal(items: List[CartItem]): USD =
-    items
-      .foldMap { i =>
-        i.item.price.value * i.quantity.value
-      }
-      .coerce[USD]
+    USD(
+      items
+        .foldMap { i =>
+          i.item.price.value * i.quantity.value
+        }
+    )
 
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
@@ -53,7 +53,7 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
           case (k, v) =>
             for {
               id <- GenUUID[F].read[ItemId](k)
-              qt <- ApThrow[F].catchNonFatal(v.toInt.coerce[Quantity])
+              qt <- ApThrow[F].catchNonFatal(Quantity(v.toInt))
               rs <- items.findById(id).map(_.map(i => CartItem(i, qt)))
             } yield rs
         }

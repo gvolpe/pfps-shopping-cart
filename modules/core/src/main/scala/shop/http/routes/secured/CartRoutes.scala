@@ -2,7 +2,6 @@ package shop.http.routes.secured
 
 import cats.effect.Sync
 import cats.implicits._
-import io.estatico.newtype.ops._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
@@ -43,7 +42,7 @@ final class CartRoutes[F[_]: Sync](
 
     // Remove item from the cart
     case DELETE -> Root / UUIDVar(uuid) as user =>
-      shoppingCart.removeItem(user.value.id, uuid.coerce[ItemId]) *> NoContent()
+      shoppingCart.removeItem(user.value.id, ItemId(uuid)) *> NoContent()
   }
 
   def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(

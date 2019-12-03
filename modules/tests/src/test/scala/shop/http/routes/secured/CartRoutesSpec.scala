@@ -2,7 +2,6 @@ package shop.http.routes.secured
 
 import cats.data.Kleisli
 import cats.effect._
-import io.estatico.newtype.ops._
 import java.util.UUID
 import org.http4s._
 import org.http4s.Method._
@@ -19,7 +18,7 @@ import suite.HttpTestSuite
 
 class CartRoutesSpec extends HttpTestSuite {
 
-  val authUser = User(UUID.randomUUID.coerce[UserId], "user".coerce[UserName]).coerce[CommonUser]
+  val authUser = CommonUser(User(UserId(UUID.randomUUID), UserName("user")))
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] =
     AuthMiddleware(Kleisli.pure(authUser))

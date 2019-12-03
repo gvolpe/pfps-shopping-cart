@@ -2,7 +2,6 @@ package shop.algebras
 
 import cats.effect.Sync
 import cats.implicits._
-import io.estatico.newtype.ops._
 import javax.crypto.spec.{ PBEKeySpec, SecretKeySpec }
 import javax.crypto.{ Cipher, SecretKeyFactory }
 import shop.config.data.PasswordSalt
@@ -22,9 +21,9 @@ object LiveCrypto {
         val factory  = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
         val bytes    = factory.generateSecret(keySpec).getEncoded
         val sKeySpec = new SecretKeySpec(bytes, "AES")
-        val eCipher  = Cipher.getInstance("AES").coerce[EncryptCipher]
+        val eCipher  = EncryptCipher(Cipher.getInstance("AES"))
         eCipher.value.init(Cipher.ENCRYPT_MODE, sKeySpec)
-        val dCipher = Cipher.getInstance("AES").coerce[DecryptCipher]
+        val dCipher = DecryptCipher(Cipher.getInstance("AES"))
         dCipher.value.init(Cipher.DECRYPT_MODE, sKeySpec)
         (eCipher, dCipher)
       }
@@ -46,14 +45,14 @@ final class LiveCrypto private (
     val bytes      = password.value.getBytes("UTF-8")
     val result     = new String(eCipher.value.doFinal(bytes), "UTF-8")
     val removeNull = result.replaceAll("\\u0000", Key)
-    removeNull.coerce[EncryptedPassword]
+    EncryptedPassword(removeNull)
   }
 
   def decrypt(password: EncryptedPassword): Password = {
     val bytes      = password.value.getBytes("UTF-8")
     val result     = new String(dCipher.value.doFinal(bytes), "UTF-8")
     val insertNull = result.replaceAll(Key, "\\u0000")
-    insertNull.coerce[Password]
+    Password(insertNull)
   }
 
 }

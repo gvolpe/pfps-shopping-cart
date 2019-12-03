@@ -7,7 +7,6 @@ import dev.profunktor.auth.jwt.JwtToken
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.circe.syntax._
 import io.circe.parser.decode
-import io.estatico.newtype.ops._
 import pdi.jwt.JwtClaim
 import shop.config.data.TokenExpiration
 import shop.domain.auth._
@@ -65,7 +64,7 @@ class LiveUsersAuth[F[_]: Functor](
     redis
       .get(token.value)
       .map(_.flatMap { u =>
-        decode[User](u).toOption.map(_.coerce[CommonUser])
+        decode[User](u).toOption.map(CommonUser.apply)
       })
 
 }
