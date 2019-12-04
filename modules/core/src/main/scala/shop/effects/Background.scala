@@ -26,6 +26,8 @@ object Background {
         Deferred[F, Unit].flatMap { gate =>
           (Timer[F].sleep(duration) *> fa.guarantee(gate.complete(()))).start
             .bracket(_ => gate.get)(_.cancel)
+            .start
+            .void
         }
 
     }
