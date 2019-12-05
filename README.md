@@ -2,6 +2,7 @@ shopping-cart
 =============
 
 ![CI Status](https://github.com/gvolpe/pfps-shopping-cart/workflows/Build/badge.svg)
+[![MergifyStatus](https://img.shields.io/endpoint.svg?url=https://gh.mergify.io/badges/gvolpe/pfps-shopping-cart&style=flat)](https://mergify.io)
 
 ### Authentication Data
 
