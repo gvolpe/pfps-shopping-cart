@@ -9,8 +9,8 @@ import shop.effects._
 
 trait GenUUID[F[_]] {
   def make: F[UUID]
-  def make[A: Coercible[UUID, ?]]: F[A]
-  def read[A: Coercible[UUID, ?]](str: String): F[A]
+  def make[A: Coercible[UUID, *]]: F[A]
+  def read[A: Coercible[UUID, *]](str: String): F[A]
 }
 
 object GenUUID {
@@ -21,10 +21,10 @@ object GenUUID {
       def make: F[UUID] =
         Sync[F].delay(UUID.randomUUID())
 
-      def make[A: Coercible[UUID, ?]]: F[A] =
+      def make[A: Coercible[UUID, *]]: F[A] =
         make.map(_.coerce[A])
 
-      def read[A: Coercible[UUID, ?]](str: String): F[A] =
+      def read[A: Coercible[UUID, *]](str: String): F[A] =
         ApThrow[F].catchNonFatal(UUID.fromString(str).coerce[A])
     }
 }
