@@ -64,15 +64,16 @@ docker build modules/core/target/docker/stage/ -t shopping-cart
 Our image should now be built. We can check it by running the following command:
 
 ```
-> docker images
+> docker images | grep shopping-cart
 REPOSITORY                    TAG                 IMAGE ID            CREATED              SIZE
-shopping-cart                 latest              e836c97e5673        About a minute ago   541MB
+shopping-cart                 latest              646501a87362        2 seconds ago       138MB
 ```
 
 To run our application using our Docker image, run the following command:
 
 ```
-docker run --network="host" shopping-cart
+cd /app
+docker-compose up
 ```
 
 ## HTTP API Resources
