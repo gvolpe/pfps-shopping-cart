@@ -24,7 +24,7 @@ object Dependencies {
     val kindProjector    = "0.11.0"
     val logback          = "1.2.3"
 
-    val scalaCheck = "1.14.1"
+    val scalaCheck = "1.14.2"
     val scalaTest  = "3.0.8"
   }
 
