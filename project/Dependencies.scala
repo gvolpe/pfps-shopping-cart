@@ -7,7 +7,7 @@ object Dependencies {
     val catsEffect    = "2.0.0"
     val catsMeowMtl   = "0.4.0"
     val catsRetry     = "0.3.2"
-    val circe         = "0.12.2"
+    val circe         = "0.12.3"
     val ciris         = "1.0.2"
     val javaxCrypto   = "1.0.1"
     val fs2           = "2.1.0"
