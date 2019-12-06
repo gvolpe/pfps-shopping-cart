@@ -72,6 +72,7 @@ lazy val core = (project in file("modules/core"))
       Libraries.javaxCrypto,
       Libraries.log4cats,
       Libraries.logback % Runtime,
+      Libraries.monix,
       Libraries.newtype,
       Libraries.redis4catsEffects,
       Libraries.redis4catsLog4cats,
