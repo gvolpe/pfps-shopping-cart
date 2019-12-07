@@ -42,6 +42,7 @@ lazy val core = (project in file("modules/core"))
     Defaults.itSettings,
     dockerBaseImage := "openjdk:8u201-jre-alpine3.9",
     dockerExposedPorts ++= Seq(8080),
+    makeBatScripts := Seq(),
     libraryDependencies ++= Seq(
       compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
       compilerPlugin(Libraries.betterMonadicFor),
