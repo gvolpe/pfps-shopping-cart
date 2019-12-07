@@ -35,7 +35,7 @@ lazy val core = (project in file("modules/core"))
   .enablePlugins(AshScriptPlugin)
   .settings(
     name := "shopping-cart-core",
-    packageName := "shopping-cart",
+    packageName in Docker := "shopping-cart",
     scalacOptions += "-Ymacro-annotations",
     scalafmtOnCompile := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
@@ -43,6 +43,7 @@ lazy val core = (project in file("modules/core"))
     dockerBaseImage := "openjdk:8u201-jre-alpine3.9",
     dockerExposedPorts ++= Seq(8080),
     makeBatScripts := Seq(),
+    dockerUpdateLatest := true,
     libraryDependencies ++= Seq(
       compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
       compilerPlugin(Libraries.betterMonadicFor),

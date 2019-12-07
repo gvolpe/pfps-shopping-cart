@@ -57,8 +57,7 @@ export SC_APP_ENV="test"
 ### Build Docker image
 
 ```
-sbt docker:stage
-docker build modules/core/target/docker/stage/ -t shopping-cart
+sbt docker:publishLocal
 ```
 
 Our image should now be built. We can check it by running the following command:
