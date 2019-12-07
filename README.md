@@ -46,15 +46,7 @@ sbt it:test
 docker-compose down
 ```
 
-## Deploying
-
-Set the proper environment variable (`test` or `prod`):
-
-```
-export SC_APP_ENV="test"
-```
-
-### Build Docker image
+## Build Docker image
 
 ```
 sbt docker:publishLocal
