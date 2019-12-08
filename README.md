@@ -24,14 +24,6 @@ For password encryption:
 
 See the [docker-compose.yml](app/docker-compose.yml) file for more details.
 
-## Requirements
-
-We need to run both `PostgreSQL` and `Redis`. Get started quickly using `docker-compose`:
-
-```
-docker-compose up
-```
-
 ## Tests
 
 To run Unit Tests:
@@ -40,7 +32,8 @@ To run Unit Tests:
 sbt test
 ```
 
-To run Integration Tests:
+To run Integration Tests we need to run both `PostgreSQL` and `Redis`:
+
 
 ```
 docker-compose up
