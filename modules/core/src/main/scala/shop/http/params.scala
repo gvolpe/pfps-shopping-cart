@@ -10,7 +10,7 @@ import org.http4s._
 
 object params {
 
-  implicit def coercibleQueryParamDecoder[A: Coercible[B, ?], B: QueryParamDecoder]: QueryParamDecoder[A] =
+  implicit def coercibleQueryParamDecoder[A: Coercible[B, *], B: QueryParamDecoder]: QueryParamDecoder[A] =
     QueryParamDecoder[B].map(_.coerce[A])
 
   implicit val nonEmptyStringParamDecoder: QueryParamDecoder[String Refined NonEmpty] =
