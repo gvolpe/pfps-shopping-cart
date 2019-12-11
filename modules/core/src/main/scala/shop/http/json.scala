@@ -19,6 +19,7 @@ import shop.domain.item._
 import shop.domain.order._
 import shop.ext.refined._
 import shop.http.auth.users._
+import squants.market._
 
 object json {
 
@@ -52,6 +53,12 @@ object json {
 
   implicit val categoryDecoder: Decoder[Category] = deriveDecoder[Category]
   implicit val categoryEncoder: Encoder[Category] = deriveEncoder[Category]
+
+  implicit val moneyDecoder: Decoder[Money] =
+    Decoder[BigDecimal].map(USD.apply)
+
+  implicit val moneyEncoder: Encoder[Money] =
+    Encoder[BigDecimal].contramap(_.amount)
 
   implicit val itemDecoder: Decoder[Item] = deriveDecoder[Item]
   implicit val itemEncoder: Encoder[Item] = deriveEncoder[Item]

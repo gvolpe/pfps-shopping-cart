@@ -14,6 +14,7 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.http.auth.users._
 import shop.http.json._
+import squants.market.USD
 import suite.HttpTestSuite
 
 class CartRoutesSpec extends HttpTestSuite {

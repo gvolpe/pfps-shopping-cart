@@ -10,11 +10,9 @@ import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.generators._
+import squants.market.Money
 
 object arbitraries {
-
-  implicit def arbCoercibleBigDecimal[A: Coercible[BigDecimal, *]]: Arbitrary[A] =
-    Arbitrary(cbBigDecimal[A])
 
   implicit def arbCoercibleInt[A: Coercible[Int, *]]: Arbitrary[A] =
     Arbitrary(Gen.posNum[Int].map(_.coerce[A]))
@@ -30,6 +28,9 @@ object arbitraries {
 
   implicit val arbCategory: Arbitrary[Category] =
     Arbitrary(categoryGen)
+
+  implicit val arbMoney: Arbitrary[Money] =
+    Arbitrary(genMoney)
 
   implicit val arbItem: Arbitrary[Item] =
     Arbitrary(itemGen)
