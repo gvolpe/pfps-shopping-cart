@@ -51,7 +51,7 @@ Our image should now be built. We can check it by running the following command:
 
 ```
 > docker images | grep shopping-cart
-REPOSITORY                    TAG                 IMAGE ID            CREATED              SIZE
+REPOSITORY                    TAG                 IMAGE ID            CREATED             SIZE
 shopping-cart                 latest              646501a87362        2 seconds ago       138MB
 ```
 

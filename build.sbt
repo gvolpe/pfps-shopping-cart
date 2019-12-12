@@ -30,7 +30,6 @@ lazy val tests = (project in file("modules/tests"))
   .dependsOn(core)
 
 lazy val core = (project in file("modules/core"))
-  .enablePlugins(JavaAppPackaging)
   .enablePlugins(DockerPlugin)
   .enablePlugins(AshScriptPlugin)
   .settings(
