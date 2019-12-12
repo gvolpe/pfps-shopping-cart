@@ -5,22 +5,21 @@ import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import java.util.UUID
-//import squants.market.USD
 import shop.domain.brand._
 import shop.domain.category._
+import squants.market._
 
 object item {
 
   @newtype case class ItemId(value: UUID)
   @newtype case class ItemName(value: String)
   @newtype case class ItemDescription(value: String)
-  @newtype case class USD(value: BigDecimal)
 
   case class Item(
       uuid: ItemId,
       name: ItemName,
       description: ItemDescription,
-      price: USD,
+      price: Money,
       brand: Brand,
       category: Category
   )
@@ -33,7 +32,7 @@ object item {
   case class CreateItemParam(
       name: ItemNameParam,
       description: ItemDescriptionParam,
-      price: USD,
+      price: Money,
       brandId: BrandId,
       categoryId: CategoryId
   ) {
@@ -50,7 +49,7 @@ object item {
   case class CreateItem(
       name: ItemName,
       description: ItemDescription,
-      price: USD,
+      price: Money,
       brandId: BrandId,
       categoryId: CategoryId
   )
@@ -73,7 +72,7 @@ object item {
 
   case class UpdateItem(
       id: ItemId,
-      price: USD
+      price: Money
   )
 
 }

@@ -5,6 +5,7 @@ import java.util.UUID
 import scala.util.control.NoStackTrace
 import shop.domain.cart._
 import shop.domain.item._
+import squants.market.Money
 
 object order {
   @newtype case class OrderId(value: UUID)
@@ -14,7 +15,7 @@ object order {
       id: OrderId,
       paymentId: PaymentId,
       items: Map[ItemId, Quantity],
-      total: USD
+      total: Money
   )
 
   case object EmptyCartError extends NoStackTrace

@@ -7,12 +7,12 @@ import org.http4s.client._
 import shop.config.data.PaymentConfig
 import shop.domain.auth.UserId
 import shop.domain.checkout.Card
-import shop.domain.item.USD
 import shop.domain.order._
 import shop.http.json._
+import squants.market.Money
 
 trait PaymentClient[F[_]] {
-  def process(userId: UserId, total: USD, card: Card): F[PaymentId]
+  def process(userId: UserId, total: Money, card: Card): F[PaymentId]
 }
 
 final class LivePaymentClient[F[_]: Sync](
@@ -20,7 +20,7 @@ final class LivePaymentClient[F[_]: Sync](
     client: Client[F]
 ) extends PaymentClient[F] {
 
-  def process(userId: UserId, total: USD, card: Card): F[PaymentId] =
+  def process(userId: UserId, total: Money, card: Card): F[PaymentId] =
     Uri.fromString(cfg.uri.value.value + "/payments").liftTo[F].flatMap { uri =>
       client
         .get[PaymentId](uri) { r =>

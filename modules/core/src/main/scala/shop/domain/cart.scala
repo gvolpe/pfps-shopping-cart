@@ -5,6 +5,7 @@ import item._
 import java.util.UUID
 import scala.util.control.NoStackTrace
 import shop.domain.auth.UserId
+import squants.market.Money
 
 object cart {
   @newtype case class Quantity(value: Int)
@@ -12,7 +13,7 @@ object cart {
   @newtype case class CartId(value: UUID)
 
   case class CartItem(item: Item, quantity: Quantity)
-  case class CartTotal(items: List[CartItem], total: USD)
+  case class CartTotal(items: List[CartItem], total: Money)
 
   case class CartNotFound(userId: UserId) extends NoStackTrace
 }

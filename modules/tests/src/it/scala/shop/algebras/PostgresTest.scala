@@ -17,6 +17,7 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
 import skunk._
+import squants.market.Money
 import suite.ResourceSuite
 
 class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
@@ -113,7 +114,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
       }
     }
 
-    forAll(MaxTests) { (oid: OrderId, pid: PaymentId, un: UserName, pw: Password, items: List[CartItem], usd: USD) =>
+    forAll(MaxTests) { (oid: OrderId, pid: PaymentId, un: UserName, pw: Password, items: List[CartItem], price: Money) =>
       spec("Orders") {
         for {
           o <- LiveOrders.make[IO](pool)
@@ -122,7 +123,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
           d <- u.create(un, pw)
           x <- o.findBy(d)
           y <- o.get(d, oid)
-          i <- o.create(d, pid, items, usd)
+          i <- o.create(d, pid, items, price)
         } yield
           assert(
             x.isEmpty && y.isEmpty && i.value.version == 4

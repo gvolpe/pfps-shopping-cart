@@ -10,6 +10,7 @@ import shop.ext.skunkx._
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._
+import squants.market._
 
 trait Items[F[_]] {
   def findAll: F[List[Item]]
@@ -116,7 +117,7 @@ private object ItemQueries {
         VALUES ($uuid, $varchar, $varchar, $numeric, $uuid, $uuid)
        """.command.contramap {
       case id ~ i =>
-        id.value ~ i.name.value ~ i.description.value ~ i.price.value ~ i.brandId.value ~ i.categoryId.value
+        id.value ~ i.name.value ~ i.description.value ~ i.price.amount ~ i.brandId.value ~ i.categoryId.value
     }
 
   val updateItem: Command[UpdateItem] =
@@ -124,6 +125,6 @@ private object ItemQueries {
         UPDATE items
         SET price = $numeric
         WHERE uuid = ${uuid.cimap[ItemId]}
-       """.command.contramap(i => i.price.value ~ i.id)
+       """.command.contramap(i => i.price.amount ~ i.id)
 
 }
