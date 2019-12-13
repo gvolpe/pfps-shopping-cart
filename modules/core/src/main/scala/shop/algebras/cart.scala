@@ -45,7 +45,7 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
 
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
-      redis.expire(userId.value.toString, exp.value)
+        redis.expire(userId.value.toString, exp.value)
 
   def get(userId: UserId): F[CartTotal] =
     redis.hGetAll(userId.value.toString).flatMap { it =>
