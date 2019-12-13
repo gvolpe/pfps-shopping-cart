@@ -140,9 +140,9 @@ final class CheckoutSpec extends PureTestSuite {
                   case (c, (x :: y :: xs)) =>
                     assert(
                       x.contains("Rescheduling") &&
-                      y.contains("Giving up") &&
-                      xs.size == MaxRetries &&
-                      c == 1
+                        y.contains("Giving up") &&
+                        xs.size == MaxRetries &&
+                        c == 1
                     )
                   case _ => fail(s"Expected $MaxRetries retries and reschedule")
                 }

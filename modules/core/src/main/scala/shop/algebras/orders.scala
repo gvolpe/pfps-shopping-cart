@@ -76,7 +76,7 @@ private object OrderQueries {
   val decoder: Decoder[Order] =
     (
       uuid.cimap[OrderId] ~ uuid ~ uuid.cimap[PaymentId] ~
-        jsonb[Map[ItemId, Quantity]] ~ numeric.map(USD.apply)
+          jsonb[Map[ItemId, Quantity]] ~ numeric.map(USD.apply)
     ).map {
       case o ~ _ ~ p ~ i ~ t =>
         Order(o, p, i, t)
@@ -85,7 +85,7 @@ private object OrderQueries {
   val encoder: Encoder[UserId ~ Order] =
     (
       uuid.cimap[OrderId] ~ uuid.cimap[UserId] ~ uuid.cimap[PaymentId] ~
-        jsonb[Map[ItemId, Quantity]] ~ numeric.contramap[Money](_.amount)
+          jsonb[Map[ItemId, Quantity]] ~ numeric.contramap[Money](_.amount)
     ).contramap {
       case id ~ o =>
         o.id ~ id ~ o.paymentId ~ o.items ~ o.total
