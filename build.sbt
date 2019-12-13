@@ -21,65 +21,61 @@ lazy val tests = (project in file("modules/tests"))
     scalafmtOnCompile := true,
     Defaults.itSettings,
     libraryDependencies ++= Seq(
-      compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
-      compilerPlugin(Libraries.betterMonadicFor),
-      Libraries.scalaTest,
-      Libraries.scalaCheck
-    )
+          compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
+          compilerPlugin(Libraries.betterMonadicFor),
+          Libraries.scalaCheck,
+          Libraries.scalaTest,
+          Libraries.scalaTestPlus
+        )
   )
   .dependsOn(core)
 
 lazy val core = (project in file("modules/core"))
-  .enablePlugins(JavaAppPackaging)
   .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin)
   .settings(
     name := "shopping-cart-core",
-    packageName := "shopping-cart",
+    packageName in Docker := "shopping-cart",
     scalacOptions += "-Ymacro-annotations",
     scalafmtOnCompile := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
+    dockerBaseImage := "openjdk:8u201-jre-alpine3.9",
     dockerExposedPorts ++= Seq(8080),
-    dockerEnvVars ++= Map(
-      "SC_APP_ENV" -> System.getenv("SC_APP_ENV"),
-      "SC_JWT_CLAIM" -> System.getenv("SC_JWT_CLAIM"),
-      "SC_JWT_SECRET_KEY" -> System.getenv("SC_JWT_SECRET_KEY"),
-      "SC_PASSWORD_SALT" -> System.getenv("SC_PASSWORD_SALT"),
-      "SC_ACCESS_TOKEN_SECRET_KEY" -> System.getenv("SC_ACCESS_TOKEN_SECRET_KEY"),
-      "SC_ADMIN_USER_TOKEN" -> System.getenv("SC_ADMIN_USER_TOKEN")
-    ),
+    makeBatScripts := Seq(),
+    dockerUpdateLatest := true,
     libraryDependencies ++= Seq(
-      compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
-      compilerPlugin(Libraries.betterMonadicFor),
-      Libraries.cats,
-      Libraries.catsEffect,
-      Libraries.catsMeowMtl,
-      Libraries.catsRetryCore,
-      Libraries.catsRetryEffect,
-      Libraries.circeCore,
-      Libraries.circeGeneric,
-      Libraries.circeParser,
-      Libraries.circeRefined,
-      Libraries.cirisCore,
-      Libraries.cirisEnum,
-      Libraries.cirisRefined,
-      Libraries.fs2,
-      Libraries.http4sDsl,
-      Libraries.http4sServer,
-      Libraries.http4sClient,
-      Libraries.http4sCirce,
-      Libraries.http4sJwtAuth,
-      Libraries.javaxCrypto,
-      Libraries.log4cats,
-      Libraries.logback % Runtime,
+          compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
+          compilerPlugin(Libraries.betterMonadicFor),
+          Libraries.cats,
+          Libraries.catsEffect,
+          Libraries.catsMeowMtl,
+          Libraries.catsRetryCore,
+          Libraries.catsRetryEffect,
+          Libraries.circeCore,
+          Libraries.circeGeneric,
+          Libraries.circeParser,
+          Libraries.circeRefined,
+          Libraries.cirisCore,
+          Libraries.cirisEnum,
+          Libraries.cirisRefined,
+          Libraries.fs2,
+          Libraries.http4sDsl,
+          Libraries.http4sServer,
+          Libraries.http4sClient,
+          Libraries.http4sCirce,
+          Libraries.http4sJwtAuth,
+          Libraries.javaxCrypto,
+          Libraries.log4cats,
+          Libraries.logback % Runtime,
       Libraries.monix,
-      Libraries.newtype,
-      Libraries.redis4catsEffects,
-      Libraries.redis4catsLog4cats,
-      Libraries.refinedCore,
-      Libraries.refinedCats,
-      Libraries.skunkCore,
-      Libraries.skunkCirce
-      //Libraries.squants, // TODO: Re-enable when there's a release for 2.13.x
-    )
+          Libraries.newtype,
+          Libraries.redis4catsEffects,
+          Libraries.redis4catsLog4cats,
+          Libraries.refinedCore,
+          Libraries.refinedCats,
+          Libraries.skunkCore,
+          Libraries.skunkCirce,
+          Libraries.squants
+        )
   )

@@ -8,6 +8,7 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.config.data.ShoppingCartExpiration
 import shop.effects._
+import squants.market._
 
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit]
@@ -34,7 +35,7 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
     exp: ShoppingCartExpiration
 ) extends ShoppingCart[F] {
 
-  private def calcTotal(items: List[CartItem]): USD =
+  private def calcTotal(items: List[CartItem]): Money =
     USD(
       items
         .foldMap { i =>
@@ -44,7 +45,7 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
 
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
-      redis.expire(userId.value.toString, exp.value)
+        redis.expire(userId.value.toString, exp.value)
 
   def get(userId: UserId): F[CartTotal] =
     redis.hGetAll(userId.value.toString).flatMap { it =>

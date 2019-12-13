@@ -7,7 +7,7 @@ object Dependencies {
     val catsEffect    = "2.0.0"
     val catsMeowMtl   = "0.4.0"
     val catsRetry     = "0.3.2"
-    val circe         = "0.12.2"
+    val circe         = "0.12.3"
     val ciris         = "1.0.2"
     val javaxCrypto   = "1.0.1"
     val fs2           = "2.1.0"
@@ -19,14 +19,15 @@ object Dependencies {
     val refined       = "0.9.10"
     val redis4cats    = "0.9.1"
     val skunk         = "0.0.7"
-    val squants       = "1.5.0"
+    val squants       = "1.6.0"
 
     val betterMonadicFor = "0.3.1"
     val kindProjector    = "0.11.0"
     val logback          = "1.2.3"
 
-    val scalaCheck = "1.14.2"
-    val scalaTest  = "3.0.8"
+    val scalaCheck    = "1.14.3"
+    val scalaTest     = "3.1.0"
+    val scalaTestPlus = "3.1.0.0-RC2"
   }
 
   object Libraries {
@@ -84,9 +85,9 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % Versions.logback
 
     // Test
-    val scalaTest      = "org.scalatest"  %% "scalatest"        % Versions.scalaTest
-    val scalaCheck     = "org.scalacheck" %% "scalacheck"       % Versions.scalaCheck
-    val catsEffectLaws = "org.typelevel"  %% "cats-effect-laws" % Versions.catsEffect
+    val scalaCheck    = "org.scalacheck"    %% "scalacheck"               % Versions.scalaCheck
+    val scalaTest     = "org.scalatest"     %% "scalatest"                % Versions.scalaTest
+    val scalaTestPlus = "org.scalatestplus" %% "scalatestplus-scalacheck" % Versions.scalaTestPlus
   }
 
 }

@@ -13,6 +13,7 @@ import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
 import shop.http.clients._
+import squants.market._
 import suite.PureTestSuite
 
 final class CheckoutSpec extends PureTestSuite {
@@ -23,19 +24,19 @@ final class CheckoutSpec extends PureTestSuite {
 
   def successfulClient(paymentId: PaymentId): PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
+      def process(userId: UserId, total: Money, card: Card): IO[PaymentId] =
         IO.pure(paymentId)
     }
 
   val unreachableClient: PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
+      def process(userId: UserId, total: Money, card: Card): IO[PaymentId] =
         IO.raiseError(PaymentError(""))
     }
 
   def recoveringClient(attemptsSoFar: Ref[IO, Int], paymentId: PaymentId): PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(userId: UserId, total: USD, card: Card): IO[PaymentId] =
+      def process(userId: UserId, total: Money, card: Card): IO[PaymentId] =
         attemptsSoFar.get.flatMap {
           case n if n == 1 => IO.pure(paymentId)
           case _           => attemptsSoFar.update(_ + 1) *> IO.raiseError(PaymentError(""))
@@ -43,7 +44,7 @@ final class CheckoutSpec extends PureTestSuite {
     }
 
   val failingOrders: Orders[IO] = new TestOrders {
-    override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
+    override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): IO[OrderId] =
       IO.raiseError(OrderError(""))
   }
 
@@ -65,7 +66,7 @@ final class CheckoutSpec extends PureTestSuite {
   }
 
   def successfulOrders(orderId: OrderId): Orders[IO] = new TestOrders {
-    override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] =
+    override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): IO[OrderId] =
       IO.pure(orderId)
   }
 
@@ -139,9 +140,9 @@ final class CheckoutSpec extends PureTestSuite {
                   case (c, (x :: y :: xs)) =>
                     assert(
                       x.contains("Rescheduling") &&
-                      y.contains("Giving up") &&
-                      xs.size == MaxRetries &&
-                      c == 1
+                        y.contains("Giving up") &&
+                        xs.size == MaxRetries &&
+                        c == 1
                     )
                   case _ => fail(s"Expected $MaxRetries retries and reschedule")
                 }
@@ -180,9 +181,9 @@ final class CheckoutSpec extends PureTestSuite {
 }
 
 protected class TestOrders() extends Orders[IO] {
-  def get(userId: UserId, orderId: OrderId): IO[Option[Order]]                                     = ???
-  def findBy(userId: UserId): IO[List[Order]]                                                      = ???
-  def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): IO[OrderId] = ???
+  def get(userId: UserId, orderId: OrderId): IO[Option[Order]]                                       = ???
+  def findBy(userId: UserId): IO[List[Order]]                                                        = ???
+  def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): IO[OrderId] = ???
 }
 
 protected class TestCart() extends ShoppingCart[IO] {

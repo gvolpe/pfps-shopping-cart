@@ -12,6 +12,7 @@ import skunk._
 import skunk.circe.codec.all._
 import skunk.codec.all._
 import skunk.implicits._
+import squants.market._
 
 trait Orders[F[_]] {
   def get(userId: UserId, orderId: OrderId): F[Option[Order]]
@@ -20,7 +21,7 @@ trait Orders[F[_]] {
       userId: UserId,
       paymentId: PaymentId,
       items: List[CartItem],
-      total: USD
+      total: Money
   ): F[OrderId]
 }
 
@@ -56,7 +57,7 @@ private class LiveOrders[F[_]: Sync](
       userId: UserId,
       paymentId: PaymentId,
       items: List[CartItem],
-      total: USD
+      total: Money
   ): F[OrderId] =
     sessionPool.use { session =>
       session.prepare(insertOrder).use { cmd =>
@@ -75,7 +76,7 @@ private object OrderQueries {
   val decoder: Decoder[Order] =
     (
       uuid.cimap[OrderId] ~ uuid ~ uuid.cimap[PaymentId] ~
-        jsonb[Map[ItemId, Quantity]] ~ numeric.cimap[USD]
+          jsonb[Map[ItemId, Quantity]] ~ numeric.map(USD.apply)
     ).map {
       case o ~ _ ~ p ~ i ~ t =>
         Order(o, p, i, t)
@@ -84,7 +85,7 @@ private object OrderQueries {
   val encoder: Encoder[UserId ~ Order] =
     (
       uuid.cimap[OrderId] ~ uuid.cimap[UserId] ~ uuid.cimap[PaymentId] ~
-        jsonb[Map[ItemId, Quantity]] ~ numeric.cimap[USD]
+          jsonb[Map[ItemId, Quantity]] ~ numeric.contramap[Money](_.amount)
     ).contramap {
       case id ~ o =>
         o.id ~ id ~ o.paymentId ~ o.items ~ o.total

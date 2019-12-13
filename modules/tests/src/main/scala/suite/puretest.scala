@@ -2,8 +2,8 @@ package suite
 
 import cats.effect._
 import java.util.UUID
-import org.scalatest.AsyncFunSuite
 import org.scalatest.compatible.Assertion
+import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalactic.source.Position
 import scala.concurrent.ExecutionContext

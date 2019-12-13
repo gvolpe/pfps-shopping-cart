@@ -11,10 +11,10 @@ import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart._
 import shop.domain.checkout._
-import shop.domain.item._
 import shop.domain.order._
 import shop.effects._
 import shop.http.clients.PaymentClient
+import squants.market.Money
 
 final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     paymentClient: PaymentClient[F],
@@ -33,7 +33,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
         Logger[F].error(s"Giving up on $action after ${g.totalRetries} retries.")
     }
 
-  private def processPayment(userId: UserId, total: USD, card: Card): F[PaymentId] = {
+  private def processPayment(userId: UserId, total: Money, card: Card): F[PaymentId] = {
     val action = retryingOnAllErrors[PaymentId](
       policy = retryPolicy,
       onError = logError("Payments")
@@ -44,7 +44,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     }
   }
 
-  private def createOrder(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: USD): F[OrderId] = {
+  private def createOrder(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): F[OrderId] = {
     val action = retryingOnAllErrors[OrderId](
       policy = retryPolicy,
       onError = logError("Order")
@@ -57,7 +57,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       .onError {
         case _ =>
           Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
-            Background[F].schedule(action, 1.hour)
+              Background[F].schedule(action, 1.hour)
       }
   }
 

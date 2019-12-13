@@ -10,6 +10,7 @@ import shop.domain.cart._
 import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
+import squants.market._
 
 object generators {
 
@@ -22,8 +23,8 @@ object generators {
   def cbInt[A: Coercible[Int, *]]: Gen[A] =
     Gen.posNum[Int].map(_.coerce[A])
 
-  def cbBigDecimal[A: Coercible[BigDecimal, *]]: Gen[A] =
-    Gen.posNum[Long].map(n => BigDecimal(n).coerce[A])
+  val genMoney: Gen[Money] =
+    Gen.posNum[Long].map(n => USD(BigDecimal(n)))
 
   val genNonEmptyString: Gen[String] =
     Gen
@@ -49,7 +50,7 @@ object generators {
       i <- cbUuid[ItemId]
       n <- cbStr[ItemName]
       d <- cbStr[ItemDescription]
-      p <- cbBigDecimal[USD]
+      p <- genMoney
       b <- brandGen
       c <- categoryGen
     } yield Item(i, n, d, p, b, c)
@@ -63,7 +64,7 @@ object generators {
   val cartTotalGen: Gen[CartTotal] =
     for {
       i <- Gen.nonEmptyListOf(cartItemGen)
-      t <- cbBigDecimal[USD]
+      t <- genMoney
     } yield CartTotal(i, t)
 
   val itemMapGen: Gen[(ItemId, Quantity)] =
