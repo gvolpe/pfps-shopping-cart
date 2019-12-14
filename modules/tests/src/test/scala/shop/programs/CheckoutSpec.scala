@@ -10,6 +10,7 @@ import shop.arbitraries._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.checkout._
+import shop.domain.errors._
 import shop.domain.item._
 import shop.domain.order._
 import shop.http.clients._

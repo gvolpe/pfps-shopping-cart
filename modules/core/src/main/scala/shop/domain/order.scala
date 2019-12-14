@@ -2,7 +2,6 @@ package shop.domain
 
 import io.estatico.newtype.macros.newtype
 import java.util.UUID
-import scala.util.control.NoStackTrace
 import shop.domain.cart._
 import shop.domain.item._
 import squants.market.Money
@@ -18,7 +17,4 @@ object order {
       total: Money
   )
 
-  case object EmptyCartError extends NoStackTrace
-  case class OrderError(cause: String) extends NoStackTrace
-  case class PaymentError(cause: String) extends NoStackTrace
 }

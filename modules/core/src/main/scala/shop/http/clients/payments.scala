@@ -7,6 +7,7 @@ import org.http4s.client._
 import shop.config.data.PaymentConfig
 import shop.domain.auth.UserId
 import shop.domain.checkout.Card
+import shop.domain.errors._
 import shop.domain.order._
 import shop.http.json._
 import squants.market.Money

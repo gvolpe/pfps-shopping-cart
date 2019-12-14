@@ -10,6 +10,7 @@ import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart._
 import shop.domain.checkout._
+import shop.domain.errors._
 import shop.domain.order._
 import shop.effects._
 import shop.http.clients.PaymentClient

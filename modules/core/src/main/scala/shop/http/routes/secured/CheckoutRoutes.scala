@@ -6,10 +6,10 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.http.auth.users.CommonUser
-import shop.domain.cart._
 import shop.domain.checkout._
-import shop.domain.order._
+import shop.domain.errors._
 import shop.http.decoder._
+import shop.http.errors._
 import shop.http.json._
 import shop.programs.CheckoutProgram
 
@@ -26,22 +26,15 @@ final class CheckoutRoutes[F[_]: Sync](
         program
           .checkout(user.value.id, card)
           .flatMap(Created(_))
-          .recoverWith {
-            case CartNotFound(userId) =>
-              NotFound(s"Cart not found for user: ${userId.value}")
-            case EmptyCartError =>
-              BadRequest("Shopping cart is empty!")
-            case PaymentError(cause) =>
-              BadRequest(cause)
-            case OrderError(cause) =>
-              BadRequest(cause)
-          }
       }
 
   }
 
-  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
-    prefixPath -> authMiddleware(httpRoutes)
-  )
+  def routes(
+      authMiddleware: AuthMiddleware[F, CommonUser]
+  )(implicit H: HttpErrorHandler[F, CheckoutError]): HttpRoutes[F] =
+    Router(
+      prefixPath -> H.handle(authMiddleware(httpRoutes))
+    )
 
 }

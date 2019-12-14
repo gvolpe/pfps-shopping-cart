@@ -2,6 +2,7 @@ package shop.modules
 
 import cats.effect._
 import cats.implicits._
+import com.olegpy.meow.hierarchy._
 import dev.profunktor.auth.JwtAuthMiddleware
 import dev.profunktor.auth.jwt.JwtToken
 import org.http4s._
@@ -10,7 +11,9 @@ import org.http4s.server.middleware._
 import org.http4s.server.Router
 import pdi.jwt._
 import scala.concurrent.duration._
+import shop.domain.errors._
 import shop.http.auth.users._
+import shop.http.errors._
 import shop.http.routes._
 import shop.http.routes.admin._
 import shop.http.routes.secured._
@@ -42,6 +45,9 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
 
   private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](security.adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](security.userJwtAuth.value, usersAuth)
+
+  // Error handlers
+  private implicit val checkoutErrorHandler: HttpErrorHandler[F, CheckoutError] = CheckoutHttpErrorHandler[F]
 
   // Auth routes
   private val loginRoutes  = new LoginRoutes[F](security.auth).routes
