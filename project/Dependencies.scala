@@ -26,7 +26,7 @@ object Dependencies {
 
     val scalaCheck    = "1.14.3"
     val scalaTest     = "3.1.0"
-    val scalaTestPlus = "3.1.0.0-RC2"
+    val scalaTestPlus = "3.1.0.0"
   }
 
   object Libraries {
@@ -83,9 +83,9 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % Versions.logback
 
     // Test
-    val scalaCheck    = "org.scalacheck"    %% "scalacheck"               % Versions.scalaCheck
-    val scalaTest     = "org.scalatest"     %% "scalatest"                % Versions.scalaTest
-    val scalaTestPlus = "org.scalatestplus" %% "scalatestplus-scalacheck" % Versions.scalaTestPlus
+    val scalaCheck    = "org.scalacheck"    %% "scalacheck"      % Versions.scalaCheck
+    val scalaTest     = "org.scalatest"     %% "scalatest"       % Versions.scalaTest
+    val scalaTestPlus = "org.scalatestplus" %% "scalacheck-1-14" % Versions.scalaTestPlus
   }
 
 }
