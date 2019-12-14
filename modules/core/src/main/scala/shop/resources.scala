@@ -1,7 +1,7 @@
 package shop
 
 import cats.effect._
-import cats.implicits._
+import com.olegpy.meow.hierarchy._
 import config.data._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
@@ -13,6 +13,7 @@ import natchez.Trace.Implicits.noop // needed for skunk
 import org.http4s.client.Client
 import org.http4s.client.blaze.BlazeClientBuilder
 import scala.concurrent.ExecutionContext
+import shop.effects._
 import skunk._
 
 final case class AppResources[F[_]](
@@ -23,9 +24,7 @@ final case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: ConcurrentEffect: ContextShift: Logger](
-      cfg: AppConfig
-  ): Resource[F, AppResources[F]] = {
+  def make[F[_]: ConcurrentEffect: ContextShift: HasAppConfig: Logger]: Resource[F, AppResources[F]] = {
 
     def mkPostgreSqlResource(c: PostgreSQLConfig): SessionPool[F] =
       Session
@@ -50,11 +49,14 @@ object AppResources {
         .withRequestTimeout(c.requestTimeout)
         .resource
 
-    (
-      mkHttpClient(cfg.httpClientConfig),
-      mkPostgreSqlResource(cfg.postgreSQL),
-      mkRedisResource(cfg.redis)
-    ).mapN(AppResources.apply[F])
+    for {
+      h <- Resource.liftF(ask[F, HttpClientConfig])
+      p <- Resource.liftF(ask[F, PostgreSQLConfig])
+      r <- Resource.liftF(ask[F, RedisConfig])
+      client <- mkHttpClient(h)
+      psql <- mkPostgreSqlResource(p)
+      redis <- mkRedisResource(r)
+    } yield AppResources(client, psql, redis)
 
   }
 

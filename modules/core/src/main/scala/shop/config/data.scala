@@ -1,5 +1,6 @@
 package shop.config
 
+import cats.mtl.ApplicativeAsk
 import ciris._
 import eu.timepit.refined.types.net.UserPortNumber
 import eu.timepit.refined.types.numeric.PosInt
@@ -8,6 +9,11 @@ import io.estatico.newtype.macros.newtype
 import scala.concurrent.duration._
 
 object data {
+
+  type HasHttpClientConfig[F[_]] = ApplicativeAsk[F, HttpClientConfig]
+  type HasPostgreSQLConfig[F[_]] = ApplicativeAsk[F, PostgreSQLConfig]
+  type HasRedisConfig[F[_]]      = ApplicativeAsk[F, RedisConfig]
+  type HasAppConfig[F[_]]        = ApplicativeAsk[F, AppConfig]
 
   @newtype case class AdminUserTokenConfig(value: Secret[NonEmptyString])
   @newtype case class JwtSecretKeyConfig(value: Secret[NonEmptyString])

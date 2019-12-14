@@ -5,6 +5,7 @@ import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.server.blaze.BlazeServerBuilder
+import shop.effects._
 import shop.modules._
 
 object Main extends IOApp {
@@ -14,7 +15,7 @@ object Main extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     config.load[IO].flatMap { cfg =>
       Logger[IO].info(s"Loaded config $cfg") *>
-        AppResources.make[IO](cfg).use { res =>
+        AppResources.make[IO].use { res =>
           for {
             security <- Security.make[IO](cfg, res.psql, res.redis)
             algebras <- Algebras.make[IO](res.redis, res.psql, cfg.cartExpiration)
