@@ -6,7 +6,7 @@ object Dependencies {
     val cats          = "2.0.0"
     val catsEffect    = "2.0.0"
     val catsMeowMtl   = "0.4.0"
-    val catsRetry     = "0.3.2"
+    val catsRetry     = "1.0.0"
     val circe         = "0.12.3"
     val ciris         = "1.0.2"
     val javaxCrypto   = "1.0.1"
@@ -30,20 +30,16 @@ object Dependencies {
   }
 
   object Libraries {
-    def catsRetry(artifact: String): ModuleID = "com.github.cb372" %% s"cats-retry-$artifact" % Versions.catsRetry
-
     def circe(artifact: String): ModuleID  = "io.circe"   %% artifact % Versions.circe
     def ciris(artifact: String): ModuleID  = "is.cir"     %% artifact % Versions.ciris
     def http4s(artifact: String): ModuleID = "org.http4s" %% artifact % Versions.http4s
 
-    val cats        = "org.typelevel" %% "cats-core"     % Versions.cats
-    val catsMeowMtl = "com.olegpy"    %% "meow-mtl-core" % Versions.catsMeowMtl
-    val catsEffect  = "org.typelevel" %% "cats-effect"   % Versions.catsEffect
-    val squants     = "org.typelevel" %% "squants"       % Versions.squants
-    val fs2         = "co.fs2"        %% "fs2-core"      % Versions.fs2
-
-    val catsRetryCore   = catsRetry("core")
-    val catsRetryEffect = catsRetry("cats-effect")
+    val cats        = "org.typelevel"    %% "cats-core"     % Versions.cats
+    val catsMeowMtl = "com.olegpy"       %% "meow-mtl-core" % Versions.catsMeowMtl
+    val catsEffect  = "org.typelevel"    %% "cats-effect"   % Versions.catsEffect
+    val catsRetry   = "com.github.cb372" %% "cats-retry"    % Versions.catsRetry
+    val squants     = "org.typelevel"    %% "squants"       % Versions.squants
+    val fs2         = "co.fs2"           %% "fs2-core"      % Versions.fs2
 
     val circeCore    = circe("circe-core")
     val circeGeneric = circe("circe-generic")
