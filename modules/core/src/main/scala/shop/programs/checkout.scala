@@ -4,7 +4,6 @@ import cats.effect.Timer
 import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
 import retry._
-import retry.CatsEffect._
 import retry.RetryDetails._
 import scala.concurrent.duration._
 import shop.algebras._
