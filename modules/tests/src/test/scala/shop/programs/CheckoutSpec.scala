@@ -39,8 +39,8 @@ final class CheckoutSpec extends PureTestSuite {
     new PaymentClient[IO] {
       def process(userId: UserId, total: Money, card: Card): IO[PaymentId] =
         attemptsSoFar.get.flatMap {
-          case n if n == 1 => IO.pure(paymentId)
-          case _           => attemptsSoFar.update(_ + 1) *> IO.raiseError(PaymentError(""))
+          case n if n.eqv(1) => IO.pure(paymentId)
+          case _             => attemptsSoFar.update(_ + 1) *> IO.raiseError(PaymentError(""))
         }
     }
 
