@@ -10,6 +10,7 @@ import io.estatico.newtype.ops._
 import natchez.Trace.Implicits.noop // needed for skunk
 import shop.arbitraries._
 import shop.config.data.PasswordSalt
+import shop.domain._
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.category._
@@ -47,7 +48,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
           z <- b.create(brand.name).attempt
         } yield
           assert(
-            x.isEmpty && y.count(_.name == brand.name) == 1 && z.isLeft
+            x.isEmpty && y.count(_.name.eqv(brand.name)).eqv(1) && z.isLeft
           )
       }
     }
@@ -62,7 +63,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
           z <- c.create(category.name).attempt
         } yield
           assert(
-            x.isEmpty && y.count(_.name == category.name) == 1 && z.isLeft
+            x.isEmpty && y.count(_.name.eqv(category.name)).eqv(1) && z.isLeft
           )
       }
     }
@@ -93,7 +94,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
           y <- i.findAll
         } yield
           assert(
-            x.isEmpty && y.count(_.name == item.name) == 1
+            x.isEmpty && y.count(_.name.eqv(item.name)).eqv(1)
           )
       }
     }
@@ -109,7 +110,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
           z <- u.create(username, password).attempt
         } yield
           assert(
-            x.count(_.id == d) == 1 && y.isEmpty && z.isLeft
+            x.count(_.id.eqv(d)).eqv(1) && y.isEmpty && z.isLeft
           )
       }
     }
@@ -126,7 +127,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
           i <- o.create(d, pid, items, price)
         } yield
           assert(
-            x.isEmpty && y.isEmpty && i.value.version == 4
+            x.isEmpty && y.isEmpty && i.value.version.eqv(4)
           )
       }
     }
