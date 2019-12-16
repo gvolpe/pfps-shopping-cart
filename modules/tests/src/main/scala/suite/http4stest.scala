@@ -1,6 +1,7 @@
 package suite
 
 import cats.effect.IO
+import cats.implicits._
 import io.circe._
 import io.circe.syntax._
 import org.http4s._
@@ -18,7 +19,7 @@ trait HttpTestSuite extends PureTestSuite {
     routes.run(req).value.flatMap {
       case Some(resp) =>
         resp.as[Json].map { json =>
-          assert(resp.status === expectedStatus && json.dropNullValues === expectedBody.asJson.dropNullValues)
+          assert(resp.status.eqv(expectedStatus) && json.dropNullValues.eqv(expectedBody.asJson.dropNullValues))
         }
       case None => fail("route nout found")
     }
@@ -26,7 +27,7 @@ trait HttpTestSuite extends PureTestSuite {
   def assertHttpStatus(routes: HttpRoutes[IO], req: Request[IO])(expectedStatus: Status) =
     routes.run(req).value.map {
       case Some(resp) =>
-        assert(resp.status === expectedStatus)
+        assert(resp.status.eqv(expectedStatus))
       case None => fail("route nout found")
     }
 

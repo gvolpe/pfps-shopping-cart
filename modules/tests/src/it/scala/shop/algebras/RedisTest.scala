@@ -2,7 +2,7 @@ package shop.algebras
 
 import cats.effect._
 import cats.effect.concurrent.Ref
-import cats.implicits.{ catsSyntaxEq => _, _ }
+import cats.implicits._
 import ciris.Secret
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
@@ -19,6 +19,7 @@ import pdi.jwt._
 import scala.concurrent.duration._
 import shop.arbitraries._
 import shop.config.data._
+import shop.domain._
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.category._
@@ -65,9 +66,9 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
               v <- c.get(uid)
             } yield
               assert(
-                x.items.isEmpty && y.items.size === 2 &&
-                z.items.size == 1 && v.items.isEmpty &&
-                w.items.headOption.fold(false)(_.quantity === q2)
+                x.items.isEmpty && y.items.size.eqv(2) &&
+                z.items.size.eqv(1) && v.items.isEmpty &&
+                w.items.headOption.fold(false)(_.quantity.eqv(q2))
               )
           }
         }
@@ -91,7 +92,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
         } yield
           assert(
             x.isEmpty && e.isRight && f.isRight && y.isEmpty &&
-            w.fold(false)(_.value.name === un1)
+            w.fold(false)(_.value.name.eqv(un1))
           )
       }
     }
