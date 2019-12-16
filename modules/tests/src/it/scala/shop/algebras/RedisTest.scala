@@ -102,7 +102,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
 protected class TestUsers(un: UserName) extends Users[IO] {
   def find(username: UserName, password: Password): IO[Option[User]] =
-    (username == un).guard[Option].as(User(UUID.randomUUID.coerce[UserId], un)).pure[IO]
+    (username.eqv(un)).guard[Option].as(User(UUID.randomUUID.coerce[UserId], un)).pure[IO]
   def create(username: UserName, password: Password): IO[UserId] =
     GenUUID[IO].make[UserId]
 }
