@@ -2,7 +2,7 @@ package shop.algebras
 
 import cats.effect._
 import cats.effect.concurrent.Ref
-import cats.implicits._
+import cats.implicits.{ catsSyntaxEq => _, _ }
 import ciris.Secret
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
@@ -65,9 +65,9 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
               v <- c.get(uid)
             } yield
               assert(
-                x.items.isEmpty && y.items.size == 2 &&
+                x.items.isEmpty && y.items.size === 2 &&
                 z.items.size == 1 && v.items.isEmpty &&
-                w.items.headOption.fold(false)(_.quantity == q2)
+                w.items.headOption.fold(false)(_.quantity === q2)
               )
           }
         }
@@ -91,7 +91,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
         } yield
           assert(
             x.isEmpty && e.isRight && f.isRight && y.isEmpty &&
-            w.fold(false)(_.value.name == un1)
+            w.fold(false)(_.value.name === un1)
           )
       }
     }

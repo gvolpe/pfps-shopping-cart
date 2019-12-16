@@ -18,7 +18,7 @@ trait HttpTestSuite extends PureTestSuite {
     routes.run(req).value.flatMap {
       case Some(resp) =>
         resp.as[Json].map { json =>
-          assert(resp.status == expectedStatus && json.dropNullValues == expectedBody.asJson.dropNullValues)
+          assert(resp.status === expectedStatus && json.dropNullValues === expectedBody.asJson.dropNullValues)
         }
       case None => fail("route nout found")
     }
@@ -26,7 +26,7 @@ trait HttpTestSuite extends PureTestSuite {
   def assertHttpStatus(routes: HttpRoutes[IO], req: Request[IO])(expectedStatus: Status) =
     routes.run(req).value.map {
       case Some(resp) =>
-        assert(resp.status == expectedStatus)
+        assert(resp.status === expectedStatus)
       case None => fail("route nout found")
     }
 
