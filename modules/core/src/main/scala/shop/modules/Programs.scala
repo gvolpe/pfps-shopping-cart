@@ -29,7 +29,7 @@ final class Programs[F[_]: Background: Logger: MonadThrow: Timer] private (
   val retryPolicy: RetryPolicy[F] =
     limitRetries[F](cfg.retriesLimit.value) |+| exponentialBackoff[F](cfg.retriesBackoff)
 
-  def checkout: CheckoutProgram[F] = new CheckoutProgram[F](
+  val checkout: CheckoutProgram[F] = new CheckoutProgram[F](
     clients.payment,
     algebras.cart,
     algebras.orders,
