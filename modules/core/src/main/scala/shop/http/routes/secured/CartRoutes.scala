@@ -1,17 +1,19 @@
 package shop.http.routes.secured
 
-import cats.effect.Sync
+import cats._
 import cats.implicits._
 import org.http4s._
+import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.ShoppingCart
-import shop.http.auth.users.CommonUser
-import shop.http.json._
 import shop.domain.cart._
 import shop.domain.item._
+import shop.http.auth.users.CommonUser
+import shop.http.json._
+import shop.http.HttpRouter
 
-final class CartRoutes[F[_]: Sync](
+final class CartRoutes[F[_]: Defer: JsonDecoder: Monad](
     shoppingCart: ShoppingCart[F]
 ) extends Http4sDsl[F] {
 
@@ -24,7 +26,10 @@ final class CartRoutes[F[_]: Sync](
 
     // Add items to the cart
     case ar @ POST -> Root as user =>
-      ar.req.decode[Cart] { cart =>
+      //JsonDecoder[F].asJsonDecode[Cart](ar.req).flatMap { cart =>
+      import org.http4s.circe._
+
+      ar.req.asJsonDecode[Cart].flatMap { cart =>
         cart.items
           .map {
             case (id, quantity) =>
@@ -36,7 +41,7 @@ final class CartRoutes[F[_]: Sync](
 
     // Modify items in the cart
     case ar @ PUT -> Root as user =>
-      ar.req.decode[Cart] { cart =>
+      JsonDecoder[F].asJsonDecode[Cart](ar.req).flatMap { cart =>
         shoppingCart.update(user.value.id, cart) *> Ok()
       }
 
@@ -45,7 +50,7 @@ final class CartRoutes[F[_]: Sync](
       shoppingCart.removeItem(user.value.id, ItemId(uuid)) *> NoContent()
   }
 
-  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
+  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = HttpRouter(
     prefixPath -> authMiddleware(httpRoutes)
   )
 

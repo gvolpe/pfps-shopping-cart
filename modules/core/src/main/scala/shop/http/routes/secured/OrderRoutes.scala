@@ -1,6 +1,6 @@
 package shop.http.routes.secured
 
-import cats.effect.Sync
+import cats._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
@@ -8,8 +8,9 @@ import shop.algebras.Orders
 import shop.domain.order._
 import shop.http.auth.users.CommonUser
 import shop.http.json._
+import shop.http.HttpRouter
 
-final class OrderRoutes[F[_]: Sync](
+final class OrderRoutes[F[_]: Defer: Monad](
     orders: Orders[F]
 ) extends Http4sDsl[F] {
 
@@ -25,7 +26,7 @@ final class OrderRoutes[F[_]: Sync](
 
   }
 
-  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
+  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = HttpRouter(
     prefixPath -> authMiddleware(httpRoutes)
   )
 

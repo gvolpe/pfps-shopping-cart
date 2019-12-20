@@ -1,13 +1,14 @@
 package shop.http.routes
 
-import cats.effect.Sync
+import cats._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
-import org.http4s.server.Router
+//import org.http4s.server.Router
 import shop.algebras.HealthCheck
 import shop.http.json._
+import shop.http.HttpRouter
 
-final class HealthRoutes[F[_]: Sync](
+final class HealthRoutes[F[_]: Defer: Monad](
     healthCheck: HealthCheck[F]
 ) extends Http4sDsl[F] {
 
@@ -18,7 +19,7 @@ final class HealthRoutes[F[_]: Sync](
       Ok(healthCheck.status)
   }
 
-  val routes: HttpRoutes[F] = Router(
+  val routes: HttpRoutes[F] = HttpRouter(
     prefixPath -> httpRoutes
   )
 

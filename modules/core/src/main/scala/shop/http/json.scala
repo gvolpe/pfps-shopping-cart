@@ -1,14 +1,14 @@
 package shop.http
 
-import cats.effect.Sync
+import cats.Applicative
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.refined._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
-import org.http4s.{ EntityDecoder, EntityEncoder }
-import org.http4s.circe.{ jsonEncoderOf, jsonOf }
+import org.http4s.EntityEncoder
+import org.http4s.circe.jsonEncoderOf
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.cart._
@@ -23,8 +23,7 @@ import squants.market._
 
 object json {
 
-  implicit def jsonDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
-  implicit def jsonEncoder[F[_]: Sync, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
+  implicit def jsonEncoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
 
   // ----- Overriding some Coercible codecs ----
   implicit val brandParamDecoder: Decoder[BrandParam] =

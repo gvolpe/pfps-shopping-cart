@@ -1,17 +1,20 @@
 package shop.http.routes.admin
 
-import cats.effect.Sync
+import cats._
 import io.circe.refined._
 import org.http4s._
+import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.Categories
 import shop.domain.category._
+import shop.effects._
 import shop.http.auth.users.AdminUser
 import shop.http.decoder._
 import shop.http.json._
+import shop.http.HttpRouter
 
-final class AdminCategoryRoutes[F[_]: Sync](
+final class AdminCategoryRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     categories: Categories[F]
 ) extends Http4sDsl[F] {
 
@@ -25,7 +28,7 @@ final class AdminCategoryRoutes[F[_]: Sync](
         }
     }
 
-  def routes(authMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = Router(
+  def routes(authMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = HttpRouter(
     prefixPath -> authMiddleware(httpRoutes)
   )
 

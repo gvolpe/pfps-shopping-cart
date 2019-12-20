@@ -1,6 +1,6 @@
 package shop.http.routes
 
-import cats.effect.Sync
+import cats._
 import cats.implicits._
 import dev.profunktor.auth.AuthHeaders
 import org.http4s._
@@ -8,8 +8,9 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.Auth
 import shop.http.auth.users._
+import shop.http.HttpRouter
 
-final class LogoutRoutes[F[_]: Sync](
+final class LogoutRoutes[F[_]: Defer: Monad](
     auth: Auth[F]
 ) extends Http4sDsl[F] {
 
@@ -24,7 +25,7 @@ final class LogoutRoutes[F[_]: Sync](
 
   }
 
-  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
+  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = HttpRouter(
     prefixPath -> authMiddleware(httpRoutes)
   )
 

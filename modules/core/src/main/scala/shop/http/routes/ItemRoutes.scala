@@ -1,15 +1,16 @@
 package shop.http.routes
 
-import cats.effect.Sync
+import cats._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
-import org.http4s.server.Router
+//import org.http4s.server.Router
 import shop.algebras.Items
 import shop.domain.brand._
 import shop.http.json._
 import shop.http.params._
+import shop.http.HttpRouter
 
-final class ItemRoutes[F[_]: Sync](
+final class ItemRoutes[F[_]: Defer: Monad](
     items: Items[F]
 ) extends Http4sDsl[F] {
 
@@ -24,7 +25,7 @@ final class ItemRoutes[F[_]: Sync](
 
   }
 
-  val routes: HttpRoutes[F] = Router(
+  val routes: HttpRoutes[F] = HttpRouter(
     prefixPath -> httpRoutes
   )
 
