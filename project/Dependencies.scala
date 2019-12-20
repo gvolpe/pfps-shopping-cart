@@ -30,9 +30,10 @@ object Dependencies {
   }
 
   object Libraries {
-    def circe(artifact: String): ModuleID  = "io.circe"   %% artifact % Versions.circe
-    def ciris(artifact: String): ModuleID  = "is.cir"     %% artifact % Versions.ciris
-    def http4s(artifact: String): ModuleID = "org.http4s" %% artifact % Versions.http4s
+    def circe(artifact: String): ModuleID   = "io.circe"   %% artifact % Versions.circe
+    def ciris(artifact: String): ModuleID   = "is.cir"     %% artifact % Versions.ciris
+    def http4s(artifact: String): ModuleID  = "org.http4s" %% artifact % Versions.http4s
+    def meowMtl(artifact: String): ModuleID = "com.olegpy" %% artifact % Versions.catsMeowMtl
 
     val cats        = "org.typelevel"    %% "cats-core"     % Versions.cats
     val catsMeowMtl = "com.olegpy"       %% "meow-mtl-core" % Versions.catsMeowMtl
@@ -40,6 +41,9 @@ object Dependencies {
     val catsRetry   = "com.github.cb372" %% "cats-retry"    % Versions.catsRetry
     val squants     = "org.typelevel"    %% "squants"       % Versions.squants
     val fs2         = "co.fs2"           %% "fs2-core"      % Versions.fs2
+
+    val catsMeowMtlCore    = meowMtl("meow-mtl-core")
+    val catsMeowMtlEffects = meowMtl("meow-mtl-effects")
 
     val circeCore    = circe("circe-core")
     val circeGeneric = circe("circe-generic")
