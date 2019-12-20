@@ -1,8 +1,8 @@
 package suite
 
 import cats.effect._
-import org.scalatest.BeforeAndAfterAll
 import cats.effect.concurrent.Deferred
+import org.scalatest.BeforeAndAfterAll
 
 trait ResourceSuite[A] extends PureTestSuite with BeforeAndAfterAll {
 
