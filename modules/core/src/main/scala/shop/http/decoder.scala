@@ -9,7 +9,7 @@ import shop.effects._
 
 object decoder {
 
-  implicit class RefinedRequestDecoder[F[_]: MonadThrow: JsonDecoder](req: Request[F]) extends Http4sDsl[F] {
+  implicit class RefinedRequestDecoder[F[_]: JsonDecoder: MonadThrow](req: Request[F]) extends Http4sDsl[F] {
 
     def decodeR[A: Decoder](f: A => F[Response[F]]): F[Response[F]] =
       req.asJsonDecode[A].attempt.flatMap {
