@@ -41,7 +41,7 @@ object AppResources {
       for {
         uri <- Resource.liftF(RedisURI.make[F](c.uri.value.value))
         client <- RedisClient[F](uri)
-        cmd <- Redis[F, String, String](client, RedisCodec.Utf8, uri)
+        cmd <- Redis[F, String, String](client, RedisCodec.Utf8)
       } yield cmd
 
     def mkHttpClient(c: HttpClientConfig): Resource[F, Client[F]] =
