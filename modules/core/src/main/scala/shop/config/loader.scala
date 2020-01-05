@@ -58,21 +58,23 @@ object load {
           retriesBackoff = 10.milliseconds
         ),
         PaymentConfig(paymentUri),
-        HttpClientConfig(
-          connectTimeout = 2.seconds,
-          requestTimeout = 2.seconds
-        ),
-        PostgreSQLConfig(
-          host = "localhost",
-          port = 5432,
-          user = "postgres",
-          database = "store",
-          max = 10
-        ),
-        RedisConfig(redisUri),
         HttpServerConfig(
           host = "0.0.0.0",
           port = 8080
+        ),
+        ResourcesConfig(
+          HttpClientConfig(
+            connectTimeout = 2.seconds,
+            requestTimeout = 2.seconds
+          ),
+          PostgreSQLConfig(
+            host = "localhost",
+            port = 5432,
+            user = "postgres",
+            database = "store",
+            max = 10
+          ),
+          RedisConfig(redisUri)
         )
       )
     }

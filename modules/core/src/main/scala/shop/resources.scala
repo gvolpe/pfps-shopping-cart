@@ -13,7 +13,6 @@ import natchez.Trace.Implicits.noop // needed for skunk
 import org.http4s.client.Client
 import org.http4s.client.blaze.BlazeClientBuilder
 import scala.concurrent.ExecutionContext
-import shop.effects._
 import skunk._
 
 final case class AppResources[F[_]](
@@ -24,7 +23,10 @@ final case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: ConcurrentEffect: ContextShift: HasAppConfig: Logger]: Resource[F, AppResources[F]] = {
+  def make[F[_]: ConcurrentEffect: ContextShift: HasAppConfig: Logger]: Resource[F, AppResources[F]] =
+    makeR[F]
+
+  private def makeR[F[_]: ConcurrentEffect: ContextShift: HasResourcesConfig: Logger]: Resource[F, AppResources[F]] = {
 
     def mkPostgreSqlResource(c: PostgreSQLConfig): SessionPool[F] =
       Session
@@ -50,9 +52,9 @@ object AppResources {
         .resource
 
     for {
-      h <- Resource.liftF(ask[F, HttpClientConfig])
-      p <- Resource.liftF(ask[F, PostgreSQLConfig])
-      r <- Resource.liftF(ask[F, RedisConfig])
+      h <- Resource.liftF(F.reader(_.httpClientConfig))
+      p <- Resource.liftF(F.reader(_.postgreSQL))
+      r <- Resource.liftF(F.reader(_.redis))
       client <- mkHttpClient(h)
       psql <- mkPostgreSqlResource(p)
       redis <- mkRedisResource(r)

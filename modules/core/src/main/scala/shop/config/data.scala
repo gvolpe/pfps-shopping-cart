@@ -10,7 +10,8 @@ import scala.concurrent.duration._
 
 object data {
 
-  type HasAppConfig[F[_]] = ApplicativeAsk[F, AppConfig]
+  type HasAppConfig[F[_]]       = ApplicativeAsk[F, AppConfig]
+  type HasResourcesConfig[F[_]] = ApplicativeAsk[F, ResourcesConfig]
 
   @newtype case class AdminUserTokenConfig(value: Secret[NonEmptyString])
   @newtype case class JwtSecretKeyConfig(value: Secret[NonEmptyString])
@@ -34,10 +35,14 @@ object data {
       cartExpiration: ShoppingCartExpiration,
       checkoutConfig: CheckoutConfig,
       paymentConfig: PaymentConfig,
+      httpServerConfig: HttpServerConfig,
+      resourcesConfig: ResourcesConfig
+  )
+
+  case class ResourcesConfig(
       httpClientConfig: HttpClientConfig,
       postgreSQL: PostgreSQLConfig,
-      redis: RedisConfig,
-      httpServerConfig: HttpServerConfig
+      redis: RedisConfig
   )
 
   case class AdminJwtConfig(

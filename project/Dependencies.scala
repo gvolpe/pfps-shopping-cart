@@ -14,6 +14,7 @@ object Dependencies {
     val http4s        = "0.21.0-M6"
     val http4sJwtAuth = "0.0.3"
     val log4cats      = "1.0.1"
+    val logback       = "1.2.3"
     val newtype       = "0.4.3"
     val refined       = "0.9.10"
     val redis4cats    = "0.9.1"
@@ -21,8 +22,8 @@ object Dependencies {
     val squants       = "1.6.0"
 
     val betterMonadicFor = "0.3.1"
+    val contextApplied   = "0.1.2"
     val kindProjector    = "0.11.0"
-    val logback          = "1.2.3"
 
     val scalaCheck    = "1.14.3"
     val scalaTest     = "3.1.0"
@@ -75,10 +76,6 @@ object Dependencies {
     val skunkCore  = "org.tpolecat" %% "skunk-core"  % Versions.skunk
     val skunkCirce = "org.tpolecat" %% "skunk-circe" % Versions.skunk
 
-    // Compiler plugins
-    val betterMonadicFor = "com.olegpy"    %% "better-monadic-for" % Versions.betterMonadicFor
-    val kindProjector    = "org.typelevel" % "kind-projector"      % Versions.kindProjector
-
     // Runtime
     val logback = "ch.qos.logback" % "logback-classic" % Versions.logback
 
@@ -86,6 +83,12 @@ object Dependencies {
     val scalaCheck    = "org.scalacheck"    %% "scalacheck"      % Versions.scalaCheck
     val scalaTest     = "org.scalatest"     %% "scalatest"       % Versions.scalaTest
     val scalaTestPlus = "org.scalatestplus" %% "scalacheck-1-14" % Versions.scalaTestPlus
+  }
+
+  object CompilerPlugins {
+    val betterMonadicFor = compilerPlugin("com.olegpy"     %% "better-monadic-for" % Versions.betterMonadicFor)
+    val contextApplied   = compilerPlugin("org.augustjune" %% "context-applied"    % Versions.contextApplied)
+    val kindProjector    = compilerPlugin("org.typelevel"  %% "kind-projector"     % Versions.kindProjector cross CrossVersion.full)
   }
 
 }

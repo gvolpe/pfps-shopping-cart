@@ -1,6 +1,6 @@
 import Dependencies._
 
-ThisBuild / scalaVersion := "2.13.0"
+ThisBuild / scalaVersion := "2.13.1"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / organization := "dev.profunktor"
 ThisBuild / organizationName := "ProfunKtor"
@@ -21,8 +21,9 @@ lazy val tests = (project in file("modules/tests"))
     scalafmtOnCompile := true,
     Defaults.itSettings,
     libraryDependencies ++= Seq(
-          compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
-          compilerPlugin(Libraries.betterMonadicFor),
+          CompilerPlugins.betterMonadicFor,
+          CompilerPlugins.contextApplied,
+          CompilerPlugins.kindProjector,
           Libraries.scalaCheck,
           Libraries.scalaTest,
           Libraries.scalaTestPlus
@@ -45,8 +46,9 @@ lazy val core = (project in file("modules/core"))
     makeBatScripts := Seq(),
     dockerUpdateLatest := true,
     libraryDependencies ++= Seq(
-          compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
-          compilerPlugin(Libraries.betterMonadicFor),
+          CompilerPlugins.betterMonadicFor,
+          CompilerPlugins.contextApplied,
+          CompilerPlugins.kindProjector,
           Libraries.cats,
           Libraries.catsEffect,
           Libraries.catsMeowMtlCore,
