@@ -19,6 +19,8 @@ object Dependencies {
     val redis4cats    = "0.9.2"
     val skunk         = "0.0.7"
     val squants       = "1.6.0"
+    val zio           = "1.0.0-RC17"
+    val zioCats       = "2.0.0.0-RC10"
 
     val betterMonadicFor = "0.3.1"
     val kindProjector    = "0.11.0"
@@ -62,6 +64,9 @@ object Dependencies {
 
     val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % Versions.log4cats
     val newtype  = "io.estatico"       %% "newtype"        % Versions.newtype
+
+    val zioCore = "dev.zio" %% "zio"              % Versions.zio
+    val zioCats = "dev.zio" %% "zio-interop-cats" % Versions.zioCats
 
     val javaxCrypto = "javax.xml.crypto" % "jsr105-api" % Versions.javaxCrypto
 

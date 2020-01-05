@@ -1,37 +1,41 @@
 package shop
 
-import cats.effect._
-import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.server.blaze.BlazeServerBuilder
 import shop.modules._
+import zio._
+import zio.interop.catz._
+import zio.interop.catz.implicits._
 
-object Main extends IOApp {
+object Main extends CatsApp {
 
-  implicit val logger = Slf4jLogger.getLogger[IO]
+  implicit val logger = Slf4jLogger.getLogger[Task]
 
-  override def run(args: List[String]): IO[ExitCode] =
-    config.load[IO].flatMap { cfg =>
-      Logger[IO].info(s"Loaded config $cfg") *>
-        AppResources.make[IO](cfg).use { res =>
-          for {
-            security <- Security.make[IO](cfg, res.psql, res.redis)
-            algebras <- Algebras.make[IO](res.redis, res.psql, cfg.cartExpiration)
-            clients <- HttpClients.make[IO](cfg.paymentConfig, res.client)
-            programs <- Programs.make[IO](cfg.checkoutConfig, algebras, clients)
-            api <- HttpApi.make[IO](algebras, programs, security)
-            _ <- BlazeServerBuilder[IO]
-                  .bindHttp(
-                    cfg.httpServerConfig.port.value,
-                    cfg.httpServerConfig.host.value
-                  )
-                  .withHttpApp(api.httpApp)
-                  .serve
-                  .compile
-                  .drain
-          } yield ExitCode.Success
-        }
-    }
+  override def run(args: List[String]): UIO[Int] =
+    config
+      .load[Task]
+      .flatMap { cfg =>
+        Logger[Task].info(s"Loaded config $cfg") *>
+          AppResources.make[Task](cfg).use { res =>
+            for {
+              security <- Security.make[Task](cfg, res.psql, res.redis)
+              algebras <- Algebras.make[Task](res.redis, res.psql, cfg.cartExpiration)
+              clients <- HttpClients.make[Task](cfg.paymentConfig, res.client)
+              programs <- Programs.make[Task](cfg.checkoutConfig, algebras, clients)
+              api <- HttpApi.make[Task](algebras, programs, security)
+              _ <- BlazeServerBuilder[Task]
+                    .bindHttp(
+                      cfg.httpServerConfig.port.value,
+                      cfg.httpServerConfig.host.value
+                    )
+                    .withHttpApp(api.httpApp)
+                    .serve
+                    .compile
+                    .drain
+            } yield 0
+          }
+      }
+      .orDie
 
 }
