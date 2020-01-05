@@ -27,8 +27,6 @@ package object effects {
     def apply[F[_]](implicit ev: MonadError[F, Throwable]): MonadThrow[F] = ev
   }
 
-  def ask[F[_], A](implicit ev: ApplicativeAsk[F, A]): F[A] = ev.ask
-
   // Not the most correct but okay for performance boost
   implicit def ioAppConfigAsk(implicit cs: ContextShift[IO]): ApplicativeAsk[IO, AppConfig] =
     new DefaultApplicativeAsk[IO, AppConfig] {

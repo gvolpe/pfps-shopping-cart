@@ -1,7 +1,6 @@
 package shop
 
 import cats.effect._
-import com.olegpy.meow.hierarchy._
 import config.data._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
@@ -23,10 +22,7 @@ final case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: ConcurrentEffect: ContextShift: HasAppConfig: Logger]: Resource[F, AppResources[F]] =
-    makeR[F]
-
-  private def makeR[F[_]: ConcurrentEffect: ContextShift: HasResourcesConfig: Logger]: Resource[F, AppResources[F]] = {
+  def make[F[_]: ConcurrentEffect: ContextShift: HasResourcesConfig: Logger]: Resource[F, AppResources[F]] = {
 
     def mkPostgreSqlResource(c: PostgreSQLConfig): SessionPool[F] =
       Session
