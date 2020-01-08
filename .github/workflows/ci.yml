@@ -13,9 +13,28 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: olafurpg/setup-scala@v5
+
     - name: Starting up Postgres and Redis
       run: docker-compose up -d
+
     - name: Tests
       run: sbt -J-Xms4G -J-Xmx4G test it:test
+
+    - name: Cache Coursier dependencies
+      uses: actions/cache@v1
+      with:
+       path: ~/.cache/coursier
+       key: ${{ runner.os }}-${{ github.ref }}-coursier
+       restore-keys: |
+        ${{ runner.os }}-${{ github.ref }}-coursier
+
+    - name: Cache Ivy dependencies
+      uses: actions/cache@v1
+      with:
+        path: ~/.ivy2/cache
+        key: ${{ runner.os }}-${{ github.ref }}-ivy2
+        restore-keys: |
+         ${{ runner.os }}-${{ github.ref }}-ivy2
+
     - name: Shutting down Postgres and Redis
       run: docker-compose down
