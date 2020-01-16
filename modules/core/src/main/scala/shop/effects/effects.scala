@@ -2,8 +2,6 @@ package shop
 
 import cats._
 import cats.effect._
-import cats.effect.concurrent.Ref
-import cats.implicits._
 import cats.mtl._
 import shop.config.data.AppConfig
 
@@ -28,19 +26,12 @@ package object effects {
   }
 
   // Not the most correct but okay for performance boost
-  implicit def ioAppConfigAsk(implicit cs: ContextShift[IO]): ApplicativeAsk[IO, AppConfig] =
+  def makeAskInstance(cfg: AppConfig): ApplicativeAsk[IO, AppConfig] =
     new DefaultApplicativeAsk[IO, AppConfig] {
-      val ref = Ref.unsafe[IO, Option[AppConfig]](None)
 
       val applicative: Applicative[IO] = implicitly
 
-      def ask: IO[AppConfig] = ref.get.flatMap {
-        case Some(cfg) => IO.pure(cfg)
-        case None =>
-          config.load.apply[IO].flatTap { cfg =>
-            ref.set(cfg.some)
-          }
-      }
+      def ask: IO[AppConfig] = IO.pure(cfg)
 
       override def reader[A](f: AppConfig => A): IO[A] =
         ask.map(f)
