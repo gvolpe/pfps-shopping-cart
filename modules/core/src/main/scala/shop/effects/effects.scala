@@ -2,8 +2,6 @@ package shop
 
 import cats._
 import cats.effect._
-import cats.mtl._
-import shop.config.data.AppConfig
 
 package object effects {
 
@@ -24,17 +22,5 @@ package object effects {
   object MonadThrow {
     def apply[F[_]](implicit ev: MonadError[F, Throwable]): MonadThrow[F] = ev
   }
-
-  // Not the most correct but okay for performance boost
-  def makeAskInstance(cfg: AppConfig): ApplicativeAsk[IO, AppConfig] =
-    new DefaultApplicativeAsk[IO, AppConfig] {
-
-      val applicative: Applicative[IO] = implicitly
-
-      def ask: IO[AppConfig] = IO.pure(cfg)
-
-      override def reader[A](f: AppConfig => A): IO[A] =
-        ask.map(f)
-    }
 
 }

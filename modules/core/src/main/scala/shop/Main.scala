@@ -2,13 +2,14 @@ package shop
 
 import cats._
 import cats.effect._
+import cats.effect.concurrent.Ref
 import cats.implicits._
+import com.olegpy.meow.effects._
 import com.olegpy.meow.hierarchy._
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.server.blaze.BlazeServerBuilder
 import shop.config.data._
-import shop.effects._
 import shop.modules._
 
 object Main extends IOApp {
@@ -23,26 +24,30 @@ object Main extends IOApp {
         AppResources.make[F].use(res => fa(cfg)(res))
     }
 
+  val configLoader: IO[Ref[IO, AppConfig]] =
+    config.load[IO].flatMap(Ref.of[IO, AppConfig])
+
   override def run(args: List[String]): IO[ExitCode] =
-    config.load[IO].map(makeAskInstance).flatMap { implicit ioAsk =>
-      loadResources[IO] { cfg => res =>
-        for {
-          security <- Security.make[IO](cfg, res.psql, res.redis)
-          algebras <- Algebras.make[IO](res.redis, res.psql, cfg.cartExpiration)
-          clients <- HttpClients.make[IO](cfg.paymentConfig, res.client)
-          programs <- Programs.make[IO](cfg.checkoutConfig, algebras, clients)
-          api <- HttpApi.make[IO](algebras, programs, security)
-          _ <- BlazeServerBuilder[IO]
-                .bindHttp(
-                  cfg.httpServerConfig.port.value,
-                  cfg.httpServerConfig.host.value
-                )
-                .withHttpApp(api.httpApp)
-                .serve
-                .compile
-                .drain
-        } yield ExitCode.Success
+    configLoader.flatMap(_.runAsk { implicit ioAsk =>
+      loadResources[IO] {
+        cfg => res =>
+          for {
+            security <- Security.make[IO](cfg, res.psql, res.redis)
+            algebras <- Algebras.make[IO](res.redis, res.psql, cfg.cartExpiration)
+            clients <- HttpClients.make[IO](cfg.paymentConfig, res.client)
+            programs <- Programs.make[IO](cfg.checkoutConfig, algebras, clients)
+            api <- HttpApi.make[IO](algebras, programs, security)
+            _ <- BlazeServerBuilder[IO]
+                  .bindHttp(
+                    cfg.httpServerConfig.port.value,
+                    cfg.httpServerConfig.host.value
+                  )
+                  .withHttpApp(api.httpApp)
+                  .serve
+                  .compile
+                  .drain
+          } yield ExitCode.Success
       }
-    }
+    })
 
 }
