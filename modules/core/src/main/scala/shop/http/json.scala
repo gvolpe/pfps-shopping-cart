@@ -22,9 +22,14 @@ import shop.ext.refined._
 import shop.http.auth.users._
 import squants.market._
 
-object json {
-
+object json extends JsonCodecs {
   implicit def jsonEncoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
+
+  // Should not be necessary but Scala seems not to find the right implicits
+  implicit def codec[F[_]: Applicative] = jsonEncoderOf[F, Payment]
+}
+
+private[http] trait JsonCodecs {
 
   // ----- Overriding some Coercible codecs ----
   implicit val brandParamDecoder: Decoder[BrandParam] =
