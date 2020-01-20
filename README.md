@@ -63,6 +63,12 @@ cd /app
 docker-compose up
 ```
 
+## Payments Client
+
+The configured test payment client is a fake API that always returns 200 with a Payment Id. Users are encouraged to make modifications, e.g. return 409 with another Payment Id (you can create one [here](https://www.uuidgenerator.net/api/version1/1)) or any other HTTP status to see how our application handles the different cases.
+
+This fake API can be modified at: [https://beeceptor.com/console/payments](https://beeceptor.com/console/payments)
+
 ## HTTP API Resources
 
 If you use the [Insomnia](https://insomnia.rest/) REST Client, you can import the shopping cart resources using the [insomnia.json](insomnia.json) file.
