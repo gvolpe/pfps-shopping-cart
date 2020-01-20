@@ -6,11 +6,11 @@ import org.http4s._
 import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
-import shop.http.auth.users.CommonUser
 import shop.domain.cart._
 import shop.domain.checkout._
 import shop.domain.order._
 import shop.effects._
+import shop.http.auth.users.CommonUser
 import shop.http.decoder._
 import shop.http.json._
 import shop.http.HttpRouter

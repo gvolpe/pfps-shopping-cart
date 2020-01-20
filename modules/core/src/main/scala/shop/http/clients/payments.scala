@@ -31,7 +31,9 @@ final class LivePaymentClient[F[_]: JsonDecoder: MonadThrow](
         if (r.status == Status.Ok || r.status == Status.Conflict)
           r.asJsonDecode[PaymentId]
         else
-          PaymentError(r.status.reason).raiseError[F, PaymentId]
+          PaymentError(
+            Option(r.status.reason).getOrElse("unknown")
+          ).raiseError[F, PaymentId]
       }
     }
 

@@ -33,6 +33,9 @@ object json {
   implicit val categoryParamDecoder: Decoder[CategoryParam] =
     Decoder.forProduct1("name")(CategoryParam.apply)
 
+  implicit val paymentIdDecoder: Decoder[PaymentId] =
+    Decoder.forProduct1("paymentId")(PaymentId.apply)
+
   // ----- Coercible codecs -----
   implicit def coercibleDecoder[A: Coercible[B, *], B: Decoder]: Decoder[A] =
     Decoder[B].map(_.coerce[A])

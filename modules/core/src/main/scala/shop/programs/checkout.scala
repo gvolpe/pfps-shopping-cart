@@ -40,7 +40,8 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     )(paymentClient.process(payment))
 
     action.adaptError {
-      case e => PaymentError(e.getMessage)
+      case e =>
+        PaymentError(Option(e.getMessage).getOrElse("Unknown"))
     }
   }
 
