@@ -22,7 +22,7 @@ object load {
         case Test =>
           default(
             redisUri = RedisURI("redis://localhost"),
-            paymentUri = PaymentURI("http://10.123.154.10/api")
+            paymentUri = PaymentURI("https://payments.free.beeceptor.com")
           )
         case Prod =>
           default(

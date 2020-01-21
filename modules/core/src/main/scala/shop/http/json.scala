@@ -17,13 +17,19 @@ import shop.domain.checkout._
 import shop.domain.healthcheck._
 import shop.domain.item._
 import shop.domain.order._
+import shop.domain.payment._
 import shop.ext.refined._
 import shop.http.auth.users._
 import squants.market._
 
-object json {
-
+object json extends JsonCodecs {
   implicit def jsonEncoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
+
+  // Should not be necessary but Scala seems not to find the right implicits
+  implicit def codec[F[_]: Applicative] = jsonEncoderOf[F, Payment]
+}
+
+private[http] trait JsonCodecs {
 
   // ----- Overriding some Coercible codecs ----
   implicit val brandParamDecoder: Decoder[BrandParam] =
@@ -31,6 +37,9 @@ object json {
 
   implicit val categoryParamDecoder: Decoder[CategoryParam] =
     Decoder.forProduct1("name")(CategoryParam.apply)
+
+  implicit val paymentIdDecoder: Decoder[PaymentId] =
+    Decoder.forProduct1("paymentId")(PaymentId.apply)
 
   // ----- Coercible codecs -----
   implicit def coercibleDecoder[A: Coercible[B, *], B: Decoder]: Decoder[A] =
@@ -73,6 +82,7 @@ object json {
   implicit val orderEncoder: Encoder[Order] = deriveEncoder[Order]
 
   implicit val cardDecoder: Decoder[Card] = deriveDecoder[Card]
+  implicit val cardEncoder: Encoder[Card] = deriveEncoder[Card]
 
   implicit val tokenEncoder: Encoder[JwtToken] =
     Encoder.forProduct1("access_token")(_.value)
@@ -85,6 +95,8 @@ object json {
 
   implicit val userDecoder: Decoder[User] = deriveDecoder[User]
   implicit val userEncoder: Encoder[User] = deriveEncoder[User]
+
+  implicit val paymentEncoder: Encoder[Payment] = deriveEncoder[Payment]
 
   implicit val appStatusEncoder: Encoder[AppStatus] = deriveEncoder[AppStatus]
 
