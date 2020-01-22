@@ -4,10 +4,12 @@ import cats.effect._
 import cats.implicits._
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
+import io.circe.parser.{ decode => jsonDecode }
 import pdi.jwt._
 import shop.algebras._
 import shop.config.data._
 import shop.domain.auth._
+import shop.effects._
 import shop.http.auth.users._
 import skunk.Session
 
@@ -40,9 +42,8 @@ object Security {
 
     for {
       adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
-      content = adminClaim.content.replace("{", "0").replace("}", "c")
-      adminId <- GenUUID[F].read[UserId](content)
-      adminUser = AdminUser(User(adminId, UserName("admin")))
+      content <- ApThrow[F].fromEither(jsonDecode[ClaimContent](adminClaim.content))
+      adminUser = AdminUser(User(UserId(content.claim), UserName("admin")))
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](sessionPool, crypto)
