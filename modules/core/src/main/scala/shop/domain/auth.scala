@@ -1,6 +1,7 @@
 package shop.domain
 
 import eu.timepit.refined.types.string.NonEmptyString
+import io.circe._
 import io.estatico.newtype.macros.newtype
 import java.util.UUID
 import javax.crypto.Cipher
@@ -44,4 +45,14 @@ object auth {
       username: UserNameParam,
       password: PasswordParam
   )
+
+  // --------- admin auth -----------
+
+  @newtype case class ClaimContent(uuid: UUID)
+
+  object ClaimContent {
+    implicit val jsonDecoder: Decoder[ClaimContent] =
+      Decoder.forProduct1("uuid")(ClaimContent.apply)
+  }
+
 }
