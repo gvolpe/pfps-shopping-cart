@@ -11,7 +11,6 @@ import shop.effects._
 import shop.http.auth.users.AdminUser
 import shop.http.decoder._
 import shop.http.json._
-import shop.http.HttpRouter
 
 final class AdminItemRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     items: Items[F]
@@ -34,7 +33,7 @@ final class AdminItemRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
         }
     }
 
-  def routes(authMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = HttpRouter(
+  def routes(authMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = Router(
     prefixPath -> authMiddleware(httpRoutes)
   )
 

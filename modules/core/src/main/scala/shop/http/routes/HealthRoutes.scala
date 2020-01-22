@@ -3,10 +3,9 @@ package shop.http.routes
 import cats._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
-//import org.http4s.server.Router
+import org.http4s.server.Router
 import shop.algebras.HealthCheck
 import shop.http.json._
-import shop.http.HttpRouter
 
 final class HealthRoutes[F[_]: Defer: Monad](
     healthCheck: HealthCheck[F]
@@ -19,7 +18,7 @@ final class HealthRoutes[F[_]: Defer: Monad](
       Ok(healthCheck.status)
   }
 
-  val routes: HttpRoutes[F] = HttpRouter(
+  val routes: HttpRoutes[F] = Router(
     prefixPath -> httpRoutes
   )
 

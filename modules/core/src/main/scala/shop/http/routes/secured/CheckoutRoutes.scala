@@ -13,7 +13,6 @@ import shop.effects._
 import shop.http.auth.users.CommonUser
 import shop.http.decoder._
 import shop.http.json._
-import shop.http.HttpRouter
 import shop.programs.CheckoutProgram
 
 final class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
@@ -43,7 +42,7 @@ final class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
 
   }
 
-  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = HttpRouter(
+  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
     prefixPath -> authMiddleware(httpRoutes)
   )
 

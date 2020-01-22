@@ -8,7 +8,6 @@ import shop.algebras.Orders
 import shop.domain.order._
 import shop.http.auth.users.CommonUser
 import shop.http.json._
-import shop.http.HttpRouter
 
 final class OrderRoutes[F[_]: Defer: Monad](
     orders: Orders[F]
@@ -26,7 +25,7 @@ final class OrderRoutes[F[_]: Defer: Monad](
 
   }
 
-  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = HttpRouter(
+  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
     prefixPath -> authMiddleware(httpRoutes)
   )
 

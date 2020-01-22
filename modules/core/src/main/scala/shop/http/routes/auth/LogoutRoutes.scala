@@ -8,7 +8,6 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.Auth
 import shop.http.auth.users._
-import shop.http.HttpRouter
 
 final class LogoutRoutes[F[_]: Defer: Monad](
     auth: Auth[F]
@@ -25,7 +24,7 @@ final class LogoutRoutes[F[_]: Defer: Monad](
 
   }
 
-  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = HttpRouter(
+  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
     prefixPath -> authMiddleware(httpRoutes)
   )
 

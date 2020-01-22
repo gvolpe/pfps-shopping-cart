@@ -26,7 +26,8 @@ object json extends JsonCodecs {
   implicit def jsonEncoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
 
   // Should not be necessary but Scala seems not to find the right implicits
-  implicit def codec[F[_]: Applicative] = jsonEncoderOf[F, Payment]
+  implicit def paymentEntityEncoder[F[_]: Applicative]: EntityEncoder[F, Payment]     = jsonEncoder[F, Payment]
+  implicit def cartTotalEntityEncoder[F[_]: Applicative]: EntityEncoder[F, CartTotal] = jsonEncoder[F, CartTotal]
 }
 
 private[http] trait JsonCodecs {

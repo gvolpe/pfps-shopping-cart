@@ -5,13 +5,12 @@ import cats.implicits._
 import org.http4s._
 import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
-//import org.http4s.server.Router
+import org.http4s.server.Router
 import shop.algebras.Auth
 import shop.domain.auth._
 import shop.effects._
 import shop.http.decoder._
 import shop.http.json._
-import shop.http.HttpRouter
 
 final class LoginRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     auth: Auth[F]
@@ -33,7 +32,7 @@ final class LoginRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
 
   }
 
-  val routes: HttpRoutes[F] = HttpRouter(
+  val routes: HttpRoutes[F] = Router(
     prefixPath -> httpRoutes
   )
 
