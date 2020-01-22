@@ -43,7 +43,7 @@ object Security {
     for {
       adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
       content <- ApThrow[F].fromEither(jsonDecode[ClaimContent](adminClaim.content))
-      adminUser = AdminUser(User(UserId(content.claim), UserName("admin")))
+      adminUser = AdminUser(User(UserId(content.uuid), UserName("admin")))
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](sessionPool, crypto)

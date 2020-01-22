@@ -48,11 +48,11 @@ object auth {
 
   // --------- admin auth -----------
 
-  @newtype case class ClaimContent(claim: UUID)
+  @newtype case class ClaimContent(uuid: UUID)
 
   object ClaimContent {
     implicit val claimContentDecoder: Decoder[ClaimContent] =
-      Decoder.forProduct1("claim")(ClaimContent.apply)
+      Decoder.forProduct1("uuid")(ClaimContent.apply)
   }
 
 }
