@@ -1,14 +1,14 @@
 package shop.http
 
-import cats.effect.Sync
+import cats.Applicative
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.refined._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
-import org.http4s.{ EntityDecoder, EntityEncoder }
-import org.http4s.circe.{ jsonEncoderOf, jsonOf }
+import org.http4s.EntityEncoder
+import org.http4s.circe.jsonEncoderOf
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.cart._
@@ -17,14 +17,20 @@ import shop.domain.checkout._
 import shop.domain.healthcheck._
 import shop.domain.item._
 import shop.domain.order._
+import shop.domain.payment._
 import shop.ext.refined._
 import shop.http.auth.users._
 import squants.market._
 
-object json {
+object json extends JsonCodecs {
+  implicit def jsonEncoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
 
-  implicit def jsonDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
-  implicit def jsonEncoder[F[_]: Sync, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
+  // Should not be necessary but Scala seems not to find the right implicits
+  implicit def paymentEntityEncoder[F[_]: Applicative]: EntityEncoder[F, Payment]     = jsonEncoder[F, Payment]
+  implicit def cartTotalEntityEncoder[F[_]: Applicative]: EntityEncoder[F, CartTotal] = jsonEncoder[F, CartTotal]
+}
+
+private[http] trait JsonCodecs {
 
   // ----- Overriding some Coercible codecs ----
   implicit val brandParamDecoder: Decoder[BrandParam] =
@@ -32,6 +38,9 @@ object json {
 
   implicit val categoryParamDecoder: Decoder[CategoryParam] =
     Decoder.forProduct1("name")(CategoryParam.apply)
+
+  implicit val paymentIdDecoder: Decoder[PaymentId] =
+    Decoder.forProduct1("paymentId")(PaymentId.apply)
 
   // ----- Coercible codecs -----
   implicit def coercibleDecoder[A: Coercible[B, *], B: Decoder]: Decoder[A] =
@@ -74,6 +83,7 @@ object json {
   implicit val orderEncoder: Encoder[Order] = deriveEncoder[Order]
 
   implicit val cardDecoder: Decoder[Card] = deriveDecoder[Card]
+  implicit val cardEncoder: Encoder[Card] = deriveEncoder[Card]
 
   implicit val tokenEncoder: Encoder[JwtToken] =
     Encoder.forProduct1("access_token")(_.value)
@@ -86,6 +96,8 @@ object json {
 
   implicit val userDecoder: Decoder[User] = deriveDecoder[User]
   implicit val userEncoder: Encoder[User] = deriveEncoder[User]
+
+  implicit val paymentEncoder: Encoder[Payment] = deriveEncoder[Payment]
 
   implicit val appStatusEncoder: Encoder[AppStatus] = deriveEncoder[AppStatus]
 

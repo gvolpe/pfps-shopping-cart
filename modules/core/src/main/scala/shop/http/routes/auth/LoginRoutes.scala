@@ -1,16 +1,18 @@
 package shop.http.routes
 
-import cats.effect.Sync
+import cats._
 import cats.implicits._
 import org.http4s._
+import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import shop.algebras.Auth
 import shop.domain.auth._
+import shop.effects._
 import shop.http.decoder._
 import shop.http.json._
 
-final class LoginRoutes[F[_]: Sync](
+final class LoginRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     auth: Auth[F]
 ) extends Http4sDsl[F] {
 

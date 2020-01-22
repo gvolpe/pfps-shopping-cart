@@ -13,6 +13,7 @@ import shop.domain.cart._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
+import shop.domain.payment._
 import shop.http.clients._
 import squants.market._
 import suite.PureTestSuite
@@ -25,19 +26,19 @@ final class CheckoutSpec extends PureTestSuite {
 
   def successfulClient(paymentId: PaymentId): PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(userId: UserId, total: Money, card: Card): IO[PaymentId] =
+      def process(payment: Payment): IO[PaymentId] =
         IO.pure(paymentId)
     }
 
   val unreachableClient: PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(userId: UserId, total: Money, card: Card): IO[PaymentId] =
+      def process(payment: Payment): IO[PaymentId] =
         IO.raiseError(PaymentError(""))
     }
 
   def recoveringClient(attemptsSoFar: Ref[IO, Int], paymentId: PaymentId): PaymentClient[IO] =
     new PaymentClient[IO] {
-      def process(userId: UserId, total: Money, card: Card): IO[PaymentId] =
+      def process(payment: Payment): IO[PaymentId] =
         attemptsSoFar.get.flatMap {
           case n if n.eqv(1) => IO.pure(paymentId)
           case _             => attemptsSoFar.update(_ + 1) *> IO.raiseError(PaymentError(""))

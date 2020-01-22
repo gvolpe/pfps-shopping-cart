@@ -1,6 +1,6 @@
 package shop.http.routes.secured
 
-import cats.effect.Sync
+import cats._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
@@ -9,7 +9,7 @@ import shop.domain.order._
 import shop.http.auth.users.CommonUser
 import shop.http.json._
 
-final class OrderRoutes[F[_]: Sync](
+final class OrderRoutes[F[_]: Defer: Monad](
     orders: Orders[F]
 ) extends Http4sDsl[F] {
 

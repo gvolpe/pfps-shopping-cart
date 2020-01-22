@@ -1,17 +1,19 @@
 package shop.http.routes.admin
 
-import cats.effect.Sync
+import cats._
 import io.circe.refined._
 import org.http4s._
+import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import shop.algebras.Brands
 import shop.domain.brand._
 import shop.http.auth.users.AdminUser
+import shop.effects._
 import shop.http.decoder._
 import shop.http.json._
 
-final class AdminBrandRoutes[F[_]: Sync](
+final class AdminBrandRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     brands: Brands[F]
 ) extends Http4sDsl[F] {
 

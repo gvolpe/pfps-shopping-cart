@@ -5,8 +5,8 @@ import cats.implicits._
 import io.circe._
 import io.circe.syntax._
 import org.http4s._
+import org.http4s.circe._
 import scala.util.control.NoStackTrace
-import shop.http.json._
 
 trait HttpTestSuite extends PureTestSuite {
 
@@ -18,7 +18,7 @@ trait HttpTestSuite extends PureTestSuite {
   ) =
     routes.run(req).value.flatMap {
       case Some(resp) =>
-        resp.as[Json].map { json =>
+        resp.asJson.map { json =>
           assert(resp.status.eqv(expectedStatus) && json.dropNullValues.eqv(expectedBody.asJson.dropNullValues))
         }
       case None => fail("route nout found")

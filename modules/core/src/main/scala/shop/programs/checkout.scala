@@ -11,6 +11,7 @@ import shop.domain.auth.UserId
 import shop.domain.cart._
 import shop.domain.checkout._
 import shop.domain.order._
+import shop.domain.payment._
 import shop.effects._
 import shop.http.clients.PaymentClient
 import squants.market.Money
@@ -32,14 +33,15 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
         Logger[F].error(s"Giving up on $action after ${g.totalRetries} retries.")
     }
 
-  private def processPayment(userId: UserId, total: Money, card: Card): F[PaymentId] = {
+  private def processPayment(payment: Payment): F[PaymentId] = {
     val action = retryingOnAllErrors[PaymentId](
       policy = retryPolicy,
       onError = logError("Payments")
-    )(paymentClient.process(userId, total, card))
+    )(paymentClient.process(payment))
 
     action.adaptError {
-      case e => PaymentError(e.getMessage)
+      case e =>
+        PaymentError(Option(e.getMessage).getOrElse("Unknown"))
     }
   }
 
@@ -67,7 +69,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       .flatMap {
         case CartTotal(items, total) =>
           for {
-            pid <- processPayment(userId, total, card)
+            pid <- processPayment(Payment(userId, total, card))
             order <- createOrder(userId, pid, items, total)
             _ <- shoppingCart.delete(userId).attempt.void
           } yield order
