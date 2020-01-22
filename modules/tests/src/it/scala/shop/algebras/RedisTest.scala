@@ -38,7 +38,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
     for {
       uri <- Resource.liftF(RedisURI.make[IO]("redis://localhost"))
       client <- RedisClient[IO](uri)
-      cmd <- Redis[IO, String, String](client, RedisCodec.Utf8, uri)
+      cmd <- Redis[IO, String, String](client, RedisCodec.Utf8)
     } yield cmd
 
   lazy val Exp         = 30.seconds.coerce[ShoppingCartExpiration]

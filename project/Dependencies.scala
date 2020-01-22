@@ -3,20 +3,20 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val cats          = "2.0.0"
+    val cats          = "2.1.0"
     val catsEffect    = "2.0.0"
     val catsMeowMtl   = "0.4.0"
-    val catsRetry     = "1.0.0"
+    val catsRetry     = "1.1.0"
     val circe         = "0.13.0-RC1"
-    val ciris         = "1.0.3"
+    val ciris         = "1.0.4"
     val javaxCrypto   = "1.0.1"
-    val fs2           = "2.1.0"
+    val fs2           = "2.2.1"
     val http4s        = "0.21.0-RC1"
     val http4sJwtAuth = "0.0.3"
     val log4cats      = "1.0.1"
     val newtype       = "0.4.3"
     val refined       = "0.9.10"
-    val redis4cats    = "0.9.1"
+    val redis4cats    = "0.9.2"
     val skunk         = "0.0.7"
     val squants       = "1.6.0"
 
@@ -26,7 +26,7 @@ object Dependencies {
 
     val scalaCheck    = "1.14.3"
     val scalaTest     = "3.1.0"
-    val scalaTestPlus = "3.1.0.0"
+    val scalaTestPlus = "3.1.0.1"
   }
 
   object Libraries {
