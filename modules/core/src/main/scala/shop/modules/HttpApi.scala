@@ -3,12 +3,10 @@ package shop.modules
 import cats.effect._
 import cats.implicits._
 import dev.profunktor.auth.JwtAuthMiddleware
-import dev.profunktor.auth.jwt.JwtToken
 import org.http4s._
 import org.http4s.implicits._
 import org.http4s.server.middleware._
 import org.http4s.server.Router
-import pdi.jwt._
 import scala.concurrent.duration._
 import shop.http.auth.users._
 import shop.http.routes._
@@ -35,13 +33,10 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
     programs: Programs[F],
     security: Security[F]
 ) {
-  private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] =
-    t => c => security.adminAuth.findUser(t)(c)
-  private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] =
-    t => c => security.usersAuth.findUser(t)(c)
-
-  private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](security.adminJwtAuth.value, adminAuth)
-  private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](security.userJwtAuth.value, usersAuth)
+  private val adminMiddleware =
+    JwtAuthMiddleware[F, AdminUser](security.adminJwtAuth.value, security.adminAuth.findUser)
+  private val usersMiddleware =
+    JwtAuthMiddleware[F, CommonUser](security.userJwtAuth.value, security.usersAuth.findUser)
 
   // Auth routes
   private val loginRoutes  = new LoginRoutes[F](security.auth).routes
