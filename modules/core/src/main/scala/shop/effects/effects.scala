@@ -2,7 +2,6 @@ package shop
 
 import cats.{ ApplicativeError, MonadError }
 import cats.effect.Bracket
-import cats.mtl.ApplicativeAsk
 
 package object effects {
 
@@ -23,7 +22,5 @@ package object effects {
   object MonadThrow {
     def apply[F[_]](implicit ev: MonadError[F, Throwable]): MonadThrow[F] = ev
   }
-
-  def ask[F[_], A](implicit ev: ApplicativeAsk[F, A]): F[A] = ev.ask
 
 }
