@@ -34,7 +34,7 @@ class TokenGenerator extends IOApp {
 
   val jwtAuth = JwtAuth.hmac(secretKey.value, algo)
 
-  def decodeToken(token: JwtToken) =
+  def decodeToken(token: JwtToken): IO[Claim] =
     jwtDecode[IO](token, jwtAuth).flatMap { c =>
       IO.fromEither(jsonDecode[Claim](c.content))
     }
