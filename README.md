@@ -5,7 +5,7 @@ shopping-cart
 [![MergifyStatus](https://img.shields.io/endpoint.svg?url=https://gh.mergify.io/badges/gvolpe/pfps-shopping-cart&style=flat)](https://mergify.io)
 [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-brightgreen.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org) <a href="https://typelevel.org/cats/"><img src="https://typelevel.org/cats/img/cats-badge.svg" height="40px" align="right" alt="Cats friendly" /></a>
 
-### Authentication Data
+## Authentication Data
 
 For didactic purposes this information is made available to the readers but in a real application *THIS SHOULD NEVER BE MADE PUBLIC*.
 
@@ -24,6 +24,29 @@ For password encryption:
 - `SC_PASSWORD_SALT`
 
 See the [docker-compose.yml](app/docker-compose.yml) file for more details.
+
+### Generate your own auth data
+
+In order to generate a valid JWT token, you need a *secret key*, which can be any String, and a *JWT Claim*, which can be any valid JSON. You can then generate a token, as shown below:
+
+```scala
+val claim = JwtClaim(
+  """
+    {"uuid": "6290c116-4153-11ea-b77f-2e728ce88125"}
+  """
+)
+
+val secretKey = JwtSecretKey("any-secret")
+
+val algo = JwtAlgorithm.HS256
+
+val mkToken: IO[JwtToken] =
+  jwtEncode[IO](claim, secretKey, algo)
+```
+
+In our case, our claim contains a UUID, which is used to identify the Admin Id. In practice, though, a JWT can be any valid JSON.
+
+Take a look at the [TokenGenerator program](https://github.com/gvolpe/pfps-shopping-cart/tree/master/modules/core/src/main/scala/tokens/generator.scala) to learn more.
 
 ## Tests
 
