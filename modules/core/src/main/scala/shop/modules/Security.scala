@@ -61,4 +61,4 @@ final class Security[F[_]] private (
     val usersAuth: UsersAuth[F, CommonUser],
     val adminJwtAuth: AdminJwtAuth,
     val userJwtAuth: UserJwtAuth
-) {}
+)

@@ -31,4 +31,4 @@ final class Algebras[F[_]] private (
     val items: Items[F],
     val orders: Orders[F],
     val healthCheck: HealthCheck[F]
-) {}
+)
