@@ -1,8 +1,9 @@
 package shop.algebras
 
+import cats.Eq
 import cats.effect._
 import cats.effect.concurrent.Ref
-import cats.implicits._
+import cats.implicits.{ catsSyntaxEq => _, _ }
 import ciris.Secret
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
@@ -64,12 +65,11 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
               w <- c.get(uid)
               _ <- c.delete(uid)
               v <- c.get(uid)
-            } yield
-              assert(
-                x.items.isEmpty && y.items.size.eqv(2) &&
-                z.items.size.eqv(1) && v.items.isEmpty &&
-                w.items.headOption.fold(false)(_.quantity.eqv(q2))
-              )
+            } yield assert(
+              x.items.isEmpty && y.items.size === 2 &&
+                z.items.size === 1 && v.items.isEmpty &&
+                w.items.headOption.fold(false)(_.quantity === q2)
+            )
           }
         }
       }
@@ -89,11 +89,10 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
           _ <- a.logout(k, un2)
           y <- u.findUser(k)(jwtClaim)
           w <- u.findUser(j)(jwtClaim)
-        } yield
-          assert(
-            x.isEmpty && e.isRight && f.isRight && y.isEmpty &&
-            w.fold(false)(_.value.name.eqv(un1))
-          )
+        } yield assert(
+          x.isEmpty && e.isRight && f.isRight && y.isEmpty &&
+            w.fold(false)(_.value.name === un1)
+        )
       }
     }
   }
@@ -102,7 +101,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
 protected class TestUsers(un: UserName) extends Users[IO] {
   def find(username: UserName, password: Password): IO[Option[User]] =
-    (username.eqv(un)).guard[Option].as(User(UUID.randomUUID.coerce[UserId], un)).pure[IO]
+    Eq[UserName].eqv(username, un).guard[Option].as(User(UUID.randomUUID.coerce[UserId], un)).pure[IO]
   def create(username: UserName, password: Password): IO[UserId] =
     GenUUID[IO].make[UserId]
 }

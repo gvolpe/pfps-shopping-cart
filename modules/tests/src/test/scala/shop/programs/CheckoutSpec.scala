@@ -2,7 +2,7 @@ package shop.programs
 
 import cats.effect._
 import cats.effect.concurrent.Ref
-import cats.implicits._
+import cats.implicits.{ catsSyntaxEq => _, _ }
 import retry.RetryPolicy
 import retry.RetryPolicies._
 import shop.algebras._
@@ -40,8 +40,8 @@ final class CheckoutSpec extends PureTestSuite {
     new PaymentClient[IO] {
       def process(payment: Payment): IO[PaymentId] =
         attemptsSoFar.get.flatMap {
-          case n if n.eqv(1) => IO.pure(paymentId)
-          case _             => attemptsSoFar.update(_ + 1) *> IO.raiseError(PaymentError(""))
+          case n if n === 1 => IO.pure(paymentId)
+          case _            => attemptsSoFar.update(_ + 1) *> IO.raiseError(PaymentError(""))
         }
     }
 
@@ -97,7 +97,7 @@ final class CheckoutSpec extends PureTestSuite {
           .flatMap {
             case Left(PaymentError(_)) =>
               logs.get.map {
-                case (x :: xs) => assert(x.contains("Giving up") && xs.size.eqv(MaxRetries))
+                case (x :: xs) => assert(x.contains("Giving up") && xs.size === MaxRetries)
                 case _         => fail(s"Expected $MaxRetries retries")
               }
             case _ => fail("Expected payment error")
@@ -118,7 +118,7 @@ final class CheckoutSpec extends PureTestSuite {
             .flatMap {
               case Right(id) =>
                 logs.get.map { xs =>
-                  assert(id.eqv(oid) && xs.size.eqv(1))
+                  assert(id === oid && xs.size === 1)
                 }
               case Left(_) => fail("Expected Payment Id")
             }
@@ -143,8 +143,8 @@ final class CheckoutSpec extends PureTestSuite {
                     assert(
                       x.contains("Rescheduling") &&
                         y.contains("Giving up") &&
-                        xs.size.eqv(MaxRetries) &&
-                        c.eqv(1)
+                        xs.size === MaxRetries &&
+                        c === 1
                     )
                   case _ => fail(s"Expected $MaxRetries retries and reschedule")
                 }
@@ -163,7 +163,7 @@ final class CheckoutSpec extends PureTestSuite {
       new CheckoutProgram[IO](successfulClient(pid), failingCart(ct), successfulOrders(oid), retryPolicy)
         .checkout(uid, card)
         .map { id =>
-          assert(id.eqv(oid))
+          assert(id === oid)
         }
     }
   }
@@ -175,7 +175,7 @@ final class CheckoutSpec extends PureTestSuite {
       new CheckoutProgram[IO](successfulClient(pid), successfulCart(ct), successfulOrders(oid), retryPolicy)
         .checkout(uid, card)
         .map { id =>
-          assert(id.eqv(oid))
+          assert(id === oid)
         }
     }
   }

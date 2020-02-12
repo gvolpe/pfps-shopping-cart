@@ -2,13 +2,13 @@ package suite
 
 import cats.effect._
 import java.util.UUID
+import org.scalactic.source.Position
 import org.scalatest.compatible.Assertion
 import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import org.scalactic.source.Position
 import scala.concurrent.ExecutionContext
 
-trait PureTestSuite extends AsyncFunSuite with ScalaCheckDrivenPropertyChecks {
+trait PureTestSuite extends AsyncFunSuite with ScalaCheckDrivenPropertyChecks with CatsEquality {
 
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
   implicit val timer: Timer[IO]     = IO.timer(ExecutionContext.global)
