@@ -58,7 +58,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
         .onError {
           case _ =>
             Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
-                Background[F].schedule(fa, 1.hour)
+                Background[F].schedule(bgAction(fa), 1.hour)
         }
 
     bgAction(action)
