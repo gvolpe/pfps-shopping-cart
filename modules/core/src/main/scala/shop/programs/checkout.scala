@@ -51,15 +51,17 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       onError = logError("Order")
     )(orders.create(userId, paymentId, items, total))
 
-    action
-      .adaptError {
-        case e => OrderError(e.getMessage)
-      }
-      .onError {
-        case _ =>
-          Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
-              Background[F].schedule(action, 1.hour)
-      }
+    def bgAction(fa: F[OrderId]): F[OrderId] =
+      fa.adaptError {
+          case e => OrderError(e.getMessage)
+        }
+        .onError {
+          case _ =>
+            Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
+                Background[F].schedule(fa, 1.hour)
+        }
+
+    bgAction(action)
   }
 
   def checkout(userId: UserId, card: Card): F[OrderId] =
