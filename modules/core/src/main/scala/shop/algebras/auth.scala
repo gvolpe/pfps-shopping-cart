@@ -108,8 +108,7 @@ final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
       case None => InvalidUserOrPassword(username).raiseError[F, JwtToken]
       case Some(user) =>
         redis.get(username.value).flatMap {
-          case Some(t) =>
-            redis.expire(t, TokenExpiration).as(JwtToken(t))
+          case Some(t) => JwtToken(t).pure[F]
           case None =>
             tokens.create.flatTap { t =>
               redis.setEx(t.value, user.asJson.noSpaces, TokenExpiration) *>
