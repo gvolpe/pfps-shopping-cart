@@ -14,7 +14,6 @@ import dev.profunktor.redis4cats.log4cats._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
-import io.estatico.newtype.ops._
 import java.util.UUID
 import pdi.jwt._
 import scala.concurrent.duration._
@@ -42,11 +41,11 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
       cmd <- Redis[IO, String, String](client, RedisCodec.Utf8)
     } yield cmd
 
-  lazy val Exp         = 30.seconds.coerce[ShoppingCartExpiration]
-  lazy val tokenConfig = Secret("bar": NonEmptyString).coerce[JwtSecretKeyConfig]
-  lazy val tokenExp    = 30.seconds.coerce[TokenExpiration]
+  lazy val Exp         = ShoppingCartExpiration(30.seconds)
+  lazy val tokenConfig = JwtSecretKeyConfig(Secret("bar": NonEmptyString))
+  lazy val tokenExp    = TokenExpiration(30.seconds)
   lazy val jwtClaim    = JwtClaim("test")
-  lazy val userJwtAuth = JwtAuth.hmac("bar", JwtAlgorithm.HS256).coerce[UserJwtAuth]
+  lazy val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
 
   withResources { cmd =>
     forAll(MaxTests) { (uid: UserId, it1: Item, it2: Item, q1: Quantity, q2: Quantity) =>
@@ -101,7 +100,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
 protected class TestUsers(un: UserName) extends Users[IO] {
   def find(username: UserName, password: Password): IO[Option[User]] =
-    Eq[UserName].eqv(username, un).guard[Option].as(User(UUID.randomUUID.coerce[UserId], un)).pure[IO]
+    Eq[UserName].eqv(username, un).guard[Option].as(User(UserId(UUID.randomUUID), un)).pure[IO]
   def create(username: UserName, password: Password): IO[UserId] =
     GenUUID[IO].make[UserId]
 }
@@ -115,8 +114,8 @@ protected class TestItems(ref: Ref[IO, Map[ItemId, Item]]) extends Items[IO] {
     ref.get.map(_.get(itemId))
   def create(item: CreateItem): IO[Unit] =
     GenUUID[IO].make[ItemId].flatMap { id =>
-      val brand    = Brand(item.brandId, "foo".coerce[BrandName])
-      val category = Category(item.categoryId, "foo".coerce[CategoryName])
+      val brand    = Brand(item.brandId, BrandName("foo"))
+      val category = Category(item.categoryId, CategoryName("foo"))
       val newItem  = Item(id, item.name, item.description, item.price, brand, category)
       ref.update(_.updated(id, newItem))
     }
