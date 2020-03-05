@@ -28,11 +28,12 @@ object item {
 
   @newtype case class ItemNameParam(value: NonEmptyString)
   @newtype case class ItemDescriptionParam(value: NonEmptyString)
+  @newtype case class PriceParam(value: String Refined ValidBigDecimal)
 
   case class CreateItemParam(
       name: ItemNameParam,
       description: ItemDescriptionParam,
-      price: Money,
+      price: PriceParam,
       brandId: BrandId,
       categoryId: CategoryId
   ) {
@@ -40,7 +41,7 @@ object item {
       CreateItem(
         ItemName(name.value.value),
         ItemDescription(description.value.value),
-        price,
+        USD(BigDecimal(price.value.value)),
         brandId,
         categoryId
       )
@@ -57,7 +58,6 @@ object item {
   // ----- Update item ------
 
   @newtype case class ItemIdParam(value: String Refined Uuid)
-  @newtype case class PriceParam(value: String Refined ValidBigDecimal)
 
   case class UpdateItemParam(
       id: ItemIdParam,
