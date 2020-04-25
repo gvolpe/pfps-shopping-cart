@@ -9,7 +9,7 @@ import shop.algebras.Brands
 import shop.arbitraries._
 import shop.domain.brand._
 import shop.http.json._
-import suite.HttpTestSuite
+import suite._
 
 class BrandRoutesSpec extends HttpTestSuite {
 
@@ -23,20 +23,24 @@ class BrandRoutesSpec extends HttpTestSuite {
       IO.raiseError(DummyError) *> IO.pure(brands)
   }
 
-  forAll { (b: List[Brand]) =>
-    spec("GET brands [OK]") {
-      GET(Uri.uri("/brands")).flatMap { req =>
-        val routes = new BrandRoutes[IO](dataBrands(b)).routes
-        assertHttp(routes, req)(Status.Ok, b)
+  test("GET brands [OK]") {
+    forAll { (b: List[Brand]) =>
+      IOAssertion {
+        GET(Uri.uri("/brands")).flatMap { req =>
+          val routes = new BrandRoutes[IO](dataBrands(b)).routes
+          assertHttp(routes, req)(Status.Ok, b)
+        }
       }
     }
   }
 
-  forAll { (b: List[Brand]) =>
-    spec("GET brands [ERROR]") {
-      GET(Uri.uri("/brands")).flatMap { req =>
-        val routes = new BrandRoutes[IO](failingBrands(b)).routes
-        assertHttpFailure(routes, req)
+  test("GET brands [ERROR]") {
+    forAll { (b: List[Brand]) =>
+      IOAssertion {
+        GET(Uri.uri("/brands")).flatMap { req =>
+          val routes = new BrandRoutes[IO](failingBrands(b)).routes
+          assertHttpFailure(routes, req)
+        }
       }
     }
   }

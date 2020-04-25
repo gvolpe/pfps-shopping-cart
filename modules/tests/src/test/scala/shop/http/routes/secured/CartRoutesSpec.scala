@@ -15,7 +15,7 @@ import shop.domain.item._
 import shop.http.auth.users._
 import shop.http.json._
 import squants.market.USD
-import suite.HttpTestSuite
+import suite._
 
 class CartRoutesSpec extends HttpTestSuite {
 
@@ -29,20 +29,24 @@ class CartRoutesSpec extends HttpTestSuite {
       IO.pure(cartTotal)
   }
 
-  forAll { (ct: CartTotal) =>
-    spec("GET shopping cart [OK]") {
-      GET(Uri.uri("/cart")).flatMap { req =>
-        val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
-        assertHttp(routes, req)(Status.Ok, ct)
+  test("GET shopping cart [OK]") {
+    forAll { (ct: CartTotal) =>
+      IOAssertion {
+        GET(Uri.uri("/cart")).flatMap { req =>
+          val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
+          assertHttp(routes, req)(Status.Ok, ct)
+        }
       }
     }
   }
 
-  forAll { (c: Cart) =>
-    spec("POST add item to shopping cart [OK]") {
-      POST(c, Uri.uri("/cart")).flatMap { req =>
-        val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
-        assertHttpStatus(routes, req)(Status.Created)
+  test("POST add item to shopping cart [OK]") {
+    forAll { (c: Cart) =>
+      IOAssertion {
+        POST(c, Uri.uri("/cart")).flatMap { req =>
+          val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
+          assertHttpStatus(routes, req)(Status.Created)
+        }
       }
     }
   }

@@ -10,7 +10,7 @@ import shop.arbitraries._
 import shop.domain.brand._
 import shop.domain.item._
 import shop.http.json._
-import suite.HttpTestSuite
+import suite._
 
 class ItemRoutesSpec extends HttpTestSuite {
 
@@ -26,29 +26,35 @@ class ItemRoutesSpec extends HttpTestSuite {
       findAll
   }
 
-  forAll { (it: List[Item]) =>
-    spec("GET items [OK]") {
-      GET(Uri.uri("/items")).flatMap { req =>
-        val routes = new ItemRoutes[IO](dataItems(it)).routes
-        assertHttp(routes, req)(Status.Ok, it)
+  test("GET items [OK]") {
+    forAll { (it: List[Item]) =>
+      IOAssertion {
+        GET(Uri.uri("/items")).flatMap { req =>
+          val routes = new ItemRoutes[IO](dataItems(it)).routes
+          assertHttp(routes, req)(Status.Ok, it)
+        }
       }
     }
   }
 
-  forAll { (it: List[Item], b: Brand) =>
-    spec("GET items by brand [OK]") {
-      GET(Uri.uri("/items").withQueryParam(b.name.value)).flatMap { req =>
-        val routes = new ItemRoutes[IO](dataItems(it)).routes
-        assertHttp(routes, req)(Status.Ok, it)
+  test("GET items by brand [OK]") {
+    forAll { (it: List[Item], b: Brand) =>
+      IOAssertion {
+        GET(Uri.uri("/items").withQueryParam(b.name.value)).flatMap { req =>
+          val routes = new ItemRoutes[IO](dataItems(it)).routes
+          assertHttp(routes, req)(Status.Ok, it)
+        }
       }
     }
   }
 
-  forAll { (it: List[Item]) =>
-    spec("GET items [ERROR]") {
-      GET(Uri.uri("/items")).flatMap { req =>
-        val routes = new ItemRoutes[IO](failingItems(it)).routes
-        assertHttpFailure(routes, req)
+  test("GET items [ERROR]") {
+    forAll { (it: List[Item]) =>
+      IOAssertion {
+        GET(Uri.uri("/items")).flatMap { req =>
+          val routes = new ItemRoutes[IO](failingItems(it)).routes
+          assertHttpFailure(routes, req)
+        }
       }
     }
   }
