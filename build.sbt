@@ -19,13 +19,13 @@ lazy val tests = (project in file("modules/tests"))
     name := "shopping-cart-test-suite",
     scalacOptions += "-Ymacro-annotations",
     scalafmtOnCompile := true,
+    testFrameworks += new TestFramework("munit.Framework"),
     Defaults.itSettings,
     libraryDependencies ++= Seq(
           compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
           compilerPlugin(Libraries.betterMonadicFor),
-          Libraries.scalaCheck,
-          Libraries.scalaTest,
-          Libraries.scalaTestPlus
+          Libraries.munitCore,
+          Libraries.munitScalacheck
         )
   )
   .dependsOn(core)

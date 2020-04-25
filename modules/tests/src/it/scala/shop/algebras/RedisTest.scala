@@ -3,7 +3,7 @@ package shop.algebras
 import cats.Eq
 import cats.effect._
 import cats.effect.concurrent.Ref
-import cats.implicits.{ catsSyntaxEq => _, _ }
+import cats.implicits._
 import ciris.Secret
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
@@ -15,6 +15,7 @@ import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import java.util.UUID
+import org.scalacheck.Prop._
 import pdi.jwt._
 import scala.concurrent.duration._
 import shop.arbitraries._
@@ -31,9 +32,6 @@ import suite._
 
 class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
-  // For it:tests, one test is enough
-  val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
-
   override def resources =
     for {
       uri <- Resource.liftF(RedisURI.make[IO]("redis://localhost"))
@@ -49,7 +47,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
   withResources { cmd =>
     test("Shopping Cart") {
-      forAll(MaxTests) { (uid: UserId, it1: Item, it2: Item, q1: Quantity, q2: Quantity) =>
+      forAll { (uid: UserId, it1: Item, it2: Item, q1: Quantity, q2: Quantity) =>
         IOAssertion {
           Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
             val items = new TestItems(ref)
@@ -77,7 +75,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
     }
 
     test("Authentication") {
-      forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
+      forAll { (un1: UserName, un2: UserName, pw: Password) =>
         IOAssertion {
           for {
             t <- LiveTokens.make[IO](tokenConfig, tokenExp)

@@ -1,13 +1,14 @@
 package shop.algebras
 
 import cats.effect._
-import cats.implicits.{ catsSyntaxEq => _, _ }
+import cats.implicits._
 import ciris._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
 import natchez.Trace.Implicits.noop // needed for skunk
+import org.scalacheck.Prop._
 import shop.arbitraries._
 import shop.config.data.PasswordSalt
 import shop.domain._
@@ -23,9 +24,6 @@ import suite._
 
 class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
 
-  // For it:tests, one test is enough
-  val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
-
   lazy val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
   override def resources =
@@ -39,7 +37,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
 
   withResources { pool =>
     test("Brands") {
-      forAll(MaxTests) { (brand: Brand) =>
+      forAll { (brand: Brand) =>
         IOAssertion {
           for {
             b <- LiveBrands.make[IO](pool)
@@ -55,7 +53,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
     }
 
     test("Categories") {
-      forAll(MaxTests) { (category: Category) =>
+      forAll { (category: Category) =>
         IOAssertion {
           for {
             c <- LiveCategories.make[IO](pool)
@@ -71,7 +69,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
     }
 
     test("Items") {
-      forAll(MaxTests) { (item: Item) =>
+      forAll { (item: Item) =>
         def newItem(
             bid: Option[BrandId],
             cid: Option[CategoryId]
@@ -103,7 +101,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
     }
 
     test("Users") {
-      forAll(MaxTests) { (username: UserName, password: Password) =>
+      forAll { (username: UserName, password: Password) =>
         IOAssertion {
           for {
             c <- LiveCrypto.make[IO](salt)
@@ -120,7 +118,7 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
     }
 
     test("Orders") {
-      forAll(MaxTests) {
+      forAll {
         (oid: OrderId, pid: PaymentId, un: UserName, pw: Password, items: List[CartItem], price: Money) =>
           IOAssertion {
             for {

@@ -2,9 +2,13 @@ package suite
 
 import cats.effect._
 import cats.effect.concurrent.Deferred
-import org.scalatest.BeforeAndAfterAll
 
-trait ResourceSuite[A] extends PureTestSuite with BeforeAndAfterAll {
+trait ResourceSuite[A] extends PureTestSuite {
+
+  // For it:tests, one test is enough
+  override def scalaCheckTestParameters =
+    super.scalaCheckTestParameters
+      .withMinSuccessfulTests(1)
 
   def resources: Resource[IO, A]
 

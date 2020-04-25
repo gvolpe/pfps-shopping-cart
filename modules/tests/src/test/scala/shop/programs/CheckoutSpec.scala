@@ -2,9 +2,11 @@ package shop.programs
 
 import cats.effect._
 import cats.effect.concurrent.Ref
-import cats.implicits.{ catsSyntaxEq => _, _ }
+import cats.implicits._
+import org.scalacheck.Prop._
 import retry.RetryPolicy
 import retry.RetryPolicies._
+import scala.util.control.NoStackTrace
 import shop.algebras._
 import shop.arbitraries._
 import shop.domain._
@@ -58,7 +60,7 @@ final class CheckoutSpec extends PureTestSuite {
   def failingCart(cartTotal: CartTotal): ShoppingCart[IO] = new TestCart {
     override def get(userId: UserId): IO[CartTotal] =
       IO.pure(cartTotal)
-    override def delete(userId: UserId): IO[Unit] = IO.raiseError(new Exception(""))
+    override def delete(userId: UserId): IO[Unit] = IO.raiseError(new NoStackTrace {})
   }
 
   def successfulCart(cartTotal: CartTotal): ShoppingCart[IO] = new TestCart {

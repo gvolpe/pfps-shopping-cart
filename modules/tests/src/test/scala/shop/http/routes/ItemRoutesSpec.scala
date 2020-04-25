@@ -5,6 +5,7 @@ import cats.implicits._
 import org.http4s._
 import org.http4s.Method._
 import org.http4s.client.dsl.io._
+import org.scalacheck.Prop._
 import shop.algebras.Items
 import shop.arbitraries._
 import shop.domain.brand._

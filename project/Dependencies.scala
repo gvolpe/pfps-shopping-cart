@@ -24,9 +24,7 @@ object Dependencies {
     val kindProjector    = "0.11.0"
     val logback          = "1.2.3"
 
-    val scalaCheck    = "1.14.3"
-    val scalaTest     = "3.1.1"
-    val scalaTestPlus = "3.1.1.1"
+    val munit = "0.7.3"
   }
 
   object Libraries {
@@ -79,9 +77,8 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % Versions.logback
 
     // Test
-    val scalaCheck    = "org.scalacheck"    %% "scalacheck"      % Versions.scalaCheck
-    val scalaTest     = "org.scalatest"     %% "scalatest"       % Versions.scalaTest
-    val scalaTestPlus = "org.scalatestplus" %% "scalacheck-1-14" % Versions.scalaTestPlus
+    val munitCore       = "org.scalameta" %% "munit"            % Versions.munit
+    val munitScalacheck = "org.scalameta" %% "munit-scalacheck" % Versions.munit
   }
 
 }
