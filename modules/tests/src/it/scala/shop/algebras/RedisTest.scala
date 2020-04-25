@@ -27,7 +27,7 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.logger.NoOp
 import shop.http.auth.users._
-import suite.ResourceSuite
+import suite._
 
 class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
@@ -48,50 +48,54 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
   lazy val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
 
   withResources { cmd =>
-    forAll(MaxTests) { (uid: UserId, it1: Item, it2: Item, q1: Quantity, q2: Quantity) =>
-      spec("Shopping Cart") {
-        Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
-          val items = new TestItems(ref)
-          LiveShoppingCart.make[IO](items, cmd, Exp).flatMap { c =>
-            for {
-              x <- c.get(uid)
-              _ <- c.add(uid, it1.uuid, q1)
-              _ <- c.add(uid, it2.uuid, q1)
-              y <- c.get(uid)
-              _ <- c.removeItem(uid, it1.uuid)
-              z <- c.get(uid)
-              _ <- c.update(uid, Cart(Map(it2.uuid -> q2)))
-              w <- c.get(uid)
-              _ <- c.delete(uid)
-              v <- c.get(uid)
-            } yield assert(
-              x.items.isEmpty && y.items.size === 2 &&
-                z.items.size === 1 && v.items.isEmpty &&
-                w.items.headOption.fold(false)(_.quantity === q2)
-            )
+    test("Shopping Cart") {
+      forAll(MaxTests) { (uid: UserId, it1: Item, it2: Item, q1: Quantity, q2: Quantity) =>
+        IOAssertion {
+          Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
+            val items = new TestItems(ref)
+            LiveShoppingCart.make[IO](items, cmd, Exp).flatMap { c =>
+              for {
+                x <- c.get(uid)
+                _ <- c.add(uid, it1.uuid, q1)
+                _ <- c.add(uid, it2.uuid, q1)
+                y <- c.get(uid)
+                _ <- c.removeItem(uid, it1.uuid)
+                z <- c.get(uid)
+                _ <- c.update(uid, Cart(Map(it2.uuid -> q2)))
+                w <- c.get(uid)
+                _ <- c.delete(uid)
+                v <- c.get(uid)
+              } yield assert(
+                x.items.isEmpty && y.items.size === 2 &&
+                  z.items.size === 1 && v.items.isEmpty &&
+                  w.items.headOption.fold(false)(_.quantity === q2)
+              )
+            }
           }
         }
       }
     }
 
-    forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
-      spec("Authentication") {
-        for {
-          t <- LiveTokens.make[IO](tokenConfig, tokenExp)
-          a <- LiveAuth.make(tokenExp, t, new TestUsers(un2), cmd)
-          u <- LiveUsersAuth.make[IO](cmd)
-          x <- u.findUser(JwtToken("invalid"))(jwtClaim)
-          j <- a.newUser(un1, pw)
-          e <- jwtDecode[IO](j, userJwtAuth.value).attempt
-          k <- a.login(un2, pw)
-          f <- jwtDecode[IO](k, userJwtAuth.value).attempt
-          _ <- a.logout(k, un2)
-          y <- u.findUser(k)(jwtClaim)
-          w <- u.findUser(j)(jwtClaim)
-        } yield assert(
-          x.isEmpty && e.isRight && f.isRight && y.isEmpty &&
-            w.fold(false)(_.value.name === un1)
-        )
+    test("Authentication") {
+      forAll(MaxTests) { (un1: UserName, un2: UserName, pw: Password) =>
+        IOAssertion {
+          for {
+            t <- LiveTokens.make[IO](tokenConfig, tokenExp)
+            a <- LiveAuth.make(tokenExp, t, new TestUsers(un2), cmd)
+            u <- LiveUsersAuth.make[IO](cmd)
+            x <- u.findUser(JwtToken("invalid"))(jwtClaim)
+            j <- a.newUser(un1, pw)
+            e <- jwtDecode[IO](j, userJwtAuth.value).attempt
+            k <- a.login(un2, pw)
+            f <- jwtDecode[IO](k, userJwtAuth.value).attempt
+            _ <- a.logout(k, un2)
+            y <- u.findUser(k)(jwtClaim)
+            w <- u.findUser(j)(jwtClaim)
+          } yield assert(
+            x.isEmpty && e.isRight && f.isRight && y.isEmpty &&
+              w.fold(false)(_.value.name === un1)
+          )
+        }
       }
     }
   }
