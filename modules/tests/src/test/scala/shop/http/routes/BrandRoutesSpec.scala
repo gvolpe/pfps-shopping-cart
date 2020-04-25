@@ -1,7 +1,6 @@
 package shop.http.routes
 
 import cats.effect._
-import cats.implicits._
 import org.http4s._
 import org.http4s.Method._
 import org.http4s.client.dsl.io._

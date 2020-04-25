@@ -13,7 +13,7 @@ object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] =
     config.load[IO].flatMap { cfg =>
-      Logger[IO].info(s"Loaded config $cfg") *>
+      Logger[IO].info(s"Loaded config $cfg") >>
         AppResources.make[IO](cfg).use { res =>
           for {
             security <- Security.make[IO](cfg, res.psql, res.redis)
