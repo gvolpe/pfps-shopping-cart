@@ -6,10 +6,9 @@ import cats.effect.concurrent.Ref
 import cats.implicits.{ catsSyntaxEq => _, _ }
 import ciris.Secret
 import dev.profunktor.auth.jwt._
-import dev.profunktor.redis4cats.algebra.RedisCommands
+import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
-import dev.profunktor.redis4cats.domain.RedisCodec
-import dev.profunktor.redis4cats.interpreter.Redis
+import dev.profunktor.redis4cats.data.RedisCodec
 import dev.profunktor.redis4cats.log4cats._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._

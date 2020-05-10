@@ -4,7 +4,7 @@ import cats.Parallel
 import cats.effect._
 import cats.effect.implicits._
 import cats.implicits._
-import dev.profunktor.redis4cats.algebra.RedisCommands
+import dev.profunktor.redis4cats.RedisCommands
 import scala.concurrent.duration._
 import shop.domain.healthcheck._
 import skunk._
