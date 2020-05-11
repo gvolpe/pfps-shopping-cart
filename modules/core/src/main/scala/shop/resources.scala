@@ -4,9 +4,8 @@ import cats.effect._
 import cats.implicits._
 import config.data._
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
-import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
-import dev.profunktor.redis4cats.data.RedisCodec
 import dev.profunktor.redis4cats.log4cats._
+import eu.timepit.refined.auto._
 import io.chrisdavenport.log4cats.Logger
 import natchez.Trace.Implicits.noop // needed for skunk
 import org.http4s.client.Client
@@ -37,11 +36,7 @@ object AppResources {
         )
 
     def mkRedisResource(c: RedisConfig): Resource[F, RedisCommands[F, String, String]] =
-      for {
-        uri <- Resource.liftF(RedisURI.make[F](c.uri.value.value))
-        client <- RedisClient[F](uri)
-        cmd <- Redis[F, String, String](client, RedisCodec.Utf8)
-      } yield cmd
+      Redis[F].utf8(c.uri.value)
 
     def mkHttpClient(c: HttpClientConfig): Resource[F, Client[F]] =
       BlazeClientBuilder[F](ExecutionContext.global)

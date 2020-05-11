@@ -7,8 +7,6 @@ import cats.implicits.{ catsSyntaxEq => _, _ }
 import ciris.Secret
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
-import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
-import dev.profunktor.redis4cats.data.RedisCodec
 import dev.profunktor.redis4cats.log4cats._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
@@ -34,11 +32,7 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
   val MaxTests: PropertyCheckConfigParam = MinSuccessful(1)
 
   override def resources =
-    for {
-      uri <- Resource.liftF(RedisURI.make[IO]("redis://localhost"))
-      client <- RedisClient[IO](uri)
-      cmd <- Redis[IO, String, String](client, RedisCodec.Utf8)
-    } yield cmd
+    Redis[IO].utf8("redis://localhost")
 
   lazy val Exp         = ShoppingCartExpiration(30.seconds)
   lazy val tokenConfig = JwtSecretKeyConfig(Secret("bar": NonEmptyString))
