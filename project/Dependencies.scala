@@ -14,7 +14,7 @@ object Dependencies {
     val http4s        = "0.21.3"
     val http4sJwtAuth = "0.0.4"
     val log4cats      = "1.1.1"
-    val newtype       = "0.4.3"
+    val newtype       = "0.4.4"
     val refined       = "0.9.14"
     val redis4cats    = "0.10.0-RC2"
     val skunk         = "0.0.9"
