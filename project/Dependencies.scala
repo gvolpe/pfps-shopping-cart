@@ -26,7 +26,7 @@ object Dependencies {
 
     val scalaCheck    = "1.14.3"
     val scalaTest     = "3.1.2"
-    val scalaTestPlus = "3.1.1.1"
+    val scalaTestPlus = "3.1.2.0"
   }
 
   object Libraries {
