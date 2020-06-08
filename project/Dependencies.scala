@@ -8,16 +8,16 @@ object Dependencies {
     val catsMeowMtl   = "0.4.0"
     val catsRetry     = "1.1.0"
     val circe         = "0.13.0"
-    val ciris         = "1.0.4"
+    val ciris         = "1.1.0"
     val javaxCrypto   = "1.0.1"
-    val fs2           = "2.3.0"
-    val http4s        = "0.21.4"
+    val fs2           = "2.4.0"
+    val http4s        = "0.21.3"
     val http4sJwtAuth = "0.0.4"
-    val log4cats      = "1.0.1"
+    val log4cats      = "1.1.1"
     val newtype       = "0.4.3"
     val refined       = "0.9.14"
-    val redis4cats    = "0.9.6"
-    val skunk         = "0.0.8"
+    val redis4cats    = "0.10.0"
+    val skunk         = "0.0.9"
     val squants       = "1.6.0"
 
     val betterMonadicFor = "0.3.1"
@@ -25,8 +25,8 @@ object Dependencies {
     val logback          = "1.2.3"
 
     val scalaCheck    = "1.14.3"
-    val scalaTest     = "3.1.1"
-    val scalaTestPlus = "3.1.1.1"
+    val scalaTest     = "3.1.2"
+    val scalaTestPlus = "3.1.2.0"
   }
 
   object Libraries {
