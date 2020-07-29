@@ -16,7 +16,7 @@ trait PaymentClient[F[_]] {
   def process(payment: Payment): F[PaymentId]
 }
 
-final class LivePaymentClient[F[_]: JsonDecoder: MonadThrow](
+final class LivePaymentClient[F[_]: JsonDecoder: BracketThrow](
     cfg: PaymentConfig,
     client: Client[F]
 ) extends PaymentClient[F]
@@ -24,13 +24,15 @@ final class LivePaymentClient[F[_]: JsonDecoder: MonadThrow](
 
   def process(payment: Payment): F[PaymentId] =
     Uri.fromString(cfg.uri.value.value + "/payments").liftTo[F].flatMap { uri =>
-      client.fetch[PaymentId](POST(payment, uri)) { r =>
-        if (r.status == Status.Ok || r.status == Status.Conflict)
-          r.asJsonDecode[PaymentId]
-        else
-          PaymentError(
-            Option(r.status.reason).getOrElse("unknown")
-          ).raiseError[F, PaymentId]
+      POST(payment, uri).flatMap { req =>
+        client.run(req).use { r =>
+          if (r.status == Status.Ok || r.status == Status.Conflict)
+            r.asJsonDecode[PaymentId]
+          else
+            PaymentError(
+              Option(r.status.reason).getOrElse("unknown")
+            ).raiseError[F, PaymentId]
+        }
       }
     }
 

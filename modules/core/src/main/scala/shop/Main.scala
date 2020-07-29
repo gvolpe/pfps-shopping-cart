@@ -5,6 +5,7 @@ import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.server.blaze.BlazeServerBuilder
+import scala.concurrent.ExecutionContext
 import shop.modules._
 
 object Main extends IOApp {
@@ -21,7 +22,7 @@ object Main extends IOApp {
             clients <- HttpClients.make[IO](cfg.paymentConfig, res.client)
             programs <- Programs.make[IO](cfg.checkoutConfig, algebras, clients)
             api <- HttpApi.make[IO](algebras, programs, security)
-            _ <- BlazeServerBuilder[IO]
+            _ <- BlazeServerBuilder[IO](ExecutionContext.global)
                   .bindHttp(
                     cfg.httpServerConfig.port.value,
                     cfg.httpServerConfig.host.value
