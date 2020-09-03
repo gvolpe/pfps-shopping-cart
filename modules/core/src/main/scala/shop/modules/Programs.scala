@@ -1,7 +1,7 @@
 package shop.modules
 
 import cats.effect._
-import cats.implicits._
+import cats.syntax.all._
 import io.chrisdavenport.log4cats.Logger
 import retry.RetryPolicy
 import retry.RetryPolicies._

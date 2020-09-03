@@ -1,7 +1,7 @@
 package shop.programs
 
 import cats.effect.Timer
-import cats.implicits._
+import cats.syntax.all._
 import io.chrisdavenport.log4cats.Logger
 import retry._
 import retry.RetryDetails._

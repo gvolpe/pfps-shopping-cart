@@ -1,7 +1,7 @@
 package shop.config
 
 import cats.effect._
-import cats.implicits._
+import cats.syntax.all._
 import ciris._
 import ciris.refined._
 import environments._

@@ -2,7 +2,7 @@ package shop.programs
 
 import cats.effect._
 import cats.effect.concurrent.Ref
-import cats.implicits.{ catsSyntaxEq => _, _ }
+import cats.syntax.all._
 import retry.RetryPolicy
 import retry.RetryPolicies._
 import shop.algebras._
