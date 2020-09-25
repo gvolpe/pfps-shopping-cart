@@ -1,7 +1,7 @@
 package shop.http.routes.secured
 
 import cats.Defer
-import cats.implicits._
+import cats.syntax.all._
 import org.http4s._
 import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl

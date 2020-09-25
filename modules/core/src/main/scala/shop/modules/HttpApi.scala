@@ -1,7 +1,7 @@
 package shop.modules
 
 import cats.effect._
-import cats.implicits._
+import cats.syntax.all._
 import dev.profunktor.auth.JwtAuthMiddleware
 import org.http4s._
 import org.http4s.implicits._

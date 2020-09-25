@@ -1,7 +1,7 @@
 package shop.algebras
 
 import cats.effect.Sync
-import cats.implicits._
+import cats.syntax.all._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import java.util.UUID

@@ -1,7 +1,7 @@
 package shop.algebras
 
 import cats.effect.Sync
-import cats.implicits._
+import cats.syntax.all._
 import javax.crypto.spec.{ PBEKeySpec, SecretKeySpec }
 import javax.crypto.{ Cipher, SecretKeyFactory }
 import shop.config.data.PasswordSalt

@@ -1,7 +1,7 @@
 package shop
 
 import cats.effect._
-import cats.implicits._
+import cats.syntax.all._
 import config.data._
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import dev.profunktor.redis4cats.log4cats._
