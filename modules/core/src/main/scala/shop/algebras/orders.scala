@@ -1,7 +1,7 @@
 package shop.algebras
 
 import cats.effect._
-import cats.implicits._
+import cats.syntax.all._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
