@@ -17,10 +17,8 @@ final class ItemRoutes[F[_]: Defer: Monad](
 
   object BrandQueryParam extends OptionalQueryParamDecoderMatcher[BrandParam]("brand")
 
-  private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
-
-    case GET -> Root :? BrandQueryParam(brand) =>
-      Ok(brand.fold(items.findAll)(b => items.findBy(b.toDomain)))
+  private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root :? BrandQueryParam(brand) =>
+    Ok(brand.fold(items.findAll)(b => items.findBy(b.toDomain)))
 
   }
 

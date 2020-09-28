@@ -27,9 +27,8 @@ final class CartRoutes[F[_]: Defer: JsonDecoder: Monad](
     case ar @ POST -> Root as user =>
       ar.req.asJsonDecode[Cart].flatMap { cart =>
         cart.items
-          .map {
-            case (id, quantity) =>
-              shoppingCart.add(user.value.id, id, quantity)
+          .map { case (id, quantity) =>
+            shoppingCart.add(user.value.id, id, quantity)
           }
           .toList
           .sequence *> Created()

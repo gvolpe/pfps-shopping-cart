@@ -39,9 +39,8 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
       onError = logError("Payments")
     )(paymentClient.process(payment))
 
-    action.adaptError {
-      case e =>
-        PaymentError(Option(e.getMessage).getOrElse("Unknown"))
+    action.adaptError { case e =>
+      PaymentError(Option(e.getMessage).getOrElse("Unknown"))
     }
   }
 
@@ -52,14 +51,12 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     )(orders.create(userId, paymentId, items, total))
 
     def bgAction(fa: F[OrderId]): F[OrderId] =
-      fa.adaptError {
-          case e => OrderError(e.getMessage)
-        }
-        .onError {
-          case _ =>
-            Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
-                Background[F].schedule(bgAction(fa), 1.hour)
-        }
+      fa.adaptError { case e =>
+        OrderError(e.getMessage)
+      }.onError { case _ =>
+        Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
+          Background[F].schedule(bgAction(fa), 1.hour)
+      }
 
     bgAction(action)
   }
@@ -68,13 +65,12 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     shoppingCart
       .get(userId)
       .ensure(EmptyCartError)(_.items.nonEmpty)
-      .flatMap {
-        case CartTotal(items, total) =>
-          for {
-            pid <- processPayment(Payment(userId, total, card))
-            order <- createOrder(userId, pid, items, total)
-            _ <- shoppingCart.delete(userId).attempt.void
-          } yield order
+      .flatMap { case CartTotal(items, total) =>
+        for {
+          pid <- processPayment(Payment(userId, total, card))
+          order <- createOrder(userId, pid, items, total)
+          _ <- shoppingCart.delete(userId).attempt.void
+        } yield order
       }
 
 }

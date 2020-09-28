@@ -20,11 +20,10 @@ final class AdminCategoryRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
   private[admin] val prefixPath = "/categories"
 
   private val httpRoutes: AuthedRoutes[AdminUser, F] =
-    AuthedRoutes.of {
-      case ar @ POST -> Root as _ =>
-        ar.req.decodeR[CategoryParam] { c =>
-          Created(categories.create(c.toDomain))
-        }
+    AuthedRoutes.of { case ar @ POST -> Root as _ =>
+      ar.req.decodeR[CategoryParam] { c =>
+        Created(categories.create(c.toDomain))
+      }
     }
 
   def routes(authMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = Router(

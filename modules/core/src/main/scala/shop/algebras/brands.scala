@@ -44,8 +44,8 @@ final class LiveBrands[F[_]: BracketThrow: GenUUID] private (
 private object BrandQueries {
 
   val codec: Codec[Brand] =
-    (uuid.cimap[BrandId] ~ varchar.cimap[BrandName]).imap {
-      case i ~ n => Brand(i, n)
+    (uuid.cimap[BrandId] ~ varchar.cimap[BrandName]).imap { case i ~ n =>
+      Brand(i, n)
     }(b => b.uuid ~ b.name)
 
   val selectAll: Query[Void, Brand] =

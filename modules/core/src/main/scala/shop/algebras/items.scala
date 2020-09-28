@@ -115,9 +115,8 @@ private object ItemQueries {
     sql"""
         INSERT INTO items
         VALUES ($uuid, $varchar, $varchar, $numeric, $uuid, $uuid)
-       """.command.contramap {
-      case id ~ i =>
-        id.value ~ i.name.value ~ i.description.value ~ i.price.amount ~ i.brandId.value ~ i.categoryId.value
+       """.command.contramap { case id ~ i =>
+      id.value ~ i.name.value ~ i.description.value ~ i.price.amount ~ i.brandId.value ~ i.categoryId.value
     }
 
   val updateItem: Command[UpdateItem] =

@@ -13,9 +13,8 @@ final class HealthRoutes[F[_]: Defer: Monad](
 
   private[routes] val prefixPath = "/healthcheck"
 
-  private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
-    case GET -> Root =>
-      Ok(healthCheck.status)
+  private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root =>
+    Ok(healthCheck.status)
   }
 
   val routes: HttpRoutes[F] = Router(

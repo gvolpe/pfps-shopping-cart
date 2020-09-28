@@ -45,18 +45,17 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
 
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
-        redis.expire(userId.value.toString, exp.value)
+      redis.expire(userId.value.toString, exp.value)
 
   def get(userId: UserId): F[CartTotal] =
     redis.hGetAll(userId.value.toString).flatMap { it =>
       it.toList
-        .traverseFilter {
-          case (k, v) =>
-            for {
-              id <- GenUUID[F].read[ItemId](k)
-              qt <- ApThrow[F].catchNonFatal(Quantity(v.toInt))
-              rs <- items.findById(id).map(_.map(i => CartItem(i, qt)))
-            } yield rs
+        .traverseFilter { case (k, v) =>
+          for {
+            id <- GenUUID[F].read[ItemId](k)
+            qt <- ApThrow[F].catchNonFatal(Quantity(v.toInt))
+            rs <- items.findById(id).map(_.map(i => CartItem(i, qt)))
+          } yield rs
         }
         .map(items => CartTotal(items, calcTotal(items)))
     }
@@ -69,13 +68,12 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
 
   def update(userId: UserId, cart: Cart): F[Unit] =
     redis.hGetAll(userId.value.toString).flatMap { it =>
-      it.toList.traverse_ {
-        case (k, _) =>
-          GenUUID[F].read[ItemId](k).flatMap { id =>
-            cart.items.get(id).traverse_ { q =>
-              redis.hSet(userId.value.toString, k, q.value.toString)
-            }
+      it.toList.traverse_ { case (k, _) =>
+        GenUUID[F].read[ItemId](k).flatMap { id =>
+          cart.items.get(id).traverse_ { q =>
+            redis.hSet(userId.value.toString, k, q.value.toString)
           }
+        }
       } *>
         redis.expire(userId.value.toString, exp.value)
     }

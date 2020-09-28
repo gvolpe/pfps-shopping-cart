@@ -45,8 +45,8 @@ final class LiveCategories[F[_]: BracketThrow: GenUUID] private (
 private object CategoryQueries {
 
   val codec: Codec[Category] =
-    (uuid.cimap[CategoryId] ~ varchar.cimap[CategoryName]).imap {
-      case i ~ n => Category(i, n)
+    (uuid.cimap[CategoryId] ~ varchar.cimap[CategoryName]).imap { case i ~ n =>
+      Category(i, n)
     }(c => c.uuid ~ c.name)
 
   val selectAll: Query[Void, Category] =

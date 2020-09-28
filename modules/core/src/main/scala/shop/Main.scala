@@ -23,14 +23,14 @@ object Main extends IOApp {
             programs <- Programs.make[IO](cfg.checkoutConfig, algebras, clients)
             api <- HttpApi.make[IO](algebras, programs, security)
             _ <- BlazeServerBuilder[IO](ExecutionContext.global)
-                  .bindHttp(
-                    cfg.httpServerConfig.port.value,
-                    cfg.httpServerConfig.host.value
-                  )
-                  .withHttpApp(api.httpApp)
-                  .serve
-                  .compile
-                  .drain
+                   .bindHttp(
+                     cfg.httpServerConfig.port.value,
+                     cfg.httpServerConfig.host.value
+                   )
+                   .withHttpApp(api.httpApp)
+                   .serve
+                   .compile
+                   .drain
           } yield ExitCode.Success
         }
     }

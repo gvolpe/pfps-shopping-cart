@@ -27,9 +27,8 @@ object LiveCrypto {
         dCipher.value.init(Cipher.DECRYPT_MODE, sKeySpec)
         (eCipher, dCipher)
       }
-      .map {
-        case (ec, dc) =>
-          new LiveCrypto(ec, dc)
+      .map { case (ec, dc) =>
+        new LiveCrypto(ec, dc)
       }
 }
 
