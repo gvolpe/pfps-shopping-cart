@@ -25,7 +25,7 @@ object Dependencies {
     val logback          = "1.2.3"
 
     val scalaCheck    = "1.15.1"
-    val scalaTest     = "3.2.2"
+    val scalaTest     = "3.2.3"
     val scalaTestPlus = "3.2.2.0"
   }
 
