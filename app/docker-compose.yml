@@ -4,8 +4,6 @@ services:
     restart: always
     image: shopping-cart:latest
     network_mode: host
-    ports:
-      - "8080:8080"
     environment:
       - DEBUG=false
       - SC_ACCESS_TOKEN_SECRET_KEY=5h0pp1ng_k4rt
