@@ -6,10 +6,7 @@ import cats.effect.concurrent.Ref
 import cats.implicits._
 import ciris.Secret
 import dev.profunktor.auth.jwt._
-import dev.profunktor.redis4cats.algebra.RedisCommands
-import dev.profunktor.redis4cats.connection.{ RedisClient, RedisURI }
-import dev.profunktor.redis4cats.domain.RedisCodec
-import dev.profunktor.redis4cats.interpreter.Redis
+import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import dev.profunktor.redis4cats.log4cats._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
@@ -33,11 +30,7 @@ import suite._
 class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
 
   override def resources =
-    for {
-      uri <- Resource.liftF(RedisURI.make[IO]("redis://localhost"))
-      client <- RedisClient[IO](uri)
-      cmd <- Redis[IO, String, String](client, RedisCodec.Utf8)
-    } yield cmd
+    Redis[IO].utf8("redis://localhost")
 
   lazy val Exp         = ShoppingCartExpiration(30.seconds)
   lazy val tokenConfig = JwtSecretKeyConfig(Secret("bar": NonEmptyString))

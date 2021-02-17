@@ -1,7 +1,6 @@
 package shop
 
 import cats.Eq
-import cats.implicits._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import java.util.UUID

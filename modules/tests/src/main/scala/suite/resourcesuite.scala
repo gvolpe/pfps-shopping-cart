@@ -32,7 +32,7 @@ trait ResourceSuite[A] extends PureTestSuite {
 
   def withResources(f: (=> A) => Unit): Unit = f {
     //to ensure that the resource has been allocated even before any spec(...) bodies
-    latch.get.unsafeRunSync
+    latch.get.unsafeRunSync()
     res
   }
 }

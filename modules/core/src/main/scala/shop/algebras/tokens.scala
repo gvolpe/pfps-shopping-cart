@@ -1,7 +1,7 @@
 package shop.algebras
 
 import cats.effect.Sync
-import cats.implicits._
+import cats.syntax.all._
 import dev.profunktor.auth.jwt._
 import io.circe.syntax._
 import pdi.jwt._

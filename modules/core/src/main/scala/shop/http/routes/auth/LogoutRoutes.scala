@@ -1,7 +1,7 @@
 package shop.http.routes
 
 import cats._
-import cats.implicits._
+import cats.syntax.all._
 import dev.profunktor.auth.AuthHeaders
 import org.http4s._
 import org.http4s.dsl.Http4sDsl

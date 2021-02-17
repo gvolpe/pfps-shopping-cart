@@ -1,8 +1,8 @@
 package shop.algebras
 
 import cats.effect._
-import cats.implicits._
-import dev.profunktor.redis4cats.algebra.RedisCommands
+import cats.syntax.all._
+import dev.profunktor.redis4cats.RedisCommands
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
