@@ -2,7 +2,6 @@ package shop
 
 import cats.Eq
 import io.estatico.newtype.Coercible
-import io.estatico.newtype.ops._
 import java.util.UUID
 
 package object domain {
@@ -11,7 +10,7 @@ package object domain {
   private def coercibleEq[A: Eq, B: Coercible[A, *]]: Eq[B] =
     new Eq[B] {
       def eqv(x: B, y: B): Boolean =
-        Eq[A].eqv(x.repr.asInstanceOf[A], y.repr.asInstanceOf[A])
+        Eq[A].eqv(x.asInstanceOf[A], y.asInstanceOf[A])
     }
 
   implicit def coercibleStringEq[B: Coercible[String, *]]: Eq[B] =
