@@ -1,16 +1,17 @@
 package shop.modules
 
+import shop.algebras._
+import shop.config.data._
+import shop.domain.auth._
+import shop.effects._
+import shop.http.auth.users._
+
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.RedisCommands
 import io.circe.parser.{ decode => jsonDecode }
 import pdi.jwt._
-import shop.algebras._
-import shop.config.data._
-import shop.domain.auth._
-import shop.effects._
-import shop.http.auth.users._
 import skunk.Session
 
 object Security {

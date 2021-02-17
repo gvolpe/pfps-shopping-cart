@@ -1,8 +1,9 @@
 package suite
 
+import scala.concurrent.ExecutionContext
+
 import cats.effect._
 import munit.ScalaCheckSuite
-import scala.concurrent.ExecutionContext
 
 trait PureTestSuite extends ScalaCheckSuite {
 

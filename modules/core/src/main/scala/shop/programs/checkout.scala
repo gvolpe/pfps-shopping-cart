@@ -1,11 +1,7 @@
 package shop.programs
 
-import cats.effect.Timer
-import cats.syntax.all._
-import io.chrisdavenport.log4cats.Logger
-import retry._
-import retry.RetryDetails._
 import scala.concurrent.duration._
+
 import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart._
@@ -14,6 +10,12 @@ import shop.domain.order._
 import shop.domain.payment._
 import shop.effects._
 import shop.http.clients.PaymentClient
+
+import cats.effect.Timer
+import cats.syntax.all._
+import io.chrisdavenport.log4cats.Logger
+import retry.RetryDetails._
+import retry._
 import squants.market.Money
 
 final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](

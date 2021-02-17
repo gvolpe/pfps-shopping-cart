@@ -1,9 +1,11 @@
 package shop.domain
 
+import java.util.UUID
+
+import scala.util.control.NoStackTrace
+
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
-import java.util.UUID
-import scala.util.control.NoStackTrace
 
 object brand {
   @newtype case class BrandId(value: UUID)

@@ -1,11 +1,12 @@
 package shop.modules
 
+import shop.algebras._
+import shop.config.data._
+
 import cats.Parallel
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.redis4cats.RedisCommands
-import shop.algebras._
-import shop.config.data._
 import skunk._
 
 object Algebras {

@@ -1,12 +1,14 @@
 package shop.algebras
 
+import scala.concurrent.duration.FiniteDuration
+
+import shop.config.data._
+
 import cats.effect.Sync
 import cats.syntax.all._
 import dev.profunktor.auth.jwt._
 import io.circe.syntax._
 import pdi.jwt._
-import scala.concurrent.duration.FiniteDuration
-import shop.config.data._
 
 trait Tokens[F[_]] {
   def create: F[JwtToken]

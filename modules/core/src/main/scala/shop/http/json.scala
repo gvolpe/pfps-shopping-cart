@@ -1,14 +1,5 @@
 package shop.http
 
-import cats.Applicative
-import dev.profunktor.auth.jwt.JwtToken
-import io.circe._
-import io.circe.generic.semiauto._
-import io.circe.refined._
-import io.estatico.newtype.Coercible
-import io.estatico.newtype.ops._
-import org.http4s.EntityEncoder
-import org.http4s.circe.jsonEncoderOf
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.cart._
@@ -20,6 +11,16 @@ import shop.domain.order._
 import shop.domain.payment._
 import shop.ext.refined._
 import shop.http.auth.users._
+
+import cats.Applicative
+import dev.profunktor.auth.jwt.JwtToken
+import io.circe._
+import io.circe.generic.semiauto._
+import io.circe.refined._
+import io.estatico.newtype.Coercible
+import io.estatico.newtype.ops._
+import org.http4s.EntityEncoder
+import org.http4s.circe.jsonEncoderOf
 import squants.market._
 
 object json extends JsonCodecs {

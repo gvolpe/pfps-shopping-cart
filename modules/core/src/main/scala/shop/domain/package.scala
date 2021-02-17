@@ -1,8 +1,9 @@
 package shop
 
+import java.util.UUID
+
 import cats.Eq
 import io.estatico.newtype.Coercible
-import java.util.UUID
 
 package object domain {
 

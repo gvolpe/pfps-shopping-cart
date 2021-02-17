@@ -1,13 +1,7 @@
 package shop.http.routes.secured
 
-import cats.data.Kleisli
-import cats.effect._
 import java.util.UUID
-import org.http4s._
-import org.http4s.Method._
-import org.http4s.client.dsl.io._
-import org.http4s.server.AuthMiddleware
-import org.scalacheck.Prop._
+
 import shop.algebras.ShoppingCart
 import shop.arbitraries._
 import shop.domain.auth._
@@ -15,6 +9,14 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.http.auth.users._
 import shop.http.json._
+
+import cats.data.Kleisli
+import cats.effect._
+import org.http4s.Method._
+import org.http4s._
+import org.http4s.client.dsl.io._
+import org.http4s.server.AuthMiddleware
+import org.scalacheck.Prop._
 import squants.market.USD
 import suite._
 

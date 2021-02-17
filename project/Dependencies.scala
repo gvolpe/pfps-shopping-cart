@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
 
-  object Versions {
+  object V {
     val cats          = "2.2.0"
     val catsEffect    = "2.2.0"
     val catsMeowMtl   = "0.4.1"
@@ -24,22 +24,24 @@ object Dependencies {
     val betterMonadicFor = "0.3.1"
     val kindProjector    = "0.11.3"
     val logback          = "1.2.3"
+    val organizeImports  = "0.5.0"
+    val semanticDB       = "4.4.4"
 
     val munit = "0.7.3"
   }
 
   object Libraries {
-    def circe(artifact: String): ModuleID  = "io.circe"    %% s"circe-$artifact" % Versions.circe
-    def ciris(artifact: String): ModuleID  = "is.cir"      %% artifact % Versions.ciris
-    def derevo(artifact: String): ModuleID = "org.manatki" %% s"derevo-$artifact" % Versions.derevo
-    def http4s(artifact: String): ModuleID = "org.http4s"  %% s"http4s-$artifact" % Versions.http4s
+    def circe(artifact: String): ModuleID  = "io.circe"    %% s"circe-$artifact"  % V.circe
+    def ciris(artifact: String): ModuleID  = "is.cir"      %% artifact            % V.ciris
+    def derevo(artifact: String): ModuleID = "org.manatki" %% s"derevo-$artifact" % V.derevo
+    def http4s(artifact: String): ModuleID = "org.http4s"  %% s"http4s-$artifact" % V.http4s
 
-    val cats        = "org.typelevel"    %% "cats-core"     % Versions.cats
-    val catsMeowMtl = "com.olegpy"       %% "meow-mtl-core" % Versions.catsMeowMtl
-    val catsEffect  = "org.typelevel"    %% "cats-effect"   % Versions.catsEffect
-    val catsRetry   = "com.github.cb372" %% "cats-retry"    % Versions.catsRetry
-    val squants     = "org.typelevel"    %% "squants"       % Versions.squants
-    val fs2         = "co.fs2"           %% "fs2-core"      % Versions.fs2
+    val cats        = "org.typelevel"    %% "cats-core"     % V.cats
+    val catsMeowMtl = "com.olegpy"       %% "meow-mtl-core" % V.catsMeowMtl
+    val catsEffect  = "org.typelevel"    %% "cats-effect"   % V.catsEffect
+    val catsRetry   = "com.github.cb372" %% "cats-retry"    % V.catsRetry
+    val squants     = "org.typelevel"    %% "squants"       % V.squants
+    val fs2         = "co.fs2"           %% "fs2-core"      % V.fs2
 
     val circeCore    = circe("core")
     val circeGeneric = circe("generic")
@@ -58,32 +60,43 @@ object Dependencies {
     val http4sClient = http4s("blaze-client")
     val http4sCirce  = http4s("circe")
 
-    val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % Versions.http4sJwtAuth
+    val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % V.http4sJwtAuth
 
-    val refinedCore = "eu.timepit" %% "refined"      % Versions.refined
-    val refinedCats = "eu.timepit" %% "refined-cats" % Versions.refined
+    val refinedCore = "eu.timepit" %% "refined"      % V.refined
+    val refinedCats = "eu.timepit" %% "refined-cats" % V.refined
 
-    val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % Versions.log4cats
-    val newtype  = "io.estatico"       %% "newtype"        % Versions.newtype
+    val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % V.log4cats
+    val newtype  = "io.estatico"       %% "newtype"        % V.newtype
 
-    val javaxCrypto = "javax.xml.crypto" % "jsr105-api" % Versions.javaxCrypto
+    val javaxCrypto = "javax.xml.crypto" % "jsr105-api" % V.javaxCrypto
 
-    val redis4catsEffects  = "dev.profunktor" %% "redis4cats-effects"  % Versions.redis4cats
-    val redis4catsLog4cats = "dev.profunktor" %% "redis4cats-log4cats" % Versions.redis4cats
+    val redis4catsEffects  = "dev.profunktor" %% "redis4cats-effects"  % V.redis4cats
+    val redis4catsLog4cats = "dev.profunktor" %% "redis4cats-log4cats" % V.redis4cats
 
-    val skunkCore  = "org.tpolecat" %% "skunk-core"  % Versions.skunk
-    val skunkCirce = "org.tpolecat" %% "skunk-circe" % Versions.skunk
-
-    // Compiler plugins
-    val betterMonadicFor = "com.olegpy"    %% "better-monadic-for" % Versions.betterMonadicFor
-    val kindProjector    = "org.typelevel" % "kind-projector"      % Versions.kindProjector
+    val skunkCore  = "org.tpolecat" %% "skunk-core"  % V.skunk
+    val skunkCirce = "org.tpolecat" %% "skunk-circe" % V.skunk
 
     // Runtime
-    val logback = "ch.qos.logback" % "logback-classic" % Versions.logback
+    val logback = "ch.qos.logback" % "logback-classic" % V.logback
 
     // Test
-    val munitCore       = "org.scalameta" %% "munit"            % Versions.munit
-    val munitScalacheck = "org.scalameta" %% "munit-scalacheck" % Versions.munit
+    val munitCore       = "org.scalameta" %% "munit"            % V.munit
+    val munitScalacheck = "org.scalameta" %% "munit-scalacheck" % V.munit
+
+    // Scalafix rules
+    val organizeImports = "com.github.liancheng" %% "organize-imports" % V.organizeImports
+  }
+
+  object CompilerPlugin {
+    val betterMonadicFor = compilerPlugin(
+      "com.olegpy" %% "better-monadic-for" % V.betterMonadicFor
+    )
+    val kindProjector = compilerPlugin(
+      "org.typelevel" % "kind-projector" % V.kindProjector cross CrossVersion.full
+    )
+    val semanticDB = compilerPlugin(
+      "org.scalameta" % "semanticdb-scalac" % V.semanticDB cross CrossVersion.full
+    )
   }
 
 }

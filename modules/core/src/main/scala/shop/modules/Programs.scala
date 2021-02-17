@@ -1,13 +1,14 @@
 package shop.modules
 
-import cats.effect._
-import cats.syntax.all._
-import io.chrisdavenport.log4cats.Logger
-import retry.RetryPolicy
-import retry.RetryPolicies._
 import shop.config.data.CheckoutConfig
 import shop.effects._
 import shop.programs._
+
+import cats.effect._
+import cats.syntax.all._
+import io.chrisdavenport.log4cats.Logger
+import retry.RetryPolicies._
+import retry.RetryPolicy
 
 object Programs {
   def make[F[_]: Background: Logger: Sync: Timer](

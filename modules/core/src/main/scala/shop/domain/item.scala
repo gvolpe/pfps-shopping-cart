@@ -1,12 +1,14 @@
 package shop.domain
 
+import java.util.UUID
+
+import shop.domain.brand._
+import shop.domain.category._
+
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
-import java.util.UUID
-import shop.domain.brand._
-import shop.domain.category._
 import squants.market._
 
 object item {

@@ -1,12 +1,13 @@
 package suite
 
+import scala.util.control.NoStackTrace
+
 import cats.effect.IO
 import cats.implicits._
 import io.circe._
 import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe._
-import scala.util.control.NoStackTrace
 
 trait HttpTestSuite extends PureTestSuite {
 

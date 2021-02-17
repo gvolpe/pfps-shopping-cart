@@ -1,12 +1,7 @@
 package shop.programs
 
-import cats.effect._
-import cats.effect.concurrent.Ref
-import cats.implicits._
-import org.scalacheck.Prop._
-import retry.RetryPolicy
-import retry.RetryPolicies._
 import scala.util.control.NoStackTrace
+
 import shop.algebras._
 import shop.arbitraries._
 import shop.domain._
@@ -17,6 +12,13 @@ import shop.domain.item._
 import shop.domain.order._
 import shop.domain.payment._
 import shop.http.clients._
+
+import cats.effect._
+import cats.effect.concurrent.Ref
+import cats.implicits._
+import org.scalacheck.Prop._
+import retry.RetryPolicies._
+import retry.RetryPolicy
 import squants.market._
 import suite._
 

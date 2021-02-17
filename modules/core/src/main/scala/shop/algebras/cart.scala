@@ -1,13 +1,14 @@
 package shop.algebras
 
-import cats.effect._
-import cats.syntax.all._
-import dev.profunktor.redis4cats.RedisCommands
+import shop.config.data.ShoppingCartExpiration
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
-import shop.config.data.ShoppingCartExpiration
 import shop.effects._
+
+import cats.effect._
+import cats.syntax.all._
+import dev.profunktor.redis4cats.RedisCommands
 import squants.market._
 
 trait ShoppingCart[F[_]] {

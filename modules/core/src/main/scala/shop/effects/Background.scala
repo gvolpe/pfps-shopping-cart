@@ -1,9 +1,10 @@
 package shop.effects
 
+import scala.concurrent.duration.FiniteDuration
+
 import cats.effect._
 import cats.effect.implicits._
 import cats.syntax.all._
-import scala.concurrent.duration.FiniteDuration
 
 trait Background[F[_]] {
   def schedule[A](

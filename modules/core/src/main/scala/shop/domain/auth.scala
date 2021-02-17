@@ -1,11 +1,13 @@
 package shop.domain
 
+import java.util.UUID
+import javax.crypto.Cipher
+
+import scala.util.control.NoStackTrace
+
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe._
 import io.estatico.newtype.macros.newtype
-import java.util.UUID
-import javax.crypto.Cipher
-import scala.util.control.NoStackTrace
 
 object auth {
 

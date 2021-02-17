@@ -1,13 +1,14 @@
 package shop.algebras
 
-import cats.effect._
-import cats.syntax.all._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
-import shop.http.json._
 import shop.ext.skunkx._
+import shop.http.json._
+
+import cats.effect._
+import cats.syntax.all._
 import skunk._
 import skunk.circe.codec.all._
 import skunk.codec.all._

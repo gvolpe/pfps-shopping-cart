@@ -1,9 +1,11 @@
 import Dependencies._
 
-ThisBuild / scalaVersion := "2.13.3"
+ThisBuild / scalaVersion := "2.13.4"
 ThisBuild / version := "0.2.0"
 ThisBuild / organization := "dev.profunktor"
 ThisBuild / organizationName := "ProfunKtor"
+
+ThisBuild / scalafixDependencies += Libraries.organizeImports
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
@@ -19,11 +21,14 @@ lazy val tests = (project in file("modules/tests"))
     name := "shopping-cart-test-suite",
     scalacOptions += "-Ymacro-annotations",
     scalafmtOnCompile := true,
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision,
     testFrameworks += new TestFramework("munit.Framework"),
     Defaults.itSettings,
     libraryDependencies ++= Seq(
-          compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
-          compilerPlugin(Libraries.betterMonadicFor),
+          CompilerPlugin.kindProjector,
+          CompilerPlugin.betterMonadicFor,
+          CompilerPlugin.semanticDB,
           Libraries.munitCore,
           Libraries.munitScalacheck
         )
@@ -45,8 +50,9 @@ lazy val core = (project in file("modules/core"))
     makeBatScripts := Seq(),
     dockerUpdateLatest := true,
     libraryDependencies ++= Seq(
-          compilerPlugin(Libraries.kindProjector cross CrossVersion.full),
-          compilerPlugin(Libraries.betterMonadicFor),
+          CompilerPlugin.kindProjector,
+          CompilerPlugin.betterMonadicFor,
+          CompilerPlugin.semanticDB,
           Libraries.cats,
           Libraries.catsEffect,
           Libraries.catsMeowMtl,
@@ -77,3 +83,5 @@ lazy val core = (project in file("modules/core"))
           Libraries.squants
         )
   )
+
+addCommandAlias("runLinter", ";scalafixAll --rules OrganizeImports")

@@ -1,8 +1,9 @@
 package shop.http.auth
 
+import shop.domain.auth._
+
 import dev.profunktor.auth.jwt._
 import io.estatico.newtype.macros.newtype
-import shop.domain.auth._
 
 object users {
 
