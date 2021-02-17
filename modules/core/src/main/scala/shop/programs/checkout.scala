@@ -11,7 +11,7 @@ import shop.domain.payment._
 import shop.effects._
 import shop.http.clients.PaymentClient
 
-import cats.effect.Timer
+import cats.effect.{ MonadThrow, Timer }
 import cats.syntax.all._
 import io.chrisdavenport.log4cats.Logger
 import retry.RetryDetails._

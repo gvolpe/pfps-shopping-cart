@@ -19,7 +19,7 @@ lazy val tests = (project in file("modules/tests"))
   .configs(IntegrationTest)
   .settings(
     name := "shopping-cart-test-suite",
-    scalacOptions += "-Ymacro-annotations",
+    scalacOptions ++= List("-Ymacro-annotations", "-Yrangepos", "-Wconf:cat=unused:info"),
     scalafmtOnCompile := true,
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
@@ -41,7 +41,7 @@ lazy val core = (project in file("modules/core"))
   .settings(
     name := "shopping-cart-core",
     packageName in Docker := "shopping-cart",
-    scalacOptions += "-Ymacro-annotations",
+    scalacOptions ++= List("-Ymacro-annotations", "-Yrangepos", "-Wconf:cat=unused:info"),
     scalafmtOnCompile := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
@@ -64,6 +64,9 @@ lazy val core = (project in file("modules/core"))
           Libraries.cirisCore,
           Libraries.cirisEnum,
           Libraries.cirisRefined,
+          Libraries.derevoCore,
+          Libraries.derevoCats,
+          Libraries.derevoCirce,
           Libraries.fs2,
           Libraries.http4sDsl,
           Libraries.http4sServer,
