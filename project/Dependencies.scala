@@ -27,7 +27,7 @@ object Dependencies {
     val organizeImports  = "0.5.0"
     val semanticDB       = "4.4.8"
 
-    val munit = "0.7.3"
+    val munit = "0.7.22"
   }
 
   object Libraries {
