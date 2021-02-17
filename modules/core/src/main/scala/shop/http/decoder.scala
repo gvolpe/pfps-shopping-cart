@@ -1,7 +1,6 @@
 package shop.http
 
-import shop.effects._
-
+import cats.effect.MonadThrow
 import cats.syntax.all._
 import io.circe.Decoder
 import org.http4s._

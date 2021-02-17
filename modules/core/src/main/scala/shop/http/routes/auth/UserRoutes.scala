@@ -2,7 +2,6 @@ package shop.http.routes
 
 import shop.algebras.Auth
 import shop.domain.auth._
-import shop.effects._
 import shop.http.decoder._
 import shop.http.json._
 

@@ -1,7 +1,6 @@
 package shop.algebras
 
 import shop.domain.auth._
-import shop.effects._
 import shop.ext.skunkx._
 import shop.http.auth.users._
 

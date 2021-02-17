@@ -3,8 +3,8 @@ import sbt._
 object Dependencies {
 
   object V {
-    val cats          = "2.2.0"
-    val catsEffect    = "2.2.0"
+    val cats          = "2.4.2"
+    val catsEffect    = "2.3.3"
     val catsMeowMtl   = "0.4.1"
     val catsRetry     = "2.0.0"
     val circe         = "0.13.0"
@@ -31,10 +31,10 @@ object Dependencies {
   }
 
   object Libraries {
-    def circe(artifact: String): ModuleID  = "io.circe"    %% s"circe-$artifact"  % V.circe
-    def ciris(artifact: String): ModuleID  = "is.cir"      %% artifact            % V.ciris
-    def derevo(artifact: String): ModuleID = "org.manatki" %% s"derevo-$artifact" % V.derevo
-    def http4s(artifact: String): ModuleID = "org.http4s"  %% s"http4s-$artifact" % V.http4s
+    def circe(artifact: String): ModuleID  = "io.circe"   %% s"circe-$artifact"  % V.circe
+    def ciris(artifact: String): ModuleID  = "is.cir"     %% artifact            % V.ciris
+    def derevo(artifact: String): ModuleID = "tf.tofu"    %% s"derevo-$artifact" % V.derevo
+    def http4s(artifact: String): ModuleID = "org.http4s" %% s"http4s-$artifact" % V.http4s
 
     val cats        = "org.typelevel"    %% "cats-core"     % V.cats
     val catsMeowMtl = "com.olegpy"       %% "meow-mtl-core" % V.catsMeowMtl
@@ -52,8 +52,9 @@ object Dependencies {
     val cirisEnum    = ciris("ciris-enumeratum")
     val cirisRefined = ciris("ciris-refined")
 
-    val derevoCore = derevo("core")
-    val derevoCats = derevo("cats")
+    val derevoCore  = derevo("core")
+    val derevoCats  = derevo("cats")
+    val derevoCirce = derevo("circe")
 
     val http4sDsl    = http4s("dsl")
     val http4sServer = http4s("blaze-server")

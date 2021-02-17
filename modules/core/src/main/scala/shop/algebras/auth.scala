@@ -2,7 +2,6 @@ package shop.algebras
 
 import shop.config.data.TokenExpiration
 import shop.domain.auth._
-import shop.effects._
 import shop.http.auth.users._
 import shop.http.json._
 

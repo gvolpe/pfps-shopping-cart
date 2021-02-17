@@ -2,7 +2,6 @@ package shop.http.routes.admin
 
 import shop.algebras.Categories
 import shop.domain.category._
-import shop.effects._
 import shop.http.auth.users.AdminUser
 import shop.http.decoder._
 import shop.http.json._
