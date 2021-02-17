@@ -1,16 +1,19 @@
 package shop.config
 
+import scala.concurrent.duration._
+
+import shop.config.data._
+
 import cats.effect._
 import cats.syntax.all._
 import ciris._
 import ciris.refined._
-import environments._
-import environments.AppEnvironment._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
-import scala.concurrent.duration._
-import shop.config.data._
+
+import environments._
+import environments.AppEnvironment._
 
 object load {
 

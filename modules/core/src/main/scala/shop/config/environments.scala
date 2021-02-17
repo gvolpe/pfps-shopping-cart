@@ -1,7 +1,7 @@
 package shop.config
 
-import enumeratum._
 import enumeratum.EnumEntry._
+import enumeratum._
 
 object environments {
 

@@ -1,10 +1,13 @@
 package shop.domain
 
-import io.estatico.newtype.macros.newtype
 import java.util.UUID
+
 import scala.util.control.NoStackTrace
+
 import shop.domain.cart._
 import shop.domain.item._
+
+import io.estatico.newtype.macros.newtype
 import squants.market.Money
 
 object order {

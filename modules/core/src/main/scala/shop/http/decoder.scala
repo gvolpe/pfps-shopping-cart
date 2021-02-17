@@ -1,11 +1,12 @@
 package shop.http
 
+import shop.effects._
+
 import cats.syntax.all._
 import io.circe.Decoder
 import org.http4s._
-import org.http4s.dsl.Http4sDsl
 import org.http4s.circe._
-import shop.effects._
+import org.http4s.dsl.Http4sDsl
 
 object decoder {
 

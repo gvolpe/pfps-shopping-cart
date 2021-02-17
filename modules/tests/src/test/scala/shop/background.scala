@@ -1,9 +1,11 @@
 package shop
 
+import scala.concurrent.duration.FiniteDuration
+
+import shop.effects.Background
+
 import cats.effect._
 import cats.effect.concurrent.Ref
-import shop.effects.Background
-import scala.concurrent.duration.FiniteDuration
 
 object background {
 

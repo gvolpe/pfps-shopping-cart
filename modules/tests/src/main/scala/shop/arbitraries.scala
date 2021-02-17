@@ -1,15 +1,17 @@
 package shop
 
-import io.estatico.newtype.Coercible
-import io.estatico.newtype.ops._
 import java.util.UUID
-import org.scalacheck.{ Arbitrary, Gen }
+
 import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.generators._
+
+import io.estatico.newtype.Coercible
+import io.estatico.newtype.ops._
+import org.scalacheck.{ Arbitrary, Gen }
 import squants.market.Money
 
 object arbitraries {

@@ -1,11 +1,15 @@
 package shop.domain
 
-import io.estatico.newtype.macros.newtype
-import item._
 import java.util.UUID
+
 import scala.util.control.NoStackTrace
+
 import shop.domain.auth.UserId
+
+import io.estatico.newtype.macros.newtype
 import squants.market.Money
+
+import item._
 
 object cart {
   @newtype case class Quantity(value: Int)

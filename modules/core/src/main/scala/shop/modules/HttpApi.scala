@@ -1,17 +1,19 @@
 package shop.modules
 
+import scala.concurrent.duration._
+
+import shop.http.auth.users._
+import shop.http.routes._
+import shop.http.routes.admin._
+import shop.http.routes.secured._
+
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.auth.JwtAuthMiddleware
 import org.http4s._
 import org.http4s.implicits._
-import org.http4s.server.middleware._
 import org.http4s.server.Router
-import scala.concurrent.duration._
-import shop.http.auth.users._
-import shop.http.routes._
-import shop.http.routes.admin._
-import shop.http.routes.secured._
+import org.http4s.server.middleware._
 
 object HttpApi {
   def make[F[_]: Concurrent: Timer](

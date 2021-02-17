@@ -1,12 +1,12 @@
 package shop.algebras
 
-import cats.effect._
-import cats.syntax.all._
-import shop.domain.brand.Brand
+import shop.domain.brand.{ Brand, _ }
 import shop.domain.category._
-import shop.domain.brand._
 import shop.domain.item._
 import shop.ext.skunkx._
+
+import cats.effect._
+import cats.syntax.all._
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._

@@ -1,8 +1,9 @@
 package shop.domain
 
+import java.util.UUID
+
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
-import java.util.UUID
 
 object category {
   @newtype case class CategoryId(value: UUID)

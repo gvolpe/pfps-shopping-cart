@@ -1,16 +1,17 @@
 package shop.http.routes.secured
 
+import shop.algebras.ShoppingCart
+import shop.domain.cart._
+import shop.domain.item._
+import shop.http.auth.users.CommonUser
+import shop.http.json._
+
 import cats._
 import cats.syntax.all._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
-import shop.algebras.ShoppingCart
-import shop.domain.cart._
-import shop.domain.item._
-import shop.http.auth.users.CommonUser
-import shop.http.json._
 
 final class CartRoutes[F[_]: Defer: JsonDecoder: Monad](
     shoppingCart: ShoppingCart[F]

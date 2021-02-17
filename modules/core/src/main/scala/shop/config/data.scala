@@ -1,11 +1,12 @@
 package shop.config
 
+import scala.concurrent.duration._
+
 import ciris._
 import eu.timepit.refined.types.net.UserPortNumber
 import eu.timepit.refined.types.numeric.PosInt
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
-import scala.concurrent.duration._
 
 object data {
 

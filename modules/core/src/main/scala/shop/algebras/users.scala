@@ -1,11 +1,12 @@
 package shop.algebras
 
-import cats.effect._
-import cats.syntax.all._
 import shop.domain.auth._
 import shop.effects._
-import shop.http.auth.users._
 import shop.ext.skunkx._
+import shop.http.auth.users._
+
+import cats.effect._
+import cats.syntax.all._
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._

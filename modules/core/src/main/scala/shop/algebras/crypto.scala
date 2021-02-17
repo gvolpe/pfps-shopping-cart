@@ -1,11 +1,13 @@
 package shop.algebras
 
-import cats.effect.Sync
-import cats.syntax.all._
 import javax.crypto.spec.{ PBEKeySpec, SecretKeySpec }
 import javax.crypto.{ Cipher, SecretKeyFactory }
+
 import shop.config.data.PasswordSalt
 import shop.domain.auth._
+
+import cats.effect.Sync
+import cats.syntax.all._
 
 trait Crypto {
   def encrypt(value: Password): EncryptedPassword

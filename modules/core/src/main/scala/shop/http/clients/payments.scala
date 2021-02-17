@@ -1,16 +1,17 @@
 package shop.http.clients
 
+import shop.config.data.PaymentConfig
+import shop.domain.order._
+import shop.domain.payment._
+import shop.effects._
+import shop.http.json._
+
 import cats.syntax.all._
+import org.http4s.Method._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.client._
 import org.http4s.client.dsl.Http4sClientDsl
-import org.http4s.Method._
-import shop.config.data.PaymentConfig
-import shop.domain.order._
-import shop.domain.payment._
-import shop.http.json._
-import shop.effects._
 
 trait PaymentClient[F[_]] {
   def process(payment: Payment): F[PaymentId]

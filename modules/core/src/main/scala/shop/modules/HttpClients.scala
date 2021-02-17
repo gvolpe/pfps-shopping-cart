@@ -1,9 +1,10 @@
 package shop.modules
 
-import cats.effect._
-import org.http4s.client.Client
 import shop.config.data.PaymentConfig
 import shop.http.clients._
+
+import cats.effect._
+import org.http4s.client.Client
 
 object HttpClients {
   def make[F[_]: Sync](

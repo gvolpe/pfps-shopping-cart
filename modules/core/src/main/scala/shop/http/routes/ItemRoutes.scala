@@ -1,13 +1,14 @@
 package shop.http.routes
 
-import cats._
-import org.http4s._
-import org.http4s.dsl.Http4sDsl
-import org.http4s.server.Router
 import shop.algebras.Items
 import shop.domain.brand._
 import shop.http.json._
 import shop.http.params._
+
+import cats._
+import org.http4s._
+import org.http4s.dsl.Http4sDsl
+import org.http4s.server.Router
 
 final class ItemRoutes[F[_]: Defer: Monad](
     items: Items[F]

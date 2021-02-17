@@ -1,7 +1,7 @@
 package shop
 
-import cats.{ ApplicativeError, MonadError }
 import cats.effect.Bracket
+import cats.{ ApplicativeError, MonadError }
 
 package object effects {
 

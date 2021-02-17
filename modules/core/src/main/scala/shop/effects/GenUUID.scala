@@ -1,11 +1,13 @@
 package shop.algebras
 
+import java.util.UUID
+
+import shop.effects._
+
 import cats.effect.Sync
 import cats.syntax.all._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
-import java.util.UUID
-import shop.effects._
 
 trait GenUUID[F[_]] {
   def make: F[UUID]
