@@ -25,7 +25,7 @@ object Dependencies {
     val kindProjector    = "0.11.3"
     val logback          = "1.2.3"
     val organizeImports  = "0.5.0"
-    val semanticDB       = "4.4.8"
+    val semanticDB       = "4.4.9"
 
     val munit = "0.7.22"
   }
