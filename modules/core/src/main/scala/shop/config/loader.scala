@@ -62,8 +62,8 @@ object load {
         ),
         PaymentConfig(paymentUri),
         HttpClientConfig(
-          connectTimeout = 2.seconds,
-          requestTimeout = 2.seconds
+          timeout = 60.seconds,
+          idleTimeInPool = 30.seconds
         ),
         PostgreSQLConfig(
           host = "localhost",

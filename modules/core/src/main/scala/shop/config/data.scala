@@ -64,8 +64,8 @@ object data {
   )
 
   case class HttpClientConfig(
-      connectTimeout: FiniteDuration,
-      requestTimeout: FiniteDuration
+      timeout: FiniteDuration,
+      idleTimeInPool: FiniteDuration
   )
 
 }

@@ -57,8 +57,8 @@ object Dependencies {
     val derevoCirce = derevo("circe")
 
     val http4sDsl    = http4s("dsl")
-    val http4sServer = http4s("blaze-server")
-    val http4sClient = http4s("blaze-client")
+    val http4sServer = http4s("ember-server")
+    val http4sClient = http4s("ember-client")
     val http4sCirce  = http4s("circe")
 
     val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % V.http4sJwtAuth
