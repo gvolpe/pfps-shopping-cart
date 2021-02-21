@@ -46,7 +46,7 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
 
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
     redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
-        redis.expire(userId.value.toString, exp.value)
+        redis.expire(userId.value.toString, exp.value).void
 
   def get(userId: UserId): F[CartTotal] =
     redis.hGetAll(userId.value.toString).flatMap { it =>
@@ -63,14 +63,14 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
     }
 
   def delete(userId: UserId): F[Unit] =
-    redis.del(userId.value.toString)
+    redis.del(userId.value.toString).void
 
   def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
-    redis.hDel(userId.value.toString, itemId.value.toString)
+    redis.hDel(userId.value.toString, itemId.value.toString).void
 
   def update(userId: UserId, cart: Cart): F[Unit] =
-    redis.hGetAll(userId.value.toString).flatMap { it =>
-      it.toList.traverse_ {
+    redis.hGetAll(userId.value.toString).flatMap {
+      _.toList.traverse_ {
         case (k, _) =>
           GenUUID[F].read[ItemId](k).flatMap { id =>
             cart.items.get(id).traverse_ { q =>
@@ -78,7 +78,7 @@ final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
             }
           }
       } *>
-        redis.expire(userId.value.toString, exp.value)
+        redis.expire(userId.value.toString, exp.value).void
     }
 
 }

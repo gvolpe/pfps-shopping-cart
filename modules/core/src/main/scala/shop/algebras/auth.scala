@@ -63,9 +63,11 @@ class LiveUsersAuth[F[_]: Functor](
   def findUser(token: JwtToken)(claim: JwtClaim): F[Option[CommonUser]] =
     redis
       .get(token.value)
-      .map(_.flatMap { u =>
-        decode[User](u).toOption.map(CommonUser.apply)
-      })
+      .map {
+        _.flatMap { u =>
+          decode[User](u).toOption.map(CommonUser.apply)
+        }
+      }
 
 }
 
@@ -118,6 +120,6 @@ final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
     }
 
   def logout(token: JwtToken, username: UserName): F[Unit] =
-    redis.del(token.value) *> redis.del(username.value)
+    redis.del(token.value) *> redis.del(username.value).void
 
 }
