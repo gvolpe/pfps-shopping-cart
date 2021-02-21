@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - second-edition
   pull_request:
 
 jobs:
