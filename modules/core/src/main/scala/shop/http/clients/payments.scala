@@ -3,12 +3,12 @@ package shop.http.clients
 import shop.config.data.PaymentConfig
 import shop.domain.order._
 import shop.domain.payment._
-import shop.http.json._
 
 import cats.effect.BracketThrow
 import cats.syntax.all._
 import org.http4s.Method._
 import org.http4s._
+import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe._
 import org.http4s.client._
 import org.http4s.client.dsl.Http4sClientDsl

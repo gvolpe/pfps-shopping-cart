@@ -1,26 +1,19 @@
 package shop
 
-import java.util.UUID
+import dev.profunktor.auth.jwt.JwtToken
+import io.circe.{ Decoder, Encoder }
+import squants.market.{ Money, USD }
 
-import cats.Eq
-import io.estatico.newtype.Coercible
+package object domain extends OrphanInstances
 
-package object domain {
+// instances for types we don't control
+trait OrphanInstances {
+  implicit val moneyDecoder: Decoder[Money] =
+    Decoder[BigDecimal].map(USD.apply)
 
-  // does not work as implicit for some reason...
-  private def coercibleEq[A: Eq, B: Coercible[A, *]]: Eq[B] =
-    new Eq[B] {
-      def eqv(x: B, y: B): Boolean =
-        Eq[A].eqv(x.asInstanceOf[A], y.asInstanceOf[A])
-    }
+  implicit val moneyEncoder: Encoder[Money] =
+    Encoder[BigDecimal].contramap(_.amount)
 
-  implicit def coercibleStringEq[B: Coercible[String, *]]: Eq[B] =
-    coercibleEq[String, B]
-
-  implicit def coercibleUuidEq[B: Coercible[UUID, *]]: Eq[B] =
-    coercibleEq[UUID, B]
-
-  implicit def coercibleIntEq[B: Coercible[Int, *]]: Eq[B] =
-    coercibleEq[Int, B]
-
+  implicit val tokenEncoder: Encoder[JwtToken] =
+    Encoder.forProduct1("access_token")(_.value)
 }

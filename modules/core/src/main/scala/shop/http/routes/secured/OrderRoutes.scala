@@ -3,10 +3,10 @@ package shop.http.routes.secured
 import shop.algebras.Orders
 import shop.domain.order._
 import shop.http.auth.users.CommonUser
-import shop.http.json._
 
 import cats._
 import org.http4s._
+import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 

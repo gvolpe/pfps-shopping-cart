@@ -4,7 +4,6 @@ import scala.util.control.NoStackTrace
 
 import shop.algebras._
 import shop.arbitraries._
-import shop.domain._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.checkout._
@@ -22,7 +21,7 @@ import retry.RetryPolicy
 import squants.market._
 import suite._
 
-final class CheckoutSpec extends PureTestSuite {
+final class CheckoutSuite extends PureTestSuite {
 
   val MaxRetries = 3
 

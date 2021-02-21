@@ -11,7 +11,6 @@ import natchez.Trace.Implicits.noop // needed for skunk
 import org.scalacheck.Prop._
 import shop.arbitraries._
 import shop.config.data.PasswordSalt
-import shop.domain._
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.category._

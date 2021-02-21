@@ -4,7 +4,6 @@ import shop.algebras.Items
 import shop.arbitraries._
 import shop.domain.brand._
 import shop.domain.item._
-import shop.http.json._
 
 import cats.effect._
 import cats.syntax.option._
@@ -14,7 +13,7 @@ import org.http4s.client.dsl.io._
 import org.scalacheck.Prop._
 import suite._
 
-class ItemRoutesSpec extends HttpTestSuite {
+class ItemRoutesSuite extends HttpTestSuite {
 
   def dataItems(items: List[Item]) = new TestItems {
     override def findAll: IO[List[Item]] =

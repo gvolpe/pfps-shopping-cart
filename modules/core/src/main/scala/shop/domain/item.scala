@@ -5,18 +5,36 @@ import java.util.UUID
 import shop.domain.brand._
 import shop.domain.category._
 
+import derevo.cats.{ eq => eqv }
+import derevo.circe.{ decoder, encoder }
+import derevo.derive
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }
 import eu.timepit.refined.types.string.NonEmptyString
+import io.circe.refined._
+import io.circe.{ KeyDecoder, KeyEncoder }
 import io.estatico.newtype.macros.newtype
 import squants.market._
 
 object item {
 
-  @newtype case class ItemId(value: UUID)
-  @newtype case class ItemName(value: String)
-  @newtype case class ItemDescription(value: String)
+  @derive(decoder, encoder)
+  @newtype
+  case class ItemId(value: UUID)
+  object ItemId {
+    implicit val keyEncoder: KeyEncoder[ItemId] = deriving
+    implicit val keyDecoder: KeyDecoder[ItemId] = deriving
+  }
 
+  @derive(decoder, encoder, eqv)
+  @newtype
+  case class ItemName(value: String)
+
+  @derive(decoder, encoder)
+  @newtype
+  case class ItemDescription(value: String)
+
+  @derive(decoder, encoder)
   case class Item(
       uuid: ItemId,
       name: ItemName,
@@ -28,10 +46,19 @@ object item {
 
   // ----- Create item ------
 
-  @newtype case class ItemNameParam(value: NonEmptyString)
-  @newtype case class ItemDescriptionParam(value: NonEmptyString)
-  @newtype case class PriceParam(value: String Refined ValidBigDecimal)
+  @derive(decoder, encoder)
+  @newtype
+  case class ItemNameParam(value: NonEmptyString)
 
+  @derive(decoder, encoder)
+  @newtype
+  case class ItemDescriptionParam(value: NonEmptyString)
+
+  @derive(decoder, encoder)
+  @newtype
+  case class PriceParam(value: String Refined ValidBigDecimal)
+
+  @derive(decoder, encoder)
   case class CreateItemParam(
       name: ItemNameParam,
       description: ItemDescriptionParam,
@@ -59,8 +86,11 @@ object item {
 
   // ----- Update item ------
 
-  @newtype case class ItemIdParam(value: String Refined Uuid)
+  @derive(decoder, encoder)
+  @newtype
+  case class ItemIdParam(value: String Refined Uuid)
 
+  @derive(decoder, encoder)
   case class UpdateItemParam(
       id: ItemIdParam,
       price: PriceParam
@@ -72,6 +102,7 @@ object item {
       )
   }
 
+  @derive(decoder, encoder)
   case class UpdateItem(
       id: ItemId,
       price: Money

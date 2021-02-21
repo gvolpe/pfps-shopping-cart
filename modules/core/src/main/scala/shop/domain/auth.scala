@@ -5,31 +5,53 @@ import javax.crypto.Cipher
 
 import scala.util.control.NoStackTrace
 
+import derevo.cats.{ eq => eqv }
+import derevo.circe.{ decoder, encoder }
+import derevo.derive
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe._
+import io.circe.refined._
 import io.estatico.newtype.macros.newtype
 
 object auth {
 
-  @newtype case class UserId(value: UUID)
-  @newtype case class UserName(value: String)
-  @newtype case class Password(value: String)
+  @derive(decoder, encoder, eqv)
+  @newtype
+  case class UserId(value: UUID)
 
-  @newtype case class EncryptedPassword(value: String)
+  @derive(decoder, encoder, eqv)
+  @newtype
+  case class UserName(value: String)
 
-  @newtype case class EncryptCipher(value: Cipher)
-  @newtype case class DecryptCipher(value: Cipher)
+  @derive(decoder, encoder)
+  @newtype
+  case class Password(value: String)
+
+  @derive(decoder, encoder)
+  @newtype
+  case class EncryptedPassword(value: String)
+
+  @newtype
+  case class EncryptCipher(value: Cipher)
+
+  @newtype
+  case class DecryptCipher(value: Cipher)
 
   // --------- user registration -----------
 
-  @newtype case class UserNameParam(value: NonEmptyString) {
+  @derive(decoder, encoder)
+  @newtype
+  case class UserNameParam(value: NonEmptyString) {
     def toDomain: UserName = UserName(value.value.toLowerCase)
   }
 
-  @newtype case class PasswordParam(value: NonEmptyString) {
+  @derive(decoder, encoder)
+  @newtype
+  case class PasswordParam(value: NonEmptyString) {
     def toDomain: Password = Password(value.value)
   }
 
+  @derive(decoder, encoder)
   case class CreateUser(
       username: UserNameParam,
       password: PasswordParam
@@ -43,6 +65,7 @@ object auth {
 
   // --------- user login -----------
 
+  @derive(decoder, encoder)
   case class LoginUser(
       username: UserNameParam,
       password: PasswordParam
@@ -50,7 +73,8 @@ object auth {
 
   // --------- admin auth -----------
 
-  @newtype case class ClaimContent(uuid: UUID)
+  @newtype
+  case class ClaimContent(uuid: UUID)
 
   object ClaimContent {
     implicit val jsonDecoder: Decoder[ClaimContent] =
