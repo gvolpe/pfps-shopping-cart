@@ -1,7 +1,5 @@
 package shop
 
-import scala.concurrent.ExecutionContext
-
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.redis4cats.log4cats._
@@ -10,7 +8,7 @@ import eu.timepit.refined.auto._
 import io.chrisdavenport.log4cats.Logger
 import natchez.Trace.Implicits.noop
 import org.http4s.client.Client
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.ember.client.EmberClientBuilder
 import skunk._
 
 import config.data._
@@ -23,7 +21,7 @@ final case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: ConcurrentEffect: ContextShift: Logger](
+  def make[F[_]: Concurrent: ContextShift: Logger: Timer](
       cfg: AppConfig
   ): Resource[F, AppResources[F]] = {
 
@@ -41,10 +39,11 @@ object AppResources {
       Redis[F].utf8(c.uri.value)
 
     def mkHttpClient(c: HttpClientConfig): Resource[F, Client[F]] =
-      BlazeClientBuilder[F](ExecutionContext.global)
-        .withConnectTimeout(c.connectTimeout)
-        .withRequestTimeout(c.requestTimeout)
-        .resource
+      EmberClientBuilder
+        .default[F]
+        .withTimeout(c.timeout)
+        .withIdleTimeInPool(c.idleTimeInPool)
+        .build
 
     (
       mkHttpClient(cfg.httpClientConfig),
