@@ -7,7 +7,7 @@ import scala.util.control.NoStackTrace
 import shop.domain.auth.UserId
 
 import derevo.cats.{ eq => eqv }
-import derevo.circe.{ decoder, encoder }
+import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import io.circe.{ Decoder, Encoder }
 import io.estatico.newtype.macros.newtype

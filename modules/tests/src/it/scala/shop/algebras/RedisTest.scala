@@ -1,30 +1,32 @@
 package shop.algebras
 
+import java.util.UUID
+
+import scala.concurrent.duration._
+
+import shop.arbitraries._
+import shop.config.data._
+import shop.domain.auth._
+import shop.domain.brand._
+import shop.domain.cart._
+import shop.domain.category._
+import shop.domain.item._
+import shop.http.auth.users._
+import shop.logger.NoOp
+
 import cats.Eq
 import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.implicits._
 import ciris.Secret
 import dev.profunktor.auth.jwt._
-import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import dev.profunktor.redis4cats.log4cats._
+import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
-import java.util.UUID
 import org.scalacheck.Prop._
 import pdi.jwt._
-import scala.concurrent.duration._
-import shop.arbitraries._
-import shop.config.data._
-import shop.domain._
-import shop.domain.auth._
-import shop.domain.brand._
-import shop.domain.category._
-import shop.domain.cart._
-import shop.domain.item._
-import shop.logger.NoOp
-import shop.http.auth.users._
 import suite._
 
 class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {

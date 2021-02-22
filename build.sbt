@@ -6,8 +6,12 @@ ThisBuild / organization := "dev.profunktor"
 ThisBuild / organizationName := "ProfunKtor"
 
 ThisBuild / scalafixDependencies += Libraries.organizeImports
+ThisBuild / semanticdbEnabled := true
+ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 
 resolvers += Resolver.sonatypeRepo("snapshots")
+
+val scalafixCommonSettings = inConfig(IntegrationTest)(scalafixConfigSettings(IntegrationTest))
 
 lazy val root = (project in file("."))
   .settings(
@@ -20,11 +24,9 @@ lazy val tests = (project in file("modules/tests"))
   .settings(
     name := "shopping-cart-test-suite",
     scalacOptions ++= List("-Ymacro-annotations", "-Yrangepos", "-Wconf:cat=unused:info"),
-    scalafmtOnCompile := true,
-    semanticdbEnabled := true,
-    semanticdbVersion := scalafixSemanticdb.revision,
     testFrameworks += new TestFramework("munit.Framework"),
     Defaults.itSettings,
+    scalafixCommonSettings,
     libraryDependencies ++= Seq(
           CompilerPlugin.kindProjector,
           CompilerPlugin.betterMonadicFor,
@@ -45,6 +47,7 @@ lazy val core = (project in file("modules/core"))
     scalafmtOnCompile := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
+    scalafixCommonSettings,
     dockerBaseImage := "openjdk:8u201-jre-alpine3.9",
     dockerExposedPorts ++= Seq(8080),
     makeBatScripts := Seq(),

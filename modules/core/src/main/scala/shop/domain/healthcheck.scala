@@ -1,6 +1,6 @@
 package shop.domain
 
-import derevo.circe.{ decoder, encoder }
+import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import io.estatico.newtype.macros._
 

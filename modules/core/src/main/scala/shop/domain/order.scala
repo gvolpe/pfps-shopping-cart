@@ -8,7 +8,7 @@ import shop.domain.cart._
 import shop.domain.item._
 
 import derevo.cats.{ eq => eqv }
-import derevo.circe.{ decoder, encoder }
+import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import io.circe.Decoder
 import io.estatico.newtype.macros.newtype

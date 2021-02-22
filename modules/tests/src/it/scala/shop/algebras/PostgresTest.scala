@@ -1,5 +1,14 @@
 package shop.algebras
 
+import shop.arbitraries._
+import shop.config.data.PasswordSalt
+import shop.domain.auth._
+import shop.domain.brand._
+import shop.domain.cart._
+import shop.domain.category._
+import shop.domain.item._
+import shop.domain.order._
+
 import cats.effect._
 import cats.implicits._
 import ciris._
@@ -7,16 +16,8 @@ import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.ops._
-import natchez.Trace.Implicits.noop // needed for skunk
+import natchez.Trace.Implicits.noop
 import org.scalacheck.Prop._
-import shop.arbitraries._
-import shop.config.data.PasswordSalt
-import shop.domain.auth._
-import shop.domain.brand._
-import shop.domain.category._
-import shop.domain.cart._
-import shop.domain.item._
-import shop.domain.order._
 import skunk._
 import squants.market.Money
 import suite._

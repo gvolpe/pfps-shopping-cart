@@ -2,7 +2,7 @@ package shop.domain
 
 import shop.ext.refined._
 
-import derevo.circe.{ decoder, encoder }
+import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import eu.timepit.refined._
 import eu.timepit.refined.api._

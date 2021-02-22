@@ -54,7 +54,7 @@ object Dependencies {
 
     val derevoCore  = derevo("core")
     val derevoCats  = derevo("cats")
-    val derevoCirce = derevo("circe")
+    val derevoCirce = derevo("circe-magnolia")
 
     val http4sDsl    = http4s("dsl")
     val http4sServer = http4s("ember-server")

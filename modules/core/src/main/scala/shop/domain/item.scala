@@ -6,7 +6,7 @@ import shop.domain.brand._
 import shop.domain.category._
 
 import derevo.cats.{ eq => eqv }
-import derevo.circe.{ decoder, encoder }
+import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }

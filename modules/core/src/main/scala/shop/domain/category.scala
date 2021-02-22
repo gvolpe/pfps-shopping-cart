@@ -3,7 +3,7 @@ package shop.domain
 import java.util.UUID
 
 import derevo.cats.{ eq => eqv }
-import derevo.circe.{ decoder, encoder }
+import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.Decoder

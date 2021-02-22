@@ -3,7 +3,7 @@ package shop.domain
 import shop.domain.auth.UserId
 import shop.domain.checkout.Card
 
-import derevo.circe.encoder
+import derevo.circe.magnolia.encoder
 import derevo.derive
 import squants.market.Money
 

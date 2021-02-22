@@ -2,7 +2,7 @@ package shop.http.auth
 
 import shop.domain.auth._
 
-import derevo.circe.{ decoder, encoder }
+import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import dev.profunktor.auth.jwt._
 import io.estatico.newtype.macros.newtype
