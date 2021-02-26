@@ -2,7 +2,7 @@ package shop.algebras
 
 import java.security.SecureRandom
 import java.util.Base64
-import javax.crypto.spec.{IvParameterSpec, PBEKeySpec, SecretKeySpec}
+import javax.crypto.spec.{ IvParameterSpec, PBEKeySpec, SecretKeySpec }
 import javax.crypto.{ Cipher, SecretKeyFactory }
 
 import shop.config.data.PasswordSalt

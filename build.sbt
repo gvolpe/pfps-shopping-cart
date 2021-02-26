@@ -1,13 +1,11 @@
 import Dependencies._
 
-ThisBuild / scalaVersion := "2.13.4"
+ThisBuild / scalaVersion := "2.13.5"
 ThisBuild / version := "0.2.0"
 ThisBuild / organization := "dev.profunktor"
 ThisBuild / organizationName := "ProfunKtor"
 
 ThisBuild / scalafixDependencies += Libraries.organizeImports
-ThisBuild / semanticdbEnabled := true
-ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
