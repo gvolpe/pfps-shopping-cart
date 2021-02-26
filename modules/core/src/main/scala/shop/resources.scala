@@ -5,7 +5,7 @@ import cats.syntax.all._
 import dev.profunktor.redis4cats.log4cats._
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import eu.timepit.refined.auto._
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import natchez.Trace.Implicits.noop
 import org.http4s.client.Client
 import org.http4s.ember.client.EmberClientBuilder
