@@ -14,7 +14,7 @@ object Dependencies {
     val fs2           = "2.5.3"
     val http4s        = "0.21.19"
     val http4sJwtAuth = "0.0.5"
-    val log4cats      = "1.1.1"
+    val log4cats      = "1.2.0"
     val newtype       = "0.4.4"
     val refined       = "0.9.21"
     val redis4cats    = "0.11.1"
@@ -66,7 +66,7 @@ object Dependencies {
     val refinedCore = "eu.timepit" %% "refined"      % V.refined
     val refinedCats = "eu.timepit" %% "refined-cats" % V.refined
 
-    val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % V.log4cats
+    val log4cats = "org.typelevel" %% "log4cats-slf4j" % V.log4cats
     val newtype  = "io.estatico"       %% "newtype"        % V.newtype
 
     val javaxCrypto = "javax.xml.crypto" % "jsr105-api" % V.javaxCrypto
