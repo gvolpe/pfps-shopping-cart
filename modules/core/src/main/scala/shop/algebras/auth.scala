@@ -3,7 +3,6 @@ package shop.algebras
 import shop.config.data.TokenExpiration
 import shop.domain.auth._
 import shop.http.auth.users._
-import shop.http.json._
 
 import cats._
 import cats.effect.Sync

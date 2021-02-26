@@ -3,7 +3,6 @@ package shop.http.routes
 import shop.algebras.Brands
 import shop.arbitraries._
 import shop.domain.brand._
-import shop.http.json._
 
 import cats.effect._
 import org.http4s.Method._
@@ -12,7 +11,7 @@ import org.http4s.client.dsl.io._
 import org.scalacheck.Prop._
 import suite._
 
-class BrandRoutesSpec extends HttpTestSuite {
+class BrandRoutesSuite extends HttpTestSuite {
 
   def dataBrands(brands: List[Brand]) = new TestBrands {
     override def findAll: IO[List[Brand]] =

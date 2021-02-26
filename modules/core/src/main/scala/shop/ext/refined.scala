@@ -1,8 +1,10 @@
 package shop.ext
 
+import eu.timepit.refined._
 import eu.timepit.refined.api._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.collection.Size
+import io.circe.Decoder
 
 object refined {
 
@@ -12,5 +14,8 @@ object refined {
       _ => s"Must have ${w.value} digits",
       Size[N](w.value)
     )
+
+  def decoderOf[T, P](implicit v: Validate[T, P], d: Decoder[T]): Decoder[T Refined P] =
+    d.emap(refineV[P].apply[T](_))
 
 }

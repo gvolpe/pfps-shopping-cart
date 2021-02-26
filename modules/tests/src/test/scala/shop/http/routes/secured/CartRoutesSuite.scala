@@ -8,19 +8,19 @@ import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.http.auth.users._
-import shop.http.json._
 
 import cats.data.Kleisli
 import cats.effect._
 import org.http4s.Method._
 import org.http4s._
+import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.client.dsl.io._
 import org.http4s.server.AuthMiddleware
 import org.scalacheck.Prop._
 import squants.market.USD
 import suite._
 
-class CartRoutesSpec extends HttpTestSuite {
+class CartRoutesSuite extends HttpTestSuite {
 
   val authUser = CommonUser(User(UserId(UUID.randomUUID), UserName("user")))
 

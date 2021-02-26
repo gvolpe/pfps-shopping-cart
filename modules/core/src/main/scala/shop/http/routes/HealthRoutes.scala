@@ -1,10 +1,10 @@
 package shop.http.routes
 
 import shop.algebras.HealthCheck
-import shop.http.json._
 
 import cats._
 import org.http4s._
+import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 

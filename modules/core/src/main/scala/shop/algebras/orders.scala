@@ -5,7 +5,6 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
 import shop.ext.skunkx._
-import shop.http.json._
 
 import cats.effect._
 import cats.syntax.all._
