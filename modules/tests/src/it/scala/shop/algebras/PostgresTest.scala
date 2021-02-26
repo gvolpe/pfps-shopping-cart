@@ -36,10 +36,11 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
     )
 
   withResources { pool =>
-    val b = Brands.make[IO](pool)
-    val c = Categories.make[IO](pool)
-    val i = Items.make[IO](pool)
-    val o = Orders.make[IO](pool)
+    // even lazy val does not work here, should use weaver...
+    def b = Brands.make[IO](pool)
+    def c = Categories.make[IO](pool)
+    def i = Items.make[IO](pool)
+    def o = Orders.make[IO](pool)
 
     test("Brands") {
       forAll { (brand: Brand) =>
