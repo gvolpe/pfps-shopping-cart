@@ -9,6 +9,7 @@ import cats.syntax.all._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 
+// TODO: Use fuuid?
 trait GenUUID[F[_]] {
   def make: F[UUID]
   def make[A: Coercible[UUID, *]]: F[A]

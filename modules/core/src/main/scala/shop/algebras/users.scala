@@ -15,45 +15,38 @@ trait Users[F[_]] {
   def create(username: UserName, password: Password): F[UserId]
 }
 
-object LiveUsers {
-  def make[F[_]: Sync](
+object Users {
+  def make[F[_]: BracketThrow: GenUUID](
       sessionPool: Resource[F, Session[F]],
       crypto: Crypto
-  ): F[Users[F]] =
-    Sync[F].delay(
-      new LiveUsers[F](sessionPool, crypto)
-    )
-}
+  ): Users[F] =
+    new Users[F] {
+      import UserQueries._
 
-final class LiveUsers[F[_]: BracketThrow: GenUUID] private (
-    sessionPool: Resource[F, Session[F]],
-    crypto: Crypto
-) extends Users[F] {
-  import UserQueries._
-
-  def find(username: UserName, password: Password): F[Option[User]] =
-    sessionPool.use { session =>
-      session.prepare(selectUser).use { q =>
-        q.option(username).map {
-          case Some(u ~ p) if p.value == crypto.encrypt(password).value => u.some
-          case _                                                        => none[User]
-        }
-      }
-    }
-
-  def create(username: UserName, password: Password): F[UserId] =
-    sessionPool.use { session =>
-      session.prepare(insertUser).use { cmd =>
-        GenUUID[F].make[UserId].flatMap { id =>
-          cmd
-            .execute(User(id, username) ~ crypto.encrypt(password))
-            .as(id)
-            .handleErrorWith {
-              case SqlState.UniqueViolation(_) =>
-                UserNameInUse(username).raiseError[F, UserId]
+      def find(username: UserName, password: Password): F[Option[User]] =
+        sessionPool.use { session =>
+          session.prepare(selectUser).use { q =>
+            q.option(username).map {
+              case Some(u ~ p) if p.value == crypto.encrypt(password).value => u.some
+              case _                                                        => none[User]
             }
+          }
         }
-      }
+
+      def create(username: UserName, password: Password): F[UserId] =
+        sessionPool.use { session =>
+          session.prepare(insertUser).use { cmd =>
+            GenUUID[F].make[UserId].flatMap { id =>
+              cmd
+                .execute(User(id, username) ~ crypto.encrypt(password))
+                .as(id)
+                .handleErrorWith {
+                  case SqlState.UniqueViolation(_) =>
+                    UserNameInUse(username).raiseError[F, UserId]
+                }
+            }
+          }
+        }
     }
 
 }

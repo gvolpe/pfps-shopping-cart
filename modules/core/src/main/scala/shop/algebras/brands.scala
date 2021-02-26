@@ -14,30 +14,24 @@ trait Brands[F[_]] {
   def create(name: BrandName): F[Unit]
 }
 
-object LiveBrands {
-  def make[F[_]: Sync](
+object Brands {
+  def make[F[_]: BracketThrow: GenUUID](
       sessionPool: Resource[F, Session[F]]
-  ): F[Brands[F]] =
-    Sync[F].delay(
-      new LiveBrands[F](sessionPool)
-    )
-}
+  ): Brands[F] =
+    new Brands[F] {
+      import BrandQueries._
 
-final class LiveBrands[F[_]: BracketThrow: GenUUID] private (
-    sessionPool: Resource[F, Session[F]]
-) extends Brands[F] {
-  import BrandQueries._
+      def findAll: F[List[Brand]] =
+        sessionPool.use(_.execute(selectAll))
 
-  def findAll: F[List[Brand]] =
-    sessionPool.use(_.execute(selectAll))
-
-  def create(name: BrandName): F[Unit] =
-    sessionPool.use { session =>
-      session.prepare(insertBrand).use { cmd =>
-        GenUUID[F].make[BrandId].flatMap { id =>
-          cmd.execute(Brand(id, name)).void
+      def create(name: BrandName): F[Unit] =
+        sessionPool.use { session =>
+          session.prepare(insertBrand).use { cmd =>
+            GenUUID[F].make[BrandId].flatMap { id =>
+              cmd.execute(Brand(id, name)).void
+            }
+          }
         }
-      }
     }
 }
 

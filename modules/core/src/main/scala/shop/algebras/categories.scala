@@ -14,32 +14,25 @@ trait Categories[F[_]] {
   def create(name: CategoryName): F[Unit]
 }
 
-object LiveCategories {
-  def make[F[_]: Sync](
+object Categories {
+  def make[F[_]: BracketThrow: GenUUID](
       sessionPool: Resource[F, Session[F]]
-  ): F[Categories[F]] =
-    Sync[F].delay(
-      new LiveCategories[F](sessionPool)
-    )
-}
+  ): Categories[F] =
+    new Categories[F] {
+      import CategoryQueries._
 
-final class LiveCategories[F[_]: BracketThrow: GenUUID] private (
-    sessionPool: Resource[F, Session[F]]
-) extends Categories[F] {
-  import CategoryQueries._
+      def findAll: F[List[Category]] =
+        sessionPool.use(_.execute(selectAll))
 
-  def findAll: F[List[Category]] =
-    sessionPool.use(_.execute(selectAll))
-
-  def create(name: CategoryName): F[Unit] =
-    sessionPool.use { session =>
-      session.prepare(insertCategory).use { cmd =>
-        GenUUID[F].make[CategoryId].flatMap { id =>
-          cmd.execute(Category(id, name)).void
+      def create(name: CategoryName): F[Unit] =
+        sessionPool.use { session =>
+          session.prepare(insertCategory).use { cmd =>
+            GenUUID[F].make[CategoryId].flatMap { id =>
+              cmd.execute(Category(id, name)).void
+            }
+          }
         }
-      }
     }
-
 }
 
 private object CategoryQueries {

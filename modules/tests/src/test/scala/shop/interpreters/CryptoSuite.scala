@@ -1,6 +1,6 @@
 package shop.interpreters
 
-import shop.algebras.LiveCrypto
+import shop.algebras.Crypto
 import shop.config.data.PasswordSalt
 import shop.domain.auth.Password
 
@@ -16,7 +16,7 @@ final class CryptoSuite extends PureTestSuite {
 
   test("password encoding and decoding roundtrip") {
     IOAssertion {
-      LiveCrypto.make[IO](salt).map { crypto =>
+      Crypto.make[IO](salt).map { crypto =>
         val ini = Password("simple123")
         val enc = crypto.encrypt(ini)
         val dec = crypto.decrypt(enc)

@@ -23,102 +23,75 @@ trait UsersAuth[F[_], A] {
   def findUser(token: JwtToken)(claim: JwtClaim): F[Option[A]]
 }
 
-object LiveAdminAuth {
-  def make[F[_]: Sync](
+object UsersAuth {
+  def admin[F[_]: Applicative](
       adminToken: JwtToken,
       adminUser: AdminUser
-  ): F[UsersAuth[F, AdminUser]] =
-    Sync[F].delay(
-      new LiveAdminAuth(adminToken, adminUser)
-    )
-}
+  ): UsersAuth[F, AdminUser] =
+    new UsersAuth[F, AdminUser] {
+      def findUser(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
+        (token == adminToken)
+          .guard[Option]
+          .as(adminUser)
+          .pure[F]
+    }
 
-class LiveAdminAuth[F[_]: Applicative](
-    adminToken: JwtToken,
-    adminUser: AdminUser
-) extends UsersAuth[F, AdminUser] {
-
-  def findUser(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
-    (token == adminToken)
-      .guard[Option]
-      .as(adminUser)
-      .pure[F]
-
-}
-
-object LiveUsersAuth {
-  def make[F[_]: Sync](
+  def common[F[_]: Functor](
       redis: RedisCommands[F, String, String]
-  ): F[UsersAuth[F, CommonUser]] =
-    Sync[F].delay(
-      new LiveUsersAuth(redis)
-    )
-}
-
-class LiveUsersAuth[F[_]: Functor](
-    redis: RedisCommands[F, String, String]
-) extends UsersAuth[F, CommonUser] {
-
-  def findUser(token: JwtToken)(claim: JwtClaim): F[Option[CommonUser]] =
-    redis
-      .get(token.value)
-      .map {
-        _.flatMap { u =>
-          decode[User](u).toOption.map(CommonUser.apply)
-        }
-      }
+  ): UsersAuth[F, CommonUser] =
+    new UsersAuth[F, CommonUser] {
+      def findUser(token: JwtToken)(claim: JwtClaim): F[Option[CommonUser]] =
+        redis
+          .get(token.value)
+          .map {
+            _.flatMap { u =>
+              decode[User](u).toOption.map(CommonUser.apply)
+            }
+          }
+    }
 
 }
 
-object LiveAuth {
+object Auth {
   def make[F[_]: Sync](
       tokenExpiration: TokenExpiration,
       tokens: Tokens[F],
       users: Users[F],
       redis: RedisCommands[F, String, String]
-  ): F[Auth[F]] =
-    Sync[F].delay(
-      new LiveAuth(tokenExpiration, tokens, users, redis)
-    )
-}
+  ): Auth[F] =
+    new Auth[F] {
 
-final class LiveAuth[F[_]: MonadThrow] private (
-    tokenExpiration: TokenExpiration,
-    tokens: Tokens[F],
-    users: Users[F],
-    redis: RedisCommands[F, String, String]
-) extends Auth[F] {
+      private val TokenExpiration = tokenExpiration.value
 
-  private val TokenExpiration = tokenExpiration.value
-
-  def newUser(username: UserName, password: Password): F[JwtToken] =
-    users.find(username, password).flatMap {
-      case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
-      case None =>
-        for {
-          i <- users.create(username, password)
-          t <- tokens.create
-          u = User(i, username).asJson.noSpaces
-          _ <- redis.setEx(t.value, u, TokenExpiration)
-          _ <- redis.setEx(username.value, t.value, TokenExpiration)
-        } yield t
-    }
-
-  def login(username: UserName, password: Password): F[JwtToken] =
-    users.find(username, password).flatMap {
-      case None => InvalidUserOrPassword(username).raiseError[F, JwtToken]
-      case Some(user) =>
-        redis.get(username.value).flatMap {
-          case Some(t) => JwtToken(t).pure[F]
+      def newUser(username: UserName, password: Password): F[JwtToken] =
+        users.find(username, password).flatMap {
+          case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
           case None =>
-            tokens.create.flatTap { t =>
-              redis.setEx(t.value, user.asJson.noSpaces, TokenExpiration) *>
-                redis.setEx(username.value, t.value, TokenExpiration)
+            for {
+              i <- users.create(username, password)
+              t <- tokens.create
+              u = User(i, username).asJson.noSpaces
+              _ <- redis.setEx(t.value, u, TokenExpiration)
+              _ <- redis.setEx(username.value, t.value, TokenExpiration)
+            } yield t
+        }
+
+      def login(username: UserName, password: Password): F[JwtToken] =
+        users.find(username, password).flatMap {
+          case None => InvalidUserOrPassword(username).raiseError[F, JwtToken]
+          case Some(user) =>
+            redis.get(username.value).flatMap {
+              case Some(t) => JwtToken(t).pure[F]
+              case None =>
+                tokens.create.flatTap { t =>
+                  redis.setEx(t.value, user.asJson.noSpaces, TokenExpiration) *>
+                    redis.setEx(username.value, t.value, TokenExpiration)
+                }
             }
         }
+
+      def logout(token: JwtToken, username: UserName): F[Unit] =
+        redis.del(token.value) *> redis.del(username.value).void
+
     }
-
-  def logout(token: JwtToken, username: UserName): F[Unit] =
-    redis.del(token.value) *> redis.del(username.value).void
-
 }

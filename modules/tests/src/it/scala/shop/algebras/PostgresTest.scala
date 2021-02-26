@@ -36,11 +36,15 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
     )
 
   withResources { pool =>
+    val b = Brands.make[IO](pool)
+    val c = Categories.make[IO](pool)
+    val i = Items.make[IO](pool)
+    val o = Orders.make[IO](pool)
+
     test("Brands") {
       forAll { (brand: Brand) =>
         IOAssertion {
           for {
-            b <- LiveBrands.make[IO](pool)
             x <- b.findAll
             _ <- b.create(brand.name)
             y <- b.findAll
@@ -56,7 +60,6 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
       forAll { (category: Category) =>
         IOAssertion {
           for {
-            c <- LiveCategories.make[IO](pool)
             x <- c.findAll
             _ <- c.create(category.name)
             y <- c.findAll
@@ -83,9 +86,6 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
 
         IOAssertion {
           for {
-            b <- LiveBrands.make[IO](pool)
-            c <- LiveCategories.make[IO](pool)
-            i <- LiveItems.make[IO](pool)
             x <- i.findAll
             _ <- b.create(item.brand.name)
             d <- b.findAll.map(_.headOption.map(_.uuid))
@@ -104,8 +104,8 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
       forAll { (username: UserName, password: Password) =>
         IOAssertion {
           for {
-            c <- LiveCrypto.make[IO](salt)
-            u <- LiveUsers.make[IO](pool, c)
+            c <- Crypto.make[IO](salt)
+            u = Users.make[IO](pool, c)
             d <- u.create(username, password)
             x <- u.find(username, password)
             y <- u.find(username, "foo".coerce[Password])
@@ -118,21 +118,19 @@ class PostgresTest extends ResourceSuite[Resource[IO, Session[IO]]] {
     }
 
     test("Orders") {
-      forAll {
-        (oid: OrderId, pid: PaymentId, un: UserName, pw: Password, items: List[CartItem], price: Money) =>
-          IOAssertion {
-            for {
-              o <- LiveOrders.make[IO](pool)
-              c <- LiveCrypto.make[IO](salt)
-              u <- LiveUsers.make[IO](pool, c)
-              d <- u.create(un, pw)
-              x <- o.findBy(d)
-              y <- o.get(d, oid)
-              i <- o.create(d, pid, items, price)
-            } yield assert(
-              x.isEmpty && y.isEmpty && i.value.version === 4
-            )
-          }
+      forAll { (oid: OrderId, pid: PaymentId, un: UserName, pw: Password, items: List[CartItem], price: Money) =>
+        IOAssertion {
+          for {
+            c <- Crypto.make[IO](salt)
+            u = Users.make[IO](pool, c)
+            d <- u.create(un, pw)
+            x <- o.findBy(d)
+            y <- o.get(d, oid)
+            i <- o.create(d, pid, items, price)
+          } yield assert(
+            x.isEmpty && y.isEmpty && i.value.version === 4
+          )
+        }
       }
     }
 

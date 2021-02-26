@@ -19,13 +19,13 @@ object Main extends IOApp {
         AppResources
           .make[IO](cfg)
           .evalMap { res =>
-            for {
-              security <- Security.make[IO](cfg, res.psql, res.redis)
-              algebras <- Algebras.make[IO](res.redis, res.psql, cfg.cartExpiration)
-              clients <- HttpClients.make[IO](cfg.paymentConfig, res.client)
-              programs <- Programs.make[IO](cfg.checkoutConfig, algebras, clients)
-              api <- HttpApi.make[IO](algebras, programs, security)
-            } yield cfg.httpServerConfig -> api
+            Security.make[IO](cfg, res.psql, res.redis).map { security =>
+              val algebras = Algebras.make[IO](res.redis, res.psql, cfg.cartExpiration)
+              val clients  = HttpClients.make[IO](cfg.paymentConfig, res.client)
+              val programs = Programs.make[IO](cfg.checkoutConfig, algebras, clients)
+              val api      = HttpApi.make[IO](algebras, programs, security)
+              cfg.httpServerConfig -> api
+            }
           }
           .flatMap {
             case (cfg, api) =>

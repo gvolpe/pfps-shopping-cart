@@ -17,7 +17,7 @@ trait Crypto {
   def decrypt(value: EncryptedPassword): Password
 }
 
-object LiveCrypto {
+object Crypto {
   def make[F[_]: Sync](secret: PasswordSalt): F[Crypto] =
     Sync[F]
       .delay {
@@ -38,27 +38,21 @@ object LiveCrypto {
       }
       .map {
         case (ec, dc) =>
-          new LiveCrypto(ec, dc)
+          new Crypto {
+            def encrypt(password: Password): EncryptedPassword = {
+              val base64 = Base64.getEncoder()
+              val bytes  = password.value.getBytes("UTF-8")
+              val result = new String(base64.encode(ec.value.doFinal(bytes)), "UTF-8")
+              EncryptedPassword(result)
+            }
+
+            def decrypt(password: EncryptedPassword): Password = {
+              val base64 = Base64.getDecoder()
+              val bytes  = base64.decode(password.value.getBytes("UTF-8"))
+              val result = new String(dc.value.doFinal(bytes), "UTF-8")
+              Password(result)
+            }
+          }
       }
-}
-
-final class LiveCrypto private (
-    eCipher: EncryptCipher,
-    dCipher: DecryptCipher
-) extends Crypto {
-
-  def encrypt(password: Password): EncryptedPassword = {
-    val base64 = Base64.getEncoder()
-    val bytes  = password.value.getBytes("UTF-8")
-    val result = new String(base64.encode(eCipher.value.doFinal(bytes)), "UTF-8")
-    EncryptedPassword(result)
-  }
-
-  def decrypt(password: EncryptedPassword): Password = {
-    val base64 = Base64.getDecoder()
-    val bytes  = base64.decode(password.value.getBytes("UTF-8"))
-    val result = new String(dCipher.value.doFinal(bytes), "UTF-8")
-    Password(result)
-  }
 
 }
