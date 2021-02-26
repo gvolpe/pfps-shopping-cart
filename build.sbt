@@ -22,15 +22,15 @@ lazy val tests = (project in file("modules/tests"))
   .settings(
     name := "shopping-cart-test-suite",
     scalacOptions ++= List("-Ymacro-annotations", "-Yrangepos", "-Wconf:cat=unused:info"),
-    testFrameworks += new TestFramework("munit.Framework"),
+    testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
     Defaults.itSettings,
     scalafixCommonSettings,
     libraryDependencies ++= Seq(
           CompilerPlugin.kindProjector,
           CompilerPlugin.betterMonadicFor,
           CompilerPlugin.semanticDB,
-          Libraries.munitCore,
-          Libraries.munitScalacheck
+          Libraries.weaverCats,
+          Libraries.weaverScalaCheck
         )
   )
   .dependsOn(core)
@@ -56,7 +56,6 @@ lazy val core = (project in file("modules/core"))
           CompilerPlugin.semanticDB,
           Libraries.cats,
           Libraries.catsEffect,
-          Libraries.catsMeowMtl,
           Libraries.catsRetry,
           Libraries.circeCore,
           Libraries.circeGeneric,

@@ -27,7 +27,7 @@ object Dependencies {
     val organizeImports  = "0.5.0"
     val semanticDB       = "4.4.10"
 
-    val munit = "0.7.22"
+    val weaver = "0.6.0-M6"
   }
 
   object Libraries {
@@ -81,8 +81,8 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % V.logback
 
     // Test
-    val munitCore       = "org.scalameta" %% "munit"            % V.munit
-    val munitScalacheck = "org.scalameta" %% "munit-scalacheck" % V.munit
+    val weaverCats       = "com.disneystreaming" %% "weaver-cats"       % V.weaver
+    val weaverScalaCheck = "com.disneystreaming" %% "weaver-scalacheck" % V.weaver
 
     // Scalafix rules
     val organizeImports = "com.github.liancheng" %% "organize-imports" % V.organizeImports

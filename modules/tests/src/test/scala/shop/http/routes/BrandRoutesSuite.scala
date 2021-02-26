@@ -1,17 +1,17 @@
 package shop.http.routes
 
 import shop.algebras.Brands
-import shop.arbitraries._
 import shop.domain.brand._
+import shop.generators._
 
 import cats.effect._
 import org.http4s.Method._
 import org.http4s._
 import org.http4s.client.dsl.io._
-import org.scalacheck.Prop._
-import suite._
+import org.scalacheck.Gen
+import suite.HttpSuite
 
-class BrandRoutesSuite extends HttpTestSuite {
+object BrandRoutesSuite extends HttpSuite {
 
   def dataBrands(brands: List[Brand]) = new TestBrands {
     override def findAll: IO[List[Brand]] =
@@ -23,24 +23,20 @@ class BrandRoutesSuite extends HttpTestSuite {
       IO.raiseError(DummyError) *> IO.pure(brands)
   }
 
-  test("GET brands [OK]") {
-    forAll { (b: List[Brand]) =>
-      IOAssertion {
-        GET(Uri.uri("/brands")).flatMap { req =>
-          val routes = new BrandRoutes[IO](dataBrands(b)).routes
-          assertHttp(routes, req)(Status.Ok, b)
-        }
+  test("GET brands succeeds") {
+    forall(Gen.listOf(brandGen)) { b =>
+      GET(Uri.uri("/brands")).flatMap { req =>
+        val routes = new BrandRoutes[IO](dataBrands(b)).routes
+        assertHttp(routes, req)(Status.Ok, b)
       }
     }
   }
 
-  test("GET brands [ERROR]") {
-    forAll { (b: List[Brand]) =>
-      IOAssertion {
-        GET(Uri.uri("/brands")).flatMap { req =>
-          val routes = new BrandRoutes[IO](failingBrands(b)).routes
-          assertHttpFailure(routes, req)
-        }
+  test("GET brands fails") {
+    forall(Gen.listOf(brandGen)) { b =>
+      GET(Uri.uri("/brands")).flatMap { req =>
+        val routes = new BrandRoutes[IO](failingBrands(b)).routes
+        assertHttpFailure(routes, req)
       }
     }
   }

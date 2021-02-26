@@ -15,15 +15,15 @@ import io.estatico.newtype.macros.newtype
 
 object auth {
 
-  @derive(decoder, encoder, eqv)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class UserId(value: UUID)
 
-  @derive(decoder, encoder, eqv)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class UserName(value: String)
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class Password(value: String)
 

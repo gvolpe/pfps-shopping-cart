@@ -15,11 +15,11 @@ import io.estatico.newtype.macros.newtype
 import squants.market.Money
 
 object order {
-  @derive(decoder, encoder, eqv)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class OrderId(value: UUID)
 
-  @derive(encoder)
+  @derive(encoder, eqv, show)
   @newtype
   case class PaymentId(value: UUID)
   object PaymentId {

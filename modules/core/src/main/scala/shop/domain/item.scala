@@ -18,7 +18,7 @@ import squants.market._
 
 object item {
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class ItemId(value: UUID)
   object ItemId {
@@ -26,15 +26,15 @@ object item {
     implicit val keyDecoder: KeyDecoder[ItemId] = deriving
   }
 
-  @derive(decoder, encoder, eqv)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class ItemName(value: String)
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class ItemDescription(value: String)
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   case class Item(
       uuid: ItemId,
       name: ItemName,

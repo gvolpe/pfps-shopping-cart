@@ -11,11 +11,11 @@ import io.circe.refined._
 import io.estatico.newtype.macros.newtype
 
 object category {
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class CategoryId(value: UUID)
 
-  @derive(decoder, encoder, eqv)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class CategoryName(value: String)
 
@@ -29,6 +29,6 @@ object category {
       Decoder.forProduct1("name")(CategoryParam.apply)
   }
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   case class Category(uuid: CategoryId, name: CategoryName)
 }
