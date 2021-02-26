@@ -13,6 +13,7 @@ trait Background[F[_]] {
   ): F[Unit]
 }
 
+// TODO: Replace for the new builtin background based on Resource
 object Background {
   def apply[F[_]](implicit ev: Background[F]): Background[F] = ev
 

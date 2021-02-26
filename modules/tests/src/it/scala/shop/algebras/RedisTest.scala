@@ -11,6 +11,7 @@ import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.category._
 import shop.domain.item._
+import shop.effects.JwtExpire
 import shop.http.auth.users._
 import shop.logger.NoOp
 
@@ -46,24 +47,23 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
         IOAssertion {
           Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
             val items = new TestItems(ref)
-            LiveShoppingCart.make[IO](items, cmd, Exp).flatMap { c =>
-              for {
-                x <- c.get(uid)
-                _ <- c.add(uid, it1.uuid, q1)
-                _ <- c.add(uid, it2.uuid, q1)
-                y <- c.get(uid)
-                _ <- c.removeItem(uid, it1.uuid)
-                z <- c.get(uid)
-                _ <- c.update(uid, Cart(Map(it2.uuid -> q2)))
-                w <- c.get(uid)
-                _ <- c.delete(uid)
-                v <- c.get(uid)
-              } yield assert(
-                x.items.isEmpty && y.items.size === 2 &&
-                  z.items.size === 1 && v.items.isEmpty &&
-                  w.items.headOption.fold(false)(_.quantity === q2)
-              )
-            }
+            val c     = ShoppingCart.make[IO](items, cmd, Exp)
+            for {
+              x <- c.get(uid)
+              _ <- c.add(uid, it1.uuid, q1)
+              _ <- c.add(uid, it2.uuid, q1)
+              y <- c.get(uid)
+              _ <- c.removeItem(uid, it1.uuid)
+              z <- c.get(uid)
+              _ <- c.update(uid, Cart(Map(it2.uuid -> q2)))
+              w <- c.get(uid)
+              _ <- c.delete(uid)
+              v <- c.get(uid)
+            } yield assert(
+              x.items.isEmpty && y.items.size === 2 &&
+                z.items.size === 1 && v.items.isEmpty &&
+                w.items.headOption.fold(false)(_.quantity === q2)
+            )
           }
         }
       }
@@ -73,9 +73,9 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
       forAll { (un1: UserName, un2: UserName, pw: Password) =>
         IOAssertion {
           for {
-            t <- LiveTokens.make[IO](tokenConfig, tokenExp)
-            a <- LiveAuth.make(tokenExp, t, new TestUsers(un2), cmd)
-            u <- LiveUsersAuth.make[IO](cmd)
+            t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
+            a = Auth.make(tokenExp, t, new TestUsers(un2), cmd)
+            u = UsersAuth.common[IO](cmd)
             x <- u.findUser(JwtToken("invalid"))(jwtClaim)
             j <- a.newUser(un1, pw)
             e <- jwtDecode[IO](j, userJwtAuth.value).attempt

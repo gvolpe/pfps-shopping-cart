@@ -15,13 +15,11 @@ object Programs {
       checkoutConfig: CheckoutConfig,
       algebras: Algebras[F],
       clients: HttpClients[F]
-  ): F[Programs[F]] =
-    Sync[F].delay(
-      new Programs[F](checkoutConfig, algebras, clients)
-    )
+  ): Programs[F] =
+    Programs[F](checkoutConfig, algebras, clients)
 }
 
-final class Programs[F[_]: Background: Logger: MonadThrow: Timer] private (
+final case class Programs[F[_]: Background: Logger: MonadThrow: Timer] private (
     cfg: CheckoutConfig,
     algebras: Algebras[F],
     clients: HttpClients[F]

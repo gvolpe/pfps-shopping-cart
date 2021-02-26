@@ -45,12 +45,12 @@ object Security {
       adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
       content <- ApThrow[F].fromEither(jsonDecode[ClaimContent](adminClaim.content))
       adminUser = AdminUser(User(UserId(content.uuid), UserName("admin")))
-      tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
-      crypto <- LiveCrypto.make[F](cfg.passwordSalt)
-      users <- LiveUsers.make[F](sessionPool, crypto)
-      auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis)
-      adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
-      usersAuth <- LiveUsersAuth.make[F](redis)
+      tokens <- JwtExpire.make[F].map(Tokens.make[F](_, cfg.tokenConfig, cfg.tokenExpiration))
+      crypto <- Crypto.make[F](cfg.passwordSalt)
+      users     = Users.make[F](sessionPool, crypto)
+      auth      = Auth.make[F](cfg.tokenExpiration, tokens, users, redis)
+      adminAuth = UsersAuth.admin[F](adminToken, adminUser)
+      usersAuth = UsersAuth.common[F](redis)
     } yield new Security[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)
 
   }

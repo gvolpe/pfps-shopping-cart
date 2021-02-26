@@ -20,17 +20,11 @@ object HttpApi {
       algebras: Algebras[F],
       programs: Programs[F],
       security: Security[F]
-  ): F[HttpApi[F]] =
-    Sync[F].delay(
-      new HttpApi[F](
-        algebras,
-        programs,
-        security
-      )
-    )
+  ): HttpApi[F] =
+    HttpApi[F](algebras, programs, security)
 }
 
-final class HttpApi[F[_]: Concurrent: Timer] private (
+final case class HttpApi[F[_]: Concurrent: Timer] private (
     algebras: Algebras[F],
     programs: Programs[F],
     security: Security[F]

@@ -19,66 +19,57 @@ trait ShoppingCart[F[_]] {
   def update(userId: UserId, cart: Cart): F[Unit]
 }
 
-object LiveShoppingCart {
-  def make[F[_]: Sync](
+object ShoppingCart {
+  def make[F[_]: GenUUID: MonadThrow](
       items: Items[F],
       redis: RedisCommands[F, String, String],
       exp: ShoppingCartExpiration
-  ): F[ShoppingCart[F]] =
-    Sync[F].delay(
-      new LiveShoppingCart(items, redis, exp)
-    )
-}
+  ): ShoppingCart[F] =
+    new ShoppingCart[F] {
 
-final class LiveShoppingCart[F[_]: GenUUID: MonadThrow] private (
-    items: Items[F],
-    redis: RedisCommands[F, String, String],
-    exp: ShoppingCartExpiration
-) extends ShoppingCart[F] {
-
-  private def calcTotal(items: List[CartItem]): Money =
-    USD(
-      items
-        .foldMap { i =>
-          i.item.price.value * i.quantity.value
-        }
-    )
-
-  def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
-    redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
-        redis.expire(userId.value.toString, exp.value).void
-
-  def get(userId: UserId): F[CartTotal] =
-    redis.hGetAll(userId.value.toString).flatMap { it =>
-      it.toList
-        .traverseFilter {
-          case (k, v) =>
-            for {
-              id <- GenUUID[F].read[ItemId](k)
-              qt <- ApThrow[F].catchNonFatal(Quantity(v.toInt))
-              rs <- items.findById(id).map(_.map(i => CartItem(i, qt)))
-            } yield rs
-        }
-        .map(items => CartTotal(items, calcTotal(items)))
-    }
-
-  def delete(userId: UserId): F[Unit] =
-    redis.del(userId.value.toString).void
-
-  def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
-    redis.hDel(userId.value.toString, itemId.value.toString).void
-
-  def update(userId: UserId, cart: Cart): F[Unit] =
-    redis.hGetAll(userId.value.toString).flatMap {
-      _.toList.traverse_ {
-        case (k, _) =>
-          GenUUID[F].read[ItemId](k).flatMap { id =>
-            cart.items.get(id).traverse_ { q =>
-              redis.hSet(userId.value.toString, k, q.value.toString)
+      private def calcTotal(items: List[CartItem]): Money =
+        USD(
+          items
+            .foldMap { i =>
+              i.item.price.value * i.quantity.value
             }
-          }
-      } *>
-        redis.expire(userId.value.toString, exp.value).void
-    }
+        )
 
+      def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
+        redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
+            redis.expire(userId.value.toString, exp.value).void
+
+      def get(userId: UserId): F[CartTotal] =
+        redis.hGetAll(userId.value.toString).flatMap { it =>
+          it.toList
+            .traverseFilter {
+              case (k, v) =>
+                for {
+                  id <- GenUUID[F].read[ItemId](k)
+                  qt <- ApThrow[F].catchNonFatal(Quantity(v.toInt))
+                  rs <- items.findById(id).map(_.map(i => CartItem(i, qt)))
+                } yield rs
+            }
+            .map(items => CartTotal(items, calcTotal(items)))
+        }
+
+      def delete(userId: UserId): F[Unit] =
+        redis.del(userId.value.toString).void
+
+      def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
+        redis.hDel(userId.value.toString, itemId.value.toString).void
+
+      def update(userId: UserId, cart: Cart): F[Unit] =
+        redis.hGetAll(userId.value.toString).flatMap {
+          _.toList.traverse_ {
+            case (k, _) =>
+              GenUUID[F].read[ItemId](k).flatMap { id =>
+                cart.items.get(id).traverse_ { q =>
+                  redis.hSet(userId.value.toString, k, q.value.toString)
+                }
+              }
+          } *>
+            redis.expire(userId.value.toString, exp.value).void
+        }
+    }
 }
