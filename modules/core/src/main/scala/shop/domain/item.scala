@@ -5,7 +5,7 @@ import java.util.UUID
 import shop.domain.brand._
 import shop.domain.category._
 
-import derevo.cats.{ eq => eqv }
+import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import eu.timepit.refined.api.Refined

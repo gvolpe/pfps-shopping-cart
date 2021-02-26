@@ -5,7 +5,7 @@ import javax.crypto.Cipher
 
 import scala.util.control.NoStackTrace
 
-import derevo.cats.{ eq => eqv }
+import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import eu.timepit.refined.types.string.NonEmptyString

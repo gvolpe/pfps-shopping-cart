@@ -7,7 +7,7 @@ import scala.util.control.NoStackTrace
 import shop.domain.cart._
 import shop.domain.item._
 
-import derevo.cats.{ eq => eqv }
+import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import io.circe.Decoder
