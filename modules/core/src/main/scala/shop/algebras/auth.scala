@@ -82,7 +82,7 @@ object LiveAuth {
     )
 }
 
-final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
+final class LiveAuth[F[_]: MonadThrow] private (
     tokenExpiration: TokenExpiration,
     tokens: Tokens[F],
     users: Users[F],
