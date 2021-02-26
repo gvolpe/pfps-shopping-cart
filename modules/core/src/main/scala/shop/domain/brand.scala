@@ -13,11 +13,11 @@ import io.circe.refined._
 import io.estatico.newtype.macros.newtype
 
 object brand {
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class BrandId(value: UUID)
 
-  @derive(decoder, encoder, eqv)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class BrandName(value: String) {
     def toBrand(brandId: BrandId): Brand =
@@ -34,7 +34,7 @@ object brand {
       Decoder.forProduct1("name")(BrandParam.apply)
   }
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   case class Brand(uuid: BrandId, name: BrandName)
 
   @derive(decoder, encoder)

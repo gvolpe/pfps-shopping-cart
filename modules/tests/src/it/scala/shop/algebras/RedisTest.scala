@@ -4,7 +4,6 @@ import java.util.UUID
 
 import scala.concurrent.duration._
 
-import shop.arbitraries._
 import shop.config.data._
 import shop.domain.auth._
 import shop.domain.brand._
@@ -12,6 +11,7 @@ import shop.domain.cart._
 import shop.domain.category._
 import shop.domain.item._
 import shop.effects.JwtExpire
+import shop.generators._
 import shop.http.auth.users._
 import shop.logger.NoOp
 
@@ -26,13 +26,17 @@ import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
-import org.scalacheck.Prop._
 import pdi.jwt._
-import suite._
+import weaver.IOSuite
+import weaver.scalacheck.{CheckConfig, Checkers}
 
-class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
+object RedisTest extends IOSuite with Checkers {
 
-  override def resources =
+  // For it:tests, one test is enough
+  override def checkConfig: CheckConfig = CheckConfig.default.copy(minimumSuccessful = 1)
+
+  override type Res = RedisCommands[IO, String, String]
+  override def sharedResource: Resource[IO, Res] =
     Redis[IO].utf8("redis://localhost")
 
   lazy val Exp         = ShoppingCartExpiration(30.seconds)
@@ -41,55 +45,70 @@ class RedisTest extends ResourceSuite[RedisCommands[IO, String, String]] {
   lazy val jwtClaim    = JwtClaim("test")
   lazy val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
 
-  withResources { cmd =>
-    test("Shopping Cart") {
-      forAll { (uid: UserId, it1: Item, it2: Item, q1: Quantity, q2: Quantity) =>
-        IOAssertion {
-          Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
-            val items = new TestItems(ref)
-            val c     = ShoppingCart.make[IO](items, cmd, Exp)
-            for {
-              x <- c.get(uid)
-              _ <- c.add(uid, it1.uuid, q1)
-              _ <- c.add(uid, it2.uuid, q1)
-              y <- c.get(uid)
-              _ <- c.removeItem(uid, it1.uuid)
-              z <- c.get(uid)
-              _ <- c.update(uid, Cart(Map(it2.uuid -> q2)))
-              w <- c.get(uid)
-              _ <- c.delete(uid)
-              v <- c.get(uid)
-            } yield assert(
-              x.items.isEmpty && y.items.size === 2 &&
-                z.items.size === 1 && v.items.isEmpty &&
-                w.items.headOption.fold(false)(_.quantity === q2)
-            )
-          }
-        }
-      }
-    }
+  test("Shopping Cart") { cmd =>
+    val gen = for {
+      uid <- userIdGen
+      it1 <- itemGen
+      it2 <- itemGen
+      q1 <- quantityGen
+      q2 <- quantityGen
+    } yield (uid, it1, it2, q1, q2)
 
-    test("Authentication") {
-      forAll { (un1: UserName, un2: UserName, pw: Password) =>
-        IOAssertion {
+    forall(gen) {
+      case (uid, it1, it2, q1, q2) =>
+        Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
+          val items = new TestItems(ref)
+          val c     = ShoppingCart.make[IO](items, cmd, Exp)
           for {
-            t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
-            a = Auth.make(tokenExp, t, new TestUsers(un2), cmd)
-            u = UsersAuth.common[IO](cmd)
-            x <- u.findUser(JwtToken("invalid"))(jwtClaim)
-            j <- a.newUser(un1, pw)
-            e <- jwtDecode[IO](j, userJwtAuth.value).attempt
-            k <- a.login(un2, pw)
-            f <- jwtDecode[IO](k, userJwtAuth.value).attempt
-            _ <- a.logout(k, un2)
-            y <- u.findUser(k)(jwtClaim)
-            w <- u.findUser(j)(jwtClaim)
-          } yield assert(
-            x.isEmpty && e.isRight && f.isRight && y.isEmpty &&
-              w.fold(false)(_.value.name === un1)
+            x <- c.get(uid)
+            _ <- c.add(uid, it1.uuid, q1)
+            _ <- c.add(uid, it2.uuid, q1)
+            y <- c.get(uid)
+            _ <- c.removeItem(uid, it1.uuid)
+            z <- c.get(uid)
+            _ <- c.update(uid, Cart(Map(it2.uuid -> q2)))
+            w <- c.get(uid)
+            _ <- c.delete(uid)
+            v <- c.get(uid)
+          } yield expect.all(
+            x.items.isEmpty,
+            y.items.size === 2,
+            z.items.size === 1,
+            v.items.isEmpty,
+            w.items.headOption.fold(false)(_.quantity === q2)
           )
         }
-      }
+    }
+  }
+
+  test("Authentication") { cmd =>
+    val gen = for {
+      un1 <- userNameGen
+      un2 <- userNameGen
+      pw <- passwordGen
+    } yield (un1, un2, pw)
+
+    forall(gen) {
+      case (un1, un2, pw) =>
+        for {
+          t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
+          a = Auth.make(tokenExp, t, new TestUsers(un2), cmd)
+          u = UsersAuth.common[IO](cmd)
+          x <- u.findUser(JwtToken("invalid"))(jwtClaim)
+          j <- a.newUser(un1, pw)
+          e <- jwtDecode[IO](j, userJwtAuth.value).attempt
+          k <- a.login(un2, pw)
+          f <- jwtDecode[IO](k, userJwtAuth.value).attempt
+          _ <- a.logout(k, un2)
+          y <- u.findUser(k)(jwtClaim)
+          w <- u.findUser(j)(jwtClaim)
+        } yield expect.all(
+          x.isEmpty,
+          e.isRight,
+          f.isRight,
+          y.isEmpty,
+          w.fold(false)(_.value.name === un1)
+        )
     }
   }
 

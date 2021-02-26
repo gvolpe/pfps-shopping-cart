@@ -16,10 +16,11 @@ import squants.market.Money
 import item._
 
 object cart {
-  @derive(decoder, encoder, eqv)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class Quantity(value: Int)
 
+  @derive(eqv, show)
   @newtype
   case class Cart(items: Map[ItemId, Quantity])
   object Cart {
@@ -30,14 +31,14 @@ object cart {
       Decoder.forProduct1("items")(Cart.apply)
   }
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class CartId(value: UUID)
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   case class CartItem(item: Item, quantity: Quantity)
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   case class CartTotal(items: List[CartItem], total: Money)
 
   @derive(decoder, encoder)

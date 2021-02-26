@@ -1,5 +1,6 @@
 package shop
 
+import cats.{ Eq, Show }
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe.{ Decoder, Encoder }
 import squants.market.{ Money, USD }
@@ -13,6 +14,10 @@ trait OrphanInstances {
 
   implicit val moneyEncoder: Encoder[Money] =
     Encoder[BigDecimal].contramap(_.amount)
+
+  implicit val moneyEq: Eq[Money] = Eq.fromUniversalEquals
+
+  implicit val moneyShow: Show[Money] = Show.fromToString
 
   implicit val tokenEncoder: Encoder[JwtToken] =
     Encoder.forProduct1("access_token")(_.value)

@@ -3,10 +3,10 @@ package shop.http.routes.secured
 import java.util.UUID
 
 import shop.algebras.ShoppingCart
-import shop.arbitraries._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
+import shop.generators._
 import shop.http.auth.users._
 
 import cats.data.Kleisli
@@ -16,11 +16,10 @@ import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.client.dsl.io._
 import org.http4s.server.AuthMiddleware
-import org.scalacheck.Prop._
 import squants.market.USD
-import suite._
+import suite.HttpSuite
 
-class CartRoutesSuite extends HttpTestSuite {
+object CartRoutesSuite extends HttpSuite {
 
   val authUser = CommonUser(User(UserId(UUID.randomUUID), UserName("user")))
 
@@ -32,24 +31,20 @@ class CartRoutesSuite extends HttpTestSuite {
       IO.pure(cartTotal)
   }
 
-  test("GET shopping cart [OK]") {
-    forAll { (ct: CartTotal) =>
-      IOAssertion {
-        GET(Uri.uri("/cart")).flatMap { req =>
-          val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
-          assertHttp(routes, req)(Status.Ok, ct)
-        }
+  test("GET shopping cart succeeds") {
+    forall(cartTotalGen) { ct =>
+      GET(Uri.uri("/cart")).flatMap { req =>
+        val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
+        assertHttp(routes, req)(Status.Ok, ct)
       }
     }
   }
 
-  test("POST add item to shopping cart [OK]") {
-    forAll { (c: Cart) =>
-      IOAssertion {
-        POST(c, Uri.uri("/cart")).flatMap { req =>
-          val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
-          assertHttpStatus(routes, req)(Status.Created)
-        }
+  test("POST add item to shopping cart succeeds") {
+    forall(cartGen) { c =>
+      POST(c, Uri.uri("/cart")).flatMap { req =>
+        val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
+        assertHttpStatus(routes, req)(Status.Created)
       }
     }
   }

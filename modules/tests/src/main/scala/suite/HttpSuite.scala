@@ -8,8 +8,10 @@ import io.circe._
 import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe._
+import weaver.SimpleIOSuite
+import weaver.scalacheck.Checkers
 
-trait HttpTestSuite extends PureTestSuite {
+trait HttpSuite extends SimpleIOSuite with Checkers {
 
   case object DummyError extends NoStackTrace
 
@@ -20,22 +22,21 @@ trait HttpTestSuite extends PureTestSuite {
     routes.run(req).value.flatMap {
       case Some(resp) =>
         resp.asJson.map { json =>
-          assert(resp.status === expectedStatus && json.dropNullValues === expectedBody.asJson.dropNullValues)
+          expect.all(resp.status === expectedStatus, json.dropNullValues === expectedBody.asJson.dropNullValues)
         }
-      case None => fail("route nout found")
+      case None => IO.pure(failure("route nout found"))
     }
 
   def assertHttpStatus(routes: HttpRoutes[IO], req: Request[IO])(expectedStatus: Status) =
     routes.run(req).value.map {
-      case Some(resp) =>
-        assert(resp.status === expectedStatus)
-      case None => fail("route nout found")
+      case Some(resp) => expect.same(resp.status, expectedStatus)
+      case None       => failure("route nout found")
     }
 
   def assertHttpFailure(routes: HttpRoutes[IO], req: Request[IO]) =
     routes.run(req).value.attempt.map {
-      case Left(_)  => assert(true)
-      case Right(_) => fail("expected a failure")
+      case Left(_)  => success
+      case Right(_) => failure("expected a failure")
     }
 
 }

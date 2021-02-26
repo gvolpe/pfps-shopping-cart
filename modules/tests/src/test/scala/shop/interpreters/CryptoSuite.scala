@@ -8,20 +8,18 @@ import cats.effect.IO
 import ciris.Secret
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
-import suite._
+import weaver.SimpleIOSuite
 
-final class CryptoSuite extends PureTestSuite {
+object CryptoSuite extends SimpleIOSuite {
 
   private val salt = PasswordSalt(Secret("53kr3t"))
 
   test("password encoding and decoding roundtrip") {
-    IOAssertion {
-      Crypto.make[IO](salt).map { crypto =>
-        val ini = Password("simple123")
-        val enc = crypto.encrypt(ini)
-        val dec = crypto.decrypt(enc)
-        assertEquals(dec, ini)
-      }
+    Crypto.make[IO](salt).map { crypto =>
+      val ini = Password("simple123")
+      val enc = crypto.encrypt(ini)
+      val dec = crypto.decrypt(enc)
+      expect.same(dec, ini)
     }
   }
 
