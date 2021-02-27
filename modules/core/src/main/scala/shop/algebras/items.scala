@@ -1,5 +1,6 @@
 package shop.algebras
 
+import shop.domain.ID
 import shop.domain.brand.{ Brand, _ }
 import shop.domain.category._
 import shop.domain.item._
@@ -48,7 +49,7 @@ object Items {
       def create(item: CreateItem): F[Unit] =
         sessionPool.use { session =>
           session.prepare(insertItem).use { cmd =>
-            GenUUID[F].make[ItemId].flatMap { id =>
+            ID.make[F, ItemId].flatMap { id =>
               cmd.execute(id ~ item).void
             }
           }

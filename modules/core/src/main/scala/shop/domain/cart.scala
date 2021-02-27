@@ -5,6 +5,7 @@ import java.util.UUID
 import scala.util.control.NoStackTrace
 
 import shop.domain.auth.UserId
+import shop.optics.uuid
 
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
@@ -31,7 +32,7 @@ object cart {
       Decoder.forProduct1("items")(Cart.apply)
   }
 
-  @derive(decoder, encoder, eqv, show)
+  @derive(decoder, encoder, eqv, show, uuid)
   @newtype
   case class CartId(value: UUID)
 

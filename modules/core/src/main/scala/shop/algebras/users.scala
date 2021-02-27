@@ -1,6 +1,8 @@
 package shop.algebras
 
+import shop.domain.ID
 import shop.domain.auth._
+import shop.effects.GenUUID
 import shop.ext.skunkx._
 import shop.http.auth.users._
 
@@ -36,7 +38,7 @@ object Users {
       def create(username: UserName, password: Password): F[UserId] =
         sessionPool.use { session =>
           session.prepare(insertUser).use { cmd =>
-            GenUUID[F].make[UserId].flatMap { id =>
+            ID.make[F, UserId].flatMap { id =>
               cmd
                 .execute(User(id, username) ~ crypto.encrypt(password))
                 .as(id)

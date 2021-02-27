@@ -6,6 +6,7 @@ import scala.util.control.NoStackTrace
 
 import shop.domain.cart._
 import shop.domain.item._
+import shop.optics.uuid
 
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
@@ -15,11 +16,11 @@ import io.estatico.newtype.macros.newtype
 import squants.market.Money
 
 object order {
-  @derive(decoder, encoder, eqv, show)
+  @derive(decoder, encoder, eqv, show, uuid)
   @newtype
   case class OrderId(value: UUID)
 
-  @derive(encoder, eqv, show)
+  @derive(encoder, eqv, show, uuid)
   @newtype
   case class PaymentId(value: UUID)
   object PaymentId {

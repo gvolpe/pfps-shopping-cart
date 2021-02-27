@@ -5,12 +5,13 @@ import java.util.UUID
 import scala.concurrent.duration._
 
 import shop.config.data._
+import shop.domain.ID
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.category._
 import shop.domain.item._
-import shop.effects.JwtExpire
+import shop.effects._
 import shop.generators._
 import shop.http.auth.users._
 import shop.logger.NoOp
@@ -118,7 +119,7 @@ protected class TestUsers(un: UserName) extends Users[IO] {
   def find(username: UserName, password: Password): IO[Option[User]] =
     Eq[UserName].eqv(username, un).guard[Option].as(User(UserId(UUID.randomUUID), un)).pure[IO]
   def create(username: UserName, password: Password): IO[UserId] =
-    GenUUID[IO].make[UserId]
+    ID.make[IO, UserId]
 }
 
 protected class TestItems(ref: Ref[IO, Map[ItemId, Item]]) extends Items[IO] {
@@ -129,7 +130,7 @@ protected class TestItems(ref: Ref[IO, Map[ItemId, Item]]) extends Items[IO] {
   def findById(itemId: ItemId): IO[Option[Item]] =
     ref.get.map(_.get(itemId))
   def create(item: CreateItem): IO[Unit] =
-    GenUUID[IO].make[ItemId].flatMap { id =>
+    ID.make[IO, ItemId].flatMap { id =>
       val brand    = Brand(item.brandId, BrandName("foo"))
       val category = Category(item.categoryId, CategoryName("foo"))
       val newItem  = Item(id, item.name, item.description, item.price, brand, category)

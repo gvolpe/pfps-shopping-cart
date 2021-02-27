@@ -1,5 +1,6 @@
 package shop.algebras
 
+import shop.domain.ID
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
@@ -54,7 +55,7 @@ object Orders {
       ): F[OrderId] =
         sessionPool.use { session =>
           session.prepare(insertOrder).use { cmd =>
-            GenUUID[F].make[OrderId].flatMap { id =>
+            ID.make[F, OrderId].flatMap { id =>
               val itMap = items.map(x => x.item.uuid -> x.quantity).toMap
               val order = Order(id, paymentId, itMap, total)
               cmd.execute(userId ~ order).as(id)

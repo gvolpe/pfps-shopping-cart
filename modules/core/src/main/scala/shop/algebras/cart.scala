@@ -1,6 +1,7 @@
 package shop.algebras
 
 import shop.config.data.ShoppingCartExpiration
+import shop.domain.ID
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
@@ -45,7 +46,7 @@ object ShoppingCart {
             .traverseFilter {
               case (k, v) =>
                 for {
-                  id <- GenUUID[F].read[ItemId](k)
+                  id <- ID.read[F, ItemId](k)
                   qt <- ApThrow[F].catchNonFatal(Quantity(v.toInt))
                   rs <- items.findById(id).map(_.map(i => CartItem(i, qt)))
                 } yield rs
@@ -63,7 +64,7 @@ object ShoppingCart {
         redis.hGetAll(userId.value.toString).flatMap {
           _.toList.traverse_ {
             case (k, _) =>
-              GenUUID[F].read[ItemId](k).flatMap { id =>
+              ID.read[F, ItemId](k).flatMap { id =>
                 cart.items.get(id).traverse_ { q =>
                   redis.hSet(userId.value.toString, k, q.value.toString)
                 }
