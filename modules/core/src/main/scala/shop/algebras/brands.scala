@@ -1,6 +1,8 @@
 package shop.algebras
 
+import shop.domain.ID
 import shop.domain.brand._
+import shop.effects.GenUUID
 import shop.ext.skunkx._
 
 import cats.effect._
@@ -27,7 +29,7 @@ object Brands {
       def create(name: BrandName): F[Unit] =
         sessionPool.use { session =>
           session.prepare(insertBrand).use { cmd =>
-            GenUUID[F].make[BrandId].flatMap { id =>
+            ID.make[F, BrandId].flatMap { id =>
               cmd.execute(Brand(id, name)).void
             }
           }

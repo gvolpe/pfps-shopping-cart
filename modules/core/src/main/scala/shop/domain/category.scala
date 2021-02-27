@@ -2,6 +2,8 @@ package shop.domain
 
 import java.util.UUID
 
+import shop.optics.uuid
+
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
@@ -11,7 +13,7 @@ import io.circe.refined._
 import io.estatico.newtype.macros.newtype
 
 object category {
-  @derive(decoder, encoder, eqv, show)
+  @derive(decoder, encoder, eqv, show, uuid)
   @newtype
   case class CategoryId(value: UUID)
 

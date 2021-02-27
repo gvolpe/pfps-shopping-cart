@@ -4,6 +4,7 @@ import java.util.UUID
 
 import shop.domain.brand._
 import shop.domain.category._
+import shop.optics.uuid
 
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
@@ -18,7 +19,7 @@ import squants.market._
 
 object item {
 
-  @derive(decoder, encoder, eqv, show)
+  @derive(decoder, encoder, eqv, show, uuid)
   @newtype
   case class ItemId(value: UUID)
   object ItemId {
