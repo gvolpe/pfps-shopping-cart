@@ -1,14 +1,13 @@
 package shop.algebras
 
+import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.category._
 import shop.effects.GenUUID
-import shop.ext.skunkx._
 
 import cats.effect._
 import cats.syntax.all._
 import skunk._
-import skunk.codec.all._
 import skunk.implicits._
 
 trait Categories[F[_]] {
@@ -40,7 +39,7 @@ object Categories {
 private object CategoryQueries {
 
   val codec: Codec[Category] =
-    (uuid.cimap[CategoryId] ~ varchar.cimap[CategoryName]).imap {
+    (categoryId ~ categoryName).imap {
       case i ~ n => Category(i, n)
     }(c => c.uuid ~ c.name)
 

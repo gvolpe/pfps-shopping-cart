@@ -1,10 +1,10 @@
 package shop.algebras
 
+import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.brand.{ Brand, _ }
 import shop.domain.category._
 import shop.domain.item._
-import shop.ext.skunkx._
 
 import cats.effect._
 import cats.syntax.all._
@@ -94,7 +94,7 @@ private object ItemQueries {
         FROM items AS i
         INNER JOIN brands AS b ON i.brand_id = b.uuid
         INNER JOIN categories AS c ON i.category_id = c.uuid
-        WHERE b.name LIKE ${varchar.cimap[BrandName]}
+        WHERE b.name LIKE ${brandName}
        """.query(decoder)
 
   val selectById: Query[ItemId, Item] =
@@ -103,7 +103,7 @@ private object ItemQueries {
         FROM items AS i
         INNER JOIN brands AS b ON i.brand_id = b.uuid
         INNER JOIN categories AS c ON i.category_id = c.uuid
-        WHERE i.uuid = ${uuid.cimap[ItemId]}
+        WHERE i.uuid = ${itemId}
        """.query(decoder)
 
   val insertItem: Command[ItemId ~ CreateItem] =
@@ -119,7 +119,7 @@ private object ItemQueries {
     sql"""
         UPDATE items
         SET price = $numeric
-        WHERE uuid = ${uuid.cimap[ItemId]}
+        WHERE uuid = ${itemId}
        """.command.contramap(i => i.price.amount ~ i.id)
 
 }
