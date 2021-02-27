@@ -5,6 +5,7 @@ import java.util.UUID
 import scala.util.control.NoStackTrace
 
 import shop.http.params._
+import shop.ext.http4s.queryParam
 import shop.optics.uuid
 
 import derevo.cats._
@@ -14,7 +15,6 @@ import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.Decoder
 import io.circe.refined._
 import io.estatico.newtype.macros.newtype
-import org.http4s.QueryParamDecoder
 
 object brand {
   @derive(decoder, encoder, eqv, show, uuid)
@@ -28,14 +28,13 @@ object brand {
       Brand(brandId, this)
   }
 
+  @derive(queryParam)
   @newtype
   case class BrandParam(value: NonEmptyString) {
     def toDomain: BrandName = BrandName(value.value.toLowerCase.capitalize)
   }
 
   object BrandParam {
-    implicit val queryParam: QueryParamDecoder[BrandParam] = deriving
-
     implicit val jsonDecoder: Decoder[BrandParam] =
       Decoder.forProduct1("name")(BrandParam.apply)
   }
