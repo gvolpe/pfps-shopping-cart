@@ -26,9 +26,6 @@ object HasUUID {
   }
 }
 
-// If you are a Monocle user, go with monocle.Iso instead
-final case class Iso[A, B](get: A => B, reverse: B => A)
-
 object uuid extends Derivation[HasUUID] with NewTypeDerivation[HasUUID] {
   def instance[A]: HasUUID[A] = new HasUUID[A] {
     val _UUID: Iso[A, UUID] = Iso[A, UUID](_.asInstanceOf[UUID], _.asInstanceOf[A])

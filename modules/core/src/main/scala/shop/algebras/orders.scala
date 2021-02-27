@@ -1,11 +1,11 @@
 package shop.algebras
 
+import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
-import shop.ext.skunkx._
 
 import cats.effect._
 import cats.syntax.all._
@@ -69,19 +69,13 @@ object Orders {
 private object OrderQueries {
 
   val decoder: Decoder[Order] =
-    (
-      uuid.cimap[OrderId] ~ uuid ~ uuid.cimap[PaymentId] ~
-          jsonb[Map[ItemId, Quantity]] ~ numeric.map(USD.apply)
-    ).map {
+    (orderId ~ uuid ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ numeric.map(USD.apply)).map {
       case o ~ _ ~ p ~ i ~ t =>
         Order(o, p, i, t)
     }
 
   val encoder: Encoder[UserId ~ Order] =
-    (
-      uuid.cimap[OrderId] ~ uuid.cimap[UserId] ~ uuid.cimap[PaymentId] ~
-          jsonb[Map[ItemId, Quantity]] ~ numeric.contramap[Money](_.amount)
-    ).contramap {
+    (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ numeric.contramap[Money](_.amount)).contramap {
       case id ~ o =>
         o.id ~ id ~ o.paymentId ~ o.items ~ o.total
     }
@@ -89,14 +83,14 @@ private object OrderQueries {
   val selectByUserId: Query[UserId, Order] =
     sql"""
         SELECT * FROM orders
-        WHERE user_id = ${uuid.cimap[UserId]}
+        WHERE user_id = ${userId}
        """.query(decoder)
 
   val selectByUserIdAndOrderId: Query[UserId ~ OrderId, Order] =
     sql"""
         SELECT * FROM orders
-        WHERE user_id = ${uuid.cimap[UserId]}
-        AND uuid = ${uuid.cimap[OrderId]}
+        WHERE user_id = ${userId}
+        AND uuid = ${orderId}
        """.query(decoder)
 
   val insertOrder: Command[UserId ~ Order] =

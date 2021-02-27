@@ -1,14 +1,13 @@
 package shop.algebras
 
+import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.brand._
 import shop.effects.GenUUID
-import shop.ext.skunkx._
 
 import cats.effect._
 import cats.syntax.all._
 import skunk._
-import skunk.codec.all._
 import skunk.implicits._
 
 trait Brands[F[_]] {
@@ -40,7 +39,7 @@ object Brands {
 private object BrandQueries {
 
   val codec: Codec[Brand] =
-    (uuid.cimap[BrandId] ~ varchar.cimap[BrandName]).imap {
+    (brandId ~ brandName).imap {
       case i ~ n => Brand(i, n)
     }(b => b.uuid ~ b.name)
 

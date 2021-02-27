@@ -4,6 +4,7 @@ import java.util.UUID
 
 import scala.util.control.NoStackTrace
 
+import shop.http.params._
 import shop.optics.uuid
 
 import derevo.cats._
@@ -13,6 +14,7 @@ import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.Decoder
 import io.circe.refined._
 import io.estatico.newtype.macros.newtype
+import org.http4s.QueryParamDecoder
 
 object brand {
   @derive(decoder, encoder, eqv, show, uuid)
@@ -32,6 +34,8 @@ object brand {
   }
 
   object BrandParam {
+    implicit val queryParam: QueryParamDecoder[BrandParam] = deriving
+
     implicit val jsonDecoder: Decoder[BrandParam] =
       Decoder.forProduct1("name")(BrandParam.apply)
   }

@@ -1,15 +1,14 @@
 package shop.algebras
 
+import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.auth._
 import shop.effects.GenUUID
-import shop.ext.skunkx._
 import shop.http.auth.users._
 
 import cats.effect._
 import cats.syntax.all._
 import skunk._
-import skunk.codec.all._
 import skunk.implicits._
 
 trait Users[F[_]] {
@@ -56,7 +55,7 @@ object Users {
 private object UserQueries {
 
   val codec: Codec[User ~ EncryptedPassword] =
-    (uuid.cimap[UserId] ~ varchar.cimap[UserName] ~ varchar.cimap[EncryptedPassword]).imap {
+    (userId ~ userName ~ encPassword).imap {
       case i ~ n ~ p =>
         User(i, n) ~ p
     } {
@@ -67,7 +66,7 @@ private object UserQueries {
   val selectUser: Query[UserName, User ~ EncryptedPassword] =
     sql"""
         SELECT * FROM users
-        WHERE name = ${varchar.cimap[UserName]}
+        WHERE name = ${userName}
        """.query(codec)
 
   val insertUser: Command[User ~ EncryptedPassword] =
