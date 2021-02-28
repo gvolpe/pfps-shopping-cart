@@ -1,4 +1,4 @@
-name: Build
+name: Scala
 
 on:
   pull_request: {}
