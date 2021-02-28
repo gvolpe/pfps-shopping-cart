@@ -2,7 +2,6 @@ package shop.algebras
 
 import shop.config.data.PasswordSalt
 import shop.domain._
-import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.category._
 import shop.domain.item._
@@ -18,8 +17,9 @@ import io.estatico.newtype.ops._
 import natchez.Trace.Implicits.noop
 import org.scalacheck.Gen
 import skunk._
+import skunk.implicits._
 import weaver.IOSuite
-import weaver.scalacheck.{CheckConfig, Checkers}
+import weaver.scalacheck.{ CheckConfig, Checkers }
 
 object PostgresTest extends IOSuite with Checkers {
 
@@ -28,15 +28,27 @@ object PostgresTest extends IOSuite with Checkers {
 
   lazy val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
 
+  val flushTables: List[Command[Void]] =
+    List("items", "brands", "categories", "orders", "users").map { table =>
+      sql"DELETE FROM #$table".command
+    }
+
   override type Res = Resource[IO, Session[IO]]
+
   override def sharedResource: Resource[IO, Res] =
-    Session.pooled[IO](
-      host = "localhost",
-      port = 5432,
-      user = "postgres",
-      database = "store",
-      max = 10
-    )
+    Session
+      .pooled[IO](
+        host = "localhost",
+        port = 5432,
+        user = "postgres",
+        database = "store",
+        max = 10
+      )
+      .evalTap {
+        _.use { s =>
+          flushTables.traverse_(s.execute)
+        }
+      }
 
   test("Brands") { pool =>
     forall(brandGen) { brand =>
@@ -103,10 +115,9 @@ object PostgresTest extends IOSuite with Checkers {
           c <- Crypto.make[IO](salt)
           u = Users.make[IO](pool, c)
           d <- u.create(username, password)
-          x <- u.find(username, password)
-          y <- u.find(username, "foo".coerce[Password])
+          x <- u.find(username)
           z <- u.create(username, password).attempt
-        } yield expect.all(x.count(_.id === d) === 1, y.isEmpty, z.isLeft)
+        } yield expect.all(x.count(_.id === d) === 1, z.isLeft)
     }
   }
 

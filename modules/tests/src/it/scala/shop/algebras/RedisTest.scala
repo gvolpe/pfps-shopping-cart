@@ -29,7 +29,7 @@ import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import pdi.jwt._
 import weaver.IOSuite
-import weaver.scalacheck.{CheckConfig, Checkers}
+import weaver.scalacheck.{ CheckConfig, Checkers }
 
 object RedisTest extends IOSuite with Checkers {
 
@@ -82,6 +82,8 @@ object RedisTest extends IOSuite with Checkers {
     }
   }
 
+  private val salt = PasswordSalt(Secret("test": NonEmptyString))
+
   test("Authentication") { cmd =>
     val gen = for {
       un1 <- userNameGen
@@ -93,21 +95,20 @@ object RedisTest extends IOSuite with Checkers {
       case (un1, un2, pw) =>
         for {
           t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
-          a = Auth.make(tokenExp, t, new TestUsers(un2), cmd)
+          c <- Crypto.make[IO](salt)
+          a = Auth.make(tokenExp, t, new TestUsers(un2), cmd, c)
           u = UsersAuth.common[IO](cmd)
           x <- u.findUser(JwtToken("invalid"))(jwtClaim)
+          y <- a.login(un1, pw).attempt // UserNotFound
           j <- a.newUser(un1, pw)
           e <- jwtDecode[IO](j, userJwtAuth.value).attempt
-          k <- a.login(un2, pw)
-          f <- jwtDecode[IO](k, userJwtAuth.value).attempt
-          _ <- a.logout(k, un2)
-          y <- u.findUser(k)(jwtClaim)
+          k <- a.login(un2, pw).attempt // InvalidPassword
           w <- u.findUser(j)(jwtClaim)
         } yield expect.all(
           x.isEmpty,
+          y == Left(UserNotFound(un1)),
           e.isRight,
-          f.isRight,
-          y.isEmpty,
+          k == Left(InvalidPassword(un2)),
           w.fold(false)(_.value.name === un1)
         )
     }
@@ -116,8 +117,12 @@ object RedisTest extends IOSuite with Checkers {
 }
 
 protected class TestUsers(un: UserName) extends Users[IO] {
-  def find(username: UserName, password: Password): IO[Option[User]] =
-    Eq[UserName].eqv(username, un).guard[Option].as(User(UserId(UUID.randomUUID), un)).pure[IO]
+  def find(username: UserName): IO[Option[UserWithPassword]] = IO.pure {
+    Eq[UserName]
+      .eqv(username, un)
+      .guard[Option]
+      .as(UserWithPassword(UserId(UUID.randomUUID), un, EncryptedPassword("foo")))
+  }
   def create(username: UserName, password: Password): IO[UserId] =
     ID.make[IO, UserId]
 }

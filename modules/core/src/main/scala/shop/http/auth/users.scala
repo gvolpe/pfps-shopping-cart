@@ -15,6 +15,9 @@ object users {
   @derive(decoder, encoder)
   case class User(id: UserId, name: UserName)
 
+  @derive(decoder, encoder)
+  case class UserWithPassword(id: UserId, name: UserName, password: EncryptedPassword)
+
   @newtype case class CommonUser(value: User)
   @newtype case class AdminUser(value: User)
 

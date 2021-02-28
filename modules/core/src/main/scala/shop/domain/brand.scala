@@ -4,8 +4,8 @@ import java.util.UUID
 
 import scala.util.control.NoStackTrace
 
-import shop.http.params._
 import shop.ext.http4s.queryParam
+import shop.http.params._
 import shop.optics.uuid
 
 import derevo.cats._
