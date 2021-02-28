@@ -1,41 +1,40 @@
-name: Build
+name: Scala
 
 on:
+  pull_request: {}
   push:
     branches:
       - master
       - second-edition
-  pull_request:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    name: Build
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        java:
+          - jdk11
+          - jdk15
     steps:
-    - uses: actions/checkout@v2
-    - uses: olafurpg/setup-scala@v10
+      - uses: actions/checkout@v2.3.2
 
-    - name: Starting up Postgres and Redis
-      run: docker-compose up -d
+      - name: "Cache for sbt & coursier ♨️"
+        uses: coursier/cache-action@v4.1
 
-    - name: Tests
-      run: sbt -J-Xms4G -J-Xmx4G test it:test
+      - name: "Starting up Postgres & Redis 🐳"
+        run: docker-compose up -d
 
-    - name: Cache Coursier dependencies
-      uses: actions/cache@v1
-      with:
-       path: ~/.cache/coursier
-       key: ${{ runner.os }}-${{ github.ref }}-coursier
-       restore-keys: |
-        ${{ runner.os }}-${{ github.ref }}-coursier
+      - name: "Install Nix ❄️"
+        uses: cachix/install-nix-action@v12
 
-    - name: Cache Ivy dependencies
-      uses: actions/cache@v1
-      with:
-        path: ~/.ivy2/cache
-        key: ${{ runner.os }}-${{ github.ref }}-ivy2
-        restore-keys: |
-         ${{ runner.os }}-${{ github.ref }}-ivy2
+      - name: "Install Cachix ❄️"
+        uses: cachix/cachix-action@v8
+        with:
+          name: neutron
 
-    - name: Shutting down Postgres and Redis
-      run: docker-compose down
+      - name: "Run with ${{ matrix.java }} 🚀"
+        run: nix-shell --argstr jdk "${{ matrix.java }}" --run "sbt test"
+
+      - name: "Shutting down Postgres & Redis 🐳"
+        run: docker-compose down
