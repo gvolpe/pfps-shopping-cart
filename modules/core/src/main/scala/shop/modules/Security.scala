@@ -48,7 +48,7 @@ object Security {
       tokens <- JwtExpire.make[F].map(Tokens.make[F](_, cfg.tokenConfig, cfg.tokenExpiration))
       crypto <- Crypto.make[F](cfg.passwordSalt)
       users     = Users.make[F](sessionPool, crypto)
-      auth      = Auth.make[F](cfg.tokenExpiration, tokens, users, redis)
+      auth      = Auth.make[F](cfg.tokenExpiration, tokens, users, redis, crypto)
       adminAuth = UsersAuth.admin[F](adminToken, adminUser)
       usersAuth = UsersAuth.common[F](redis)
     } yield new Security[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)

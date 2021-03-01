@@ -29,7 +29,7 @@ object auth {
   @newtype
   case class Password(value: String)
 
-  @derive(decoder, encoder)
+  @derive(decoder, encoder, eqv, show)
   @newtype
   case class EncryptedPassword(value: String)
 
@@ -59,8 +59,9 @@ object auth {
       password: PasswordParam
   )
 
+  case class UserNotFound(username: UserName) extends NoStackTrace
   case class UserNameInUse(username: UserName) extends NoStackTrace
-  case class InvalidUserOrPassword(username: UserName) extends NoStackTrace
+  case class InvalidPassword(username: UserName) extends NoStackTrace
   case object UnsupportedOperation extends NoStackTrace
 
   case object TokenNotFound extends NoStackTrace

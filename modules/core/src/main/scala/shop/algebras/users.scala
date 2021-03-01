@@ -12,7 +12,7 @@ import skunk._
 import skunk.implicits._
 
 trait Users[F[_]] {
-  def find(username: UserName, password: Password): F[Option[User]]
+  def find(username: UserName): F[Option[UserWithPassword]]
   def create(username: UserName, password: Password): F[UserId]
 }
 
@@ -24,12 +24,12 @@ object Users {
     new Users[F] {
       import UserQueries._
 
-      def find(username: UserName, password: Password): F[Option[User]] =
+      def find(username: UserName): F[Option[UserWithPassword]] =
         sessionPool.use { session =>
           session.prepare(selectUser).use { q =>
             q.option(username).map {
-              case Some(u ~ p) if p.value == crypto.encrypt(password).value => u.some
-              case _                                                        => none[User]
+              case Some(u ~ p) => UserWithPassword(u.id, u.name, p).some
+              case _           => none[UserWithPassword]
             }
           }
         }
