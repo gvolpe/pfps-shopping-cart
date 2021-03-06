@@ -13,7 +13,7 @@ import shop.http.clients.PaymentClient
 
 import cats.effect.{ MonadThrow, Timer }
 import cats.syntax.all._
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import retry.RetryDetails._
 import retry._
 import squants.market.Money
