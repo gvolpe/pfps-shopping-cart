@@ -6,7 +6,7 @@ import shop.programs._
 
 import cats.effect._
 import cats.syntax.all._
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import retry.RetryPolicies._
 import retry.RetryPolicy
 

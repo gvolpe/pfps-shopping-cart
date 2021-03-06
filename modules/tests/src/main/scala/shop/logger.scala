@@ -2,7 +2,7 @@ package shop
 
 import cats.effect.IO
 import cats.effect.concurrent.Ref
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 
 object logger {
 
