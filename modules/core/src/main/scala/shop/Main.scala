@@ -8,6 +8,7 @@ import eu.timepit.refined.auto._
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.server.defaults.Banner
 
 object Main extends IOApp {
 
@@ -37,7 +38,7 @@ object Main extends IOApp {
                 .build
           }
           .use { server =>
-            Logger[IO].info(s"HTTP Server started at ${server.address}") >>
+            Logger[IO].info(s"\n${Banner.mkString("\n")}\nHTTP Server started at ${server.address}") >>
               IO.never.as(ExitCode.Success)
           }
     }
