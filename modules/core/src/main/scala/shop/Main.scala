@@ -5,10 +5,10 @@ import shop.modules._
 import cats.effect._
 import cats.syntax.all._
 import eu.timepit.refined.auto._
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.defaults.Banner
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object Main extends IOApp {
 
