@@ -11,7 +11,7 @@ shopping-cart
 
 Here's an overview of the different components that make this application.
 
-[!components](./components.png)
+![components](./components.png)
 
 - Both **Services** and **Authentication** are *algebras*. The latter are mainly dependencies for some of the services.
 - Programs shows **Checkout**, the business logic that combines most of the services.
