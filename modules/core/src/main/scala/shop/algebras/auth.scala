@@ -1,6 +1,7 @@
 package shop.algebras
 
 import shop.config.data.TokenExpiration
+import shop.domain._
 import shop.domain.auth._
 import shop.http.auth.users._
 
@@ -30,7 +31,7 @@ object UsersAuth {
   ): UsersAuth[F, AdminUser] =
     new UsersAuth[F, AdminUser] {
       def findUser(token: JwtToken)(claim: JwtClaim): F[Option[AdminUser]] =
-        (token == adminToken)
+        (token === adminToken)
           .guard[Option]
           .as(adminUser)
           .pure[F]
