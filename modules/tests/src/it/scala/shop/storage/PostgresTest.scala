@@ -1,11 +1,13 @@
-package shop.algebras
+package shop.storage
 
+import shop.auth._
 import shop.config.data.PasswordSalt
 import shop.domain._
 import shop.domain.brand._
 import shop.domain.category._
 import shop.domain.item._
 import shop.generators._
+import shop.services._
 
 import cats.effect._
 import cats.implicits._

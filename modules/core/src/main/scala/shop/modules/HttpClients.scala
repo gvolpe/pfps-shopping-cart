@@ -1,7 +1,7 @@
 package shop.modules
 
 import shop.config.data.PaymentConfig
-import shop.http.clients._
+import shop.http.clients.PaymentClient
 
 import cats.effect._
 import org.http4s.circe.JsonDecoder

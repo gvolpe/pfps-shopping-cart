@@ -1,9 +1,9 @@
 package shop.http.routes.secured
 
-import shop.algebras.ShoppingCart
 import shop.domain.cart._
 import shop.domain.item._
 import shop.http.auth.users.CommonUser
+import shop.services.ShoppingCart
 
 import cats._
 import cats.syntax.all._

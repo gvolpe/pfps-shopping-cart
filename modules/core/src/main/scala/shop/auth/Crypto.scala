@@ -1,4 +1,4 @@
-package shop.algebras
+package shop.auth
 
 import java.security.SecureRandom
 import java.util.Base64

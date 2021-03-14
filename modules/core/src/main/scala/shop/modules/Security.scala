@@ -1,10 +1,11 @@
 package shop.modules
 
-import shop.algebras._
+import shop.auth._
 import shop.config.data._
 import shop.domain.auth._
 import shop.effects._
 import shop.http.auth.users._
+import shop.services._
 
 import cats.effect._
 import cats.syntax.all._

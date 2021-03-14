@@ -1,8 +1,8 @@
 package shop.http.routes.secured
 
-import shop.algebras.Orders
 import shop.domain.order._
 import shop.http.auth.users.CommonUser
+import shop.services.Orders
 
 import cats._
 import org.http4s._

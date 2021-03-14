@@ -1,6 +1,6 @@
 package shop.interpreters
 
-import shop.algebras.Crypto
+import shop.auth.Crypto
 import shop.config.data.PasswordSalt
 import shop.domain.auth.Password
 

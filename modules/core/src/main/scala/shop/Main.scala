@@ -21,10 +21,10 @@ object Main extends IOApp {
           .make[IO](cfg)
           .evalMap { res =>
             Security.make[IO](cfg, res.psql, res.redis).map { security =>
-              val algebras = Algebras.make[IO](res.redis, res.psql, cfg.cartExpiration)
               val clients  = HttpClients.make[IO](cfg.paymentConfig, res.client)
-              val programs = Programs.make[IO](cfg.checkoutConfig, algebras, clients)
-              val api      = HttpApi.make[IO](algebras, programs, security)
+              val services = Services.make[IO](res.redis, res.psql, cfg.cartExpiration)
+              val programs = Programs.make[IO](cfg.checkoutConfig, services, clients)
+              val api      = HttpApi.make[IO](services, programs, security)
               cfg.httpServerConfig -> api
             }
           }

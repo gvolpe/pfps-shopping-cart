@@ -5,7 +5,7 @@ import shop.domain.checkout._
 import shop.domain.order._
 import shop.http.auth.users.CommonUser
 import shop.http.decoder._
-import shop.programs.CheckoutProgram
+import shop.programs.Checkout
 
 import cats.Defer
 import cats.effect.MonadThrow
@@ -17,7 +17,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 
 final class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
-    program: CheckoutProgram[F]
+    checkout: Checkout[F]
 ) extends Http4sDsl[F] {
 
   private[routes] val prefixPath = "/checkout"
@@ -26,8 +26,8 @@ final class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
 
     case ar @ POST -> Root as user =>
       ar.req.decodeR[Card] { card =>
-        program
-          .checkout(user.value.id, card)
+        checkout
+          .process(user.value.id, card)
           .flatMap(Created(_))
           .recoverWith {
             case CartNotFound(userId) =>

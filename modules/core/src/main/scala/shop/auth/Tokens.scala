@@ -1,4 +1,4 @@
-package shop.algebras
+package shop.auth
 
 import shop.config.data._
 import shop.effects._

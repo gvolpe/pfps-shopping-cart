@@ -1,5 +1,7 @@
 package shop
 
+import shop.config.data._
+
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.redis4cats.log4cats._
@@ -10,8 +12,6 @@ import org.http4s.client.Client
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.Logger
 import skunk._
-
-import config.data._
 
 final case class AppResources[F[_]](
     client: Client[F],

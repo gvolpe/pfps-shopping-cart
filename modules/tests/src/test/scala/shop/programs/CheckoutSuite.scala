@@ -2,7 +2,6 @@ package shop.programs
 
 import scala.util.control.NoStackTrace
 
-import shop.algebras._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
@@ -10,6 +9,7 @@ import shop.domain.order._
 import shop.domain.payment._
 import shop.generators._
 import shop.http.clients._
+import shop.services._
 
 import cats.effect._
 import cats.effect.concurrent.Ref
@@ -88,8 +88,8 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
 
     forall(gen) {
       case (uid, pid, oid, _, card) =>
-        new CheckoutProgram[IO](successfulClient(pid), emptyCart, successfulOrders(oid), retryPolicy)
-          .checkout(uid, card)
+        new Checkout[IO](successfulClient(pid), emptyCart, successfulOrders(oid), retryPolicy)
+          .process(uid, card)
           .attempt
           .map {
             case Left(EmptyCartError) => success
@@ -104,8 +104,8 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
         Ref.of[IO, List[String]](List.empty).flatMap { logs =>
           implicit val bg     = shop.background.NoOp
           implicit val logger = shop.logger.acc(logs)
-          new CheckoutProgram[IO](unreachableClient, successfulCart(ct), successfulOrders(oid), retryPolicy)
-            .checkout(uid, card)
+          new Checkout[IO](unreachableClient, successfulCart(ct), successfulOrders(oid), retryPolicy)
+            .process(uid, card)
             .attempt
             .flatMap {
               case Left(PaymentError(_)) =>
@@ -126,12 +126,12 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
           Ref.of[IO, Int](0).flatMap { ref =>
             implicit val bg     = shop.background.NoOp
             implicit val logger = shop.logger.acc(logs)
-            new CheckoutProgram[IO](
+            new Checkout[IO](
               recoveringClient(ref, pid),
               successfulCart(ct),
               successfulOrders(oid),
               retryPolicy
-            ).checkout(uid, card)
+            ).process(uid, card)
               .attempt
               .flatMap {
                 case Right(id) =>
@@ -152,8 +152,8 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
           Ref.of[IO, List[String]](List.empty).flatMap { logs =>
             implicit val bg     = shop.background.counter(ref)
             implicit val logger = shop.logger.acc(logs)
-            new CheckoutProgram[IO](successfulClient(pid), successfulCart(ct), failingOrders, retryPolicy)
-              .checkout(uid, card)
+            new Checkout[IO](successfulClient(pid), successfulCart(ct), failingOrders, retryPolicy)
+              .process(uid, card)
               .attempt
               .flatMap {
                 case Left(OrderError(_)) =>
@@ -181,8 +181,8 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
 
     forall(gen) {
       case (uid, pid, oid, ct, card) =>
-        new CheckoutProgram[IO](successfulClient(pid), failingCart(ct), successfulOrders(oid), retryPolicy)
-          .checkout(uid, card)
+        new Checkout[IO](successfulClient(pid), failingCart(ct), successfulOrders(oid), retryPolicy)
+          .process(uid, card)
           .map(expect.same(oid, _))
     }
   }
@@ -192,8 +192,8 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
     import shop.logger.NoOp
     forall(gen) {
       case (uid, pid, oid, ct, card) =>
-        new CheckoutProgram[IO](successfulClient(pid), successfulCart(ct), successfulOrders(oid), retryPolicy)
-          .checkout(uid, card)
+        new Checkout[IO](successfulClient(pid), successfulCart(ct), successfulOrders(oid), retryPolicy)
+          .process(uid, card)
           .map(expect.same(oid, _))
     }
   }

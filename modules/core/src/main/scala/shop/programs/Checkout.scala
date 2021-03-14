@@ -2,7 +2,6 @@ package shop.programs
 
 import scala.concurrent.duration._
 
-import shop.algebras._
 import shop.domain.auth.UserId
 import shop.domain.cart._
 import shop.domain.checkout._
@@ -10,6 +9,7 @@ import shop.domain.order._
 import shop.domain.payment._
 import shop.effects._
 import shop.http.clients.PaymentClient
+import shop.services._
 
 import cats.effect.{ MonadThrow, Timer }
 import cats.syntax.all._
@@ -18,7 +18,7 @@ import retry.RetryDetails._
 import retry._
 import squants.market.Money
 
-final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
+final class Checkout[F[_]: Background: Logger: MonadThrow: Timer](
     paymentClient: PaymentClient[F],
     shoppingCart: ShoppingCart[F],
     orders: Orders[F],
@@ -66,7 +66,7 @@ final class CheckoutProgram[F[_]: Background: Logger: MonadThrow: Timer](
     bgAction(action)
   }
 
-  def checkout(userId: UserId, card: Card): F[OrderId] =
+  def process(userId: UserId, card: Card): F[OrderId] =
     shoppingCart
       .get(userId)
       .ensure(EmptyCartError)(_.items.nonEmpty)
