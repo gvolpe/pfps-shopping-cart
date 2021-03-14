@@ -1,5 +1,6 @@
-package shop.algebras
+package shop.services
 
+import shop.auth.Crypto
 import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.auth._

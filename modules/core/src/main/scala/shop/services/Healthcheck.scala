@@ -1,4 +1,4 @@
-package shop.algebras
+package shop.services
 
 import scala.concurrent.duration._
 

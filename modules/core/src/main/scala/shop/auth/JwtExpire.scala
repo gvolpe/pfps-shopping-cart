@@ -1,4 +1,4 @@
-package shop.algebras
+package shop.auth
 
 import shop.config.data.TokenExpiration
 import shop.effects.JwtClock

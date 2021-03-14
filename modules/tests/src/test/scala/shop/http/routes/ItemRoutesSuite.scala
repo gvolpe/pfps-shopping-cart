@@ -1,9 +1,9 @@
 package shop.http.routes
 
-import shop.algebras.Items
 import shop.domain.brand._
 import shop.domain.item._
 import shop.generators._
+import shop.services.Items
 
 import cats.effect._
 import cats.syntax.option._

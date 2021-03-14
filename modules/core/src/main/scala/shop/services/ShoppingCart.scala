@@ -1,4 +1,4 @@
-package shop.algebras
+package shop.services
 
 import shop.config.data.ShoppingCartExpiration
 import shop.domain.ID

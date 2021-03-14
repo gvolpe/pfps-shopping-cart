@@ -2,12 +2,12 @@ package shop.http.routes.secured
 
 import java.util.UUID
 
-import shop.algebras.ShoppingCart
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.generators._
 import shop.http.auth.users._
+import shop.services.ShoppingCart
 
 import cats.data.Kleisli
 import cats.effect._

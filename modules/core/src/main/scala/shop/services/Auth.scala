@@ -1,5 +1,6 @@
-package shop.algebras
+package shop.services
 
+import shop.auth.{ Crypto, Tokens }
 import shop.config.data.TokenExpiration
 import shop.domain._
 import shop.domain.auth._

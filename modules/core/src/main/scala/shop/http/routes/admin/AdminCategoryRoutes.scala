@@ -1,9 +1,9 @@
 package shop.http.routes.admin
 
-import shop.algebras.Categories
 import shop.domain.category._
 import shop.http.auth.users.AdminUser
 import shop.http.decoder._
+import shop.services.Categories
 
 import cats._
 import org.http4s._

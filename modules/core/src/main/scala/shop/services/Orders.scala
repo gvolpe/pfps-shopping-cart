@@ -1,4 +1,4 @@
-package shop.algebras
+package shop.services
 
 import shop.database.codecs._
 import shop.domain.ID

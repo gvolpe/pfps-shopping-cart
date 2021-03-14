@@ -1,9 +1,9 @@
 package shop.http.routes
 
-import shop.algebras.Auth
 import shop.domain._
 import shop.domain.auth._
 import shop.http.decoder._
+import shop.services.Auth
 
 import cats._
 import cats.syntax.all._

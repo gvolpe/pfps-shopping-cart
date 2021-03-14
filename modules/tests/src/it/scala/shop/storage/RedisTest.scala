@@ -1,9 +1,10 @@
-package shop.algebras
+package shop.storage
 
 import java.util.UUID
 
 import scala.concurrent.duration._
 
+import shop.auth._
 import shop.config.data._
 import shop.domain.ID
 import shop.domain.auth._
@@ -14,6 +15,7 @@ import shop.domain.item._
 import shop.generators._
 import shop.http.auth.users._
 import shop.logger.NoOp
+import shop.services._
 
 import cats.Eq
 import cats.effect._

@@ -1,7 +1,7 @@
 package shop.http.routes
 
-import shop.algebras.Items
 import shop.domain.brand._
+import shop.services.Items
 
 import cats._
 import org.http4s._

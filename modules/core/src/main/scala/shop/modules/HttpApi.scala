@@ -17,15 +17,15 @@ import org.http4s.server.middleware._
 
 object HttpApi {
   def make[F[_]: Concurrent: Timer](
-      algebras: Algebras[F],
+      services: Services[F],
       programs: Programs[F],
       security: Security[F]
   ): HttpApi[F] =
-    HttpApi[F](algebras, programs, security)
+    HttpApi[F](services, programs, security)
 }
 
 final case class HttpApi[F[_]: Concurrent: Timer] private (
-    algebras: Algebras[F],
+    services: Services[F],
     programs: Programs[F],
     security: Security[F]
 ) {
@@ -40,20 +40,20 @@ final case class HttpApi[F[_]: Concurrent: Timer] private (
   private val userRoutes   = new UserRoutes[F](security.auth).routes
 
   // Open routes
-  private val healthRoutes   = new HealthRoutes[F](algebras.healthCheck).routes
-  private val brandRoutes    = new BrandRoutes[F](algebras.brands).routes
-  private val categoryRoutes = new CategoryRoutes[F](algebras.categories).routes
-  private val itemRoutes     = new ItemRoutes[F](algebras.items).routes
+  private val healthRoutes   = new HealthRoutes[F](services.healthCheck).routes
+  private val brandRoutes    = new BrandRoutes[F](services.brands).routes
+  private val categoryRoutes = new CategoryRoutes[F](services.categories).routes
+  private val itemRoutes     = new ItemRoutes[F](services.items).routes
 
   // Secured routes
-  private val cartRoutes     = new CartRoutes[F](algebras.cart).routes(usersMiddleware)
+  private val cartRoutes     = new CartRoutes[F](services.cart).routes(usersMiddleware)
   private val checkoutRoutes = new CheckoutRoutes[F](programs.checkout).routes(usersMiddleware)
-  private val orderRoutes    = new OrderRoutes[F](algebras.orders).routes(usersMiddleware)
+  private val orderRoutes    = new OrderRoutes[F](services.orders).routes(usersMiddleware)
 
   // Admin routes
-  private val adminBrandRoutes    = new AdminBrandRoutes[F](algebras.brands).routes(adminMiddleware)
-  private val adminCategoryRoutes = new AdminCategoryRoutes[F](algebras.categories).routes(adminMiddleware)
-  private val adminItemRoutes     = new AdminItemRoutes[F](algebras.items).routes(adminMiddleware)
+  private val adminBrandRoutes    = new AdminBrandRoutes[F](services.brands).routes(adminMiddleware)
+  private val adminCategoryRoutes = new AdminCategoryRoutes[F](services.categories).routes(adminMiddleware)
+  private val adminItemRoutes     = new AdminItemRoutes[F](services.items).routes(adminMiddleware)
 
   // Combining all the http routes
   private val openRoutes: HttpRoutes[F] =

@@ -1,6 +1,6 @@
 package shop.http.routes
 
-import shop.algebras.HealthCheck
+import shop.services.HealthCheck
 
 import cats._
 import org.http4s._

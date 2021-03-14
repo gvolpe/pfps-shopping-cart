@@ -1,8 +1,8 @@
 package shop.http.routes
 
-import shop.algebras.Brands
 import shop.domain.brand._
 import shop.generators._
+import shop.services.Brands
 
 import cats.effect._
 import org.http4s.Method._

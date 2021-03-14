@@ -13,25 +13,25 @@ import retry.RetryPolicy
 object Programs {
   def make[F[_]: Background: Logger: Sync: Timer](
       checkoutConfig: CheckoutConfig,
-      algebras: Algebras[F],
+      services: Services[F],
       clients: HttpClients[F]
   ): Programs[F] =
-    Programs[F](checkoutConfig, algebras, clients)
+    Programs[F](checkoutConfig, services, clients)
 }
 
 final case class Programs[F[_]: Background: Logger: MonadThrow: Timer] private (
     cfg: CheckoutConfig,
-    algebras: Algebras[F],
+    services: Services[F],
     clients: HttpClients[F]
 ) {
 
   val retryPolicy: RetryPolicy[F] =
     limitRetries[F](cfg.retriesLimit.value) |+| exponentialBackoff[F](cfg.retriesBackoff)
 
-  val checkout: CheckoutProgram[F] = new CheckoutProgram[F](
+  val checkout: Checkout[F] = new Checkout[F](
     clients.payment,
-    algebras.cart,
-    algebras.orders,
+    services.cart,
+    services.orders,
     retryPolicy
   )
 

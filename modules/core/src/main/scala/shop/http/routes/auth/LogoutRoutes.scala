@@ -1,7 +1,7 @@
 package shop.http.routes
 
-import shop.algebras.Auth
 import shop.http.auth.users._
+import shop.services.Auth
 
 import cats._
 import cats.syntax.all._
