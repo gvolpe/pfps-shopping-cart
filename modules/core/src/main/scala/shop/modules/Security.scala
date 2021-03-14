@@ -10,6 +10,7 @@ import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.RedisCommands
+import eu.timepit.refined.auto._
 import io.circe.parser.{ decode => jsonDecode }
 import pdi.jwt._
 import skunk.Session
@@ -25,7 +26,7 @@ object Security {
       AdminJwtAuth(
         JwtAuth
           .hmac(
-            cfg.adminJwtConfig.secretKey.value.value.value,
+            cfg.adminJwtConfig.secretKey.secret.value,
             JwtAlgorithm.HS256
           )
       )
@@ -34,12 +35,12 @@ object Security {
       UserJwtAuth(
         JwtAuth
           .hmac(
-            cfg.tokenConfig.value.value.value,
+            cfg.tokenConfig.secret.value,
             JwtAlgorithm.HS256
           )
       )
 
-    val adminToken = JwtToken(cfg.adminJwtConfig.adminToken.value.value.value)
+    val adminToken = JwtToken(cfg.adminJwtConfig.adminToken.secret.value)
 
     for {
       adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)

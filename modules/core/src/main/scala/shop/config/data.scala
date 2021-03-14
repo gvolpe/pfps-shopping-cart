@@ -10,12 +10,12 @@ import io.estatico.newtype.macros.newtype
 
 object data {
 
-  @newtype case class AdminUserTokenConfig(value: Secret[NonEmptyString])
-  @newtype case class JwtSecretKeyConfig(value: Secret[NonEmptyString])
-  @newtype case class JwtClaimConfig(value: Secret[NonEmptyString])
+  @newtype case class AdminUserTokenConfig(secret: Secret[NonEmptyString])
+  @newtype case class JwtSecretKeyConfig(secret: Secret[NonEmptyString])
+  @newtype case class JwtClaimConfig(secret: Secret[NonEmptyString])
   @newtype case class TokenExpiration(value: FiniteDuration)
 
-  @newtype case class PasswordSalt(value: Secret[NonEmptyString])
+  @newtype case class PasswordSalt(secret: Secret[NonEmptyString])
 
   @newtype case class ShoppingCartExpiration(value: FiniteDuration)
 
