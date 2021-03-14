@@ -11,7 +11,6 @@ import shop.domain.brand._
 import shop.domain.cart._
 import shop.domain.category._
 import shop.domain.item._
-import shop.effects._
 import shop.generators._
 import shop.http.auth.users._
 import shop.logger.NoOp

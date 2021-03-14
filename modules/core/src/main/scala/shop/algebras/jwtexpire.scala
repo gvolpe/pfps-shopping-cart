@@ -1,6 +1,7 @@
-package shop.effects
+package shop.algebras
 
 import shop.config.data.TokenExpiration
+import shop.effects.JwtClock
 
 import cats.effect.Sync
 import cats.syntax.all._
