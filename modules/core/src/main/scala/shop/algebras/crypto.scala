@@ -18,14 +18,14 @@ trait Crypto {
 }
 
 object Crypto {
-  def make[F[_]: Sync](secret: PasswordSalt): F[Crypto] =
+  def make[F[_]: Sync](passwordSalt: PasswordSalt): F[Crypto] =
     Sync[F]
       .delay {
         val random  = new SecureRandom()
         val ivBytes = new Array[Byte](16)
         random.nextBytes(ivBytes)
         val iv       = new IvParameterSpec(ivBytes);
-        val salt     = secret.value.value.getBytes("UTF-8")
+        val salt     = passwordSalt.secret.value.getBytes("UTF-8")
         val keySpec  = new PBEKeySpec("password".toCharArray(), salt, 65536, 256)
         val factory  = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
         val bytes    = factory.generateSecret(keySpec).getEncoded
