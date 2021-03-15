@@ -35,33 +35,29 @@ final class Checkout[F[_]: Background: Logger: MonadThrow: Timer](
         Logger[F].error(s"Giving up on $action after ${g.totalRetries} retries.")
     }
 
-  private def processPayment(payment: Payment): F[PaymentId] = {
-    val action = retryingOnAllErrors[PaymentId](
-      policy = retryPolicy,
-      onError = logError("Payments")
-    )(paymentClient.process(payment))
+  private def retriable[A](action: String)(fa: F[A]): F[A] =
+    retryingOnAllErrors[A](retryPolicy, logError(action))(fa)
 
-    action.adaptError {
-      case e =>
-        PaymentError(Option(e.getMessage).getOrElse("Unknown"))
-    }
-  }
+  private def processPayment(payment: Payment): F[PaymentId] =
+    retriable("Payments")(paymentClient.process(payment))
+      .adaptError {
+        case e =>
+          PaymentError(Option(e.getMessage).getOrElse("Unknown"))
+      }
 
   private def createOrder(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): F[OrderId] = {
-    val action = retryingOnAllErrors[OrderId](
-      policy = retryPolicy,
-      onError = logError("Order")
-    )(orders.create(userId, paymentId, items, total))
-
-    def bgAction(fa: F[OrderId]): F[OrderId] =
-      fa.adaptError {
+    val action =
+      retriable("Order")(orders.create(userId, paymentId, items, total))
+        .adaptError {
           case e => OrderError(e.getMessage)
         }
-        .onError {
-          case _ =>
-            Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
-                Background[F].schedule(bgAction(fa), 1.hour)
-        }
+
+    def bgAction(fa: F[OrderId]): F[OrderId] =
+      fa.onError {
+        case _ =>
+          Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
+              Background[F].schedule(bgAction(fa), 1.hour)
+      }
 
     bgAction(action)
   }
