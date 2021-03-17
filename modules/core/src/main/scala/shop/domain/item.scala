@@ -4,6 +4,7 @@ import java.util.UUID
 
 import shop.domain.brand._
 import shop.domain.category._
+import shop.ext.http4s.{ keyDecoder, keyEncoder }
 import shop.optics.uuid
 
 import derevo.cats._
@@ -14,19 +15,14 @@ import eu.timepit.refined.auto._
 import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.refined._
-import io.circe.{ KeyDecoder, KeyEncoder }
 import io.estatico.newtype.macros.newtype
 import squants.market._
 
 object item {
 
-  @derive(decoder, encoder, eqv, show, uuid)
+  @derive(decoder, encoder, keyDecoder, keyEncoder, eqv, show, uuid)
   @newtype
   case class ItemId(value: UUID)
-  object ItemId {
-    implicit val keyEncoder: KeyEncoder[ItemId] = deriving
-    implicit val keyDecoder: KeyDecoder[ItemId] = deriving
-  }
 
   @derive(decoder, encoder, eqv, show)
   @newtype
