@@ -27,7 +27,7 @@ final class LoginRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
           .login(user.username.toDomain, user.password.toDomain)
           .flatMap(Ok(_))
           .recoverWith {
-            case InvalidPassword(_) => Forbidden()
+            case UserNotFound(_) | InvalidPassword(_) => Forbidden()
           }
       }
 
