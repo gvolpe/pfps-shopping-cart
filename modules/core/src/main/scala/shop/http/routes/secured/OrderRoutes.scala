@@ -1,7 +1,7 @@
 package shop.http.routes.secured
 
-import shop.domain.order._
 import shop.http.auth.users.CommonUser
+import shop.http.vars.OrderIdVar
 import shop.services.Orders
 
 import cats._
@@ -21,8 +21,8 @@ final class OrderRoutes[F[_]: Defer: Monad](
     case GET -> Root as user =>
       Ok(orders.findBy(user.value.id))
 
-    case GET -> Root / UUIDVar(orderId) as user =>
-      Ok(orders.get(user.value.id, OrderId(orderId)))
+    case GET -> Root / OrderIdVar(orderId) as user =>
+      Ok(orders.get(user.value.id, orderId))
 
   }
 
