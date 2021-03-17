@@ -10,6 +10,7 @@ import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import eu.timepit.refined.api.Refined
+import eu.timepit.refined.auto._
 import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.refined._
@@ -69,9 +70,9 @@ object item {
   ) {
     def toDomain: CreateItem =
       CreateItem(
-        ItemName(name.value.value),
-        ItemDescription(description.value.value),
-        USD(BigDecimal(price.value.value)),
+        ItemName(name.value),
+        ItemDescription(description.value),
+        USD(BigDecimal(price.value)),
         brandId,
         categoryId
       )
@@ -98,8 +99,8 @@ object item {
   ) {
     def toDomain: UpdateItem =
       UpdateItem(
-        ItemId(UUID.fromString(id.value.value)),
-        USD(BigDecimal(price.value.value))
+        ItemId(UUID.fromString(id.value)),
+        USD(BigDecimal(price.value))
       )
   }
 

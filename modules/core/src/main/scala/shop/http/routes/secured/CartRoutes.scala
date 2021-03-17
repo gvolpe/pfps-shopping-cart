@@ -1,8 +1,8 @@
 package shop.http.routes.secured
 
 import shop.domain.cart._
-import shop.domain.item._
 import shop.http.auth.users.CommonUser
+import shop.http.vars.ItemIdVar
 import shop.services.ShoppingCart
 
 import cats._
@@ -26,8 +26,8 @@ final class CartRoutes[F[_]: Defer: JsonDecoder: Monad](
 
     // Add items to the cart
     case ar @ POST -> Root as user =>
-      ar.req.asJsonDecode[Cart].flatMap { cart =>
-        cart.items
+      ar.req.asJsonDecode[Cart].flatMap {
+        _.items
           .map {
             case (id, quantity) =>
               shoppingCart.add(user.value.id, id, quantity)
@@ -43,8 +43,8 @@ final class CartRoutes[F[_]: Defer: JsonDecoder: Monad](
       }
 
     // Remove item from the cart
-    case DELETE -> Root / UUIDVar(uuid) as user =>
-      shoppingCart.removeItem(user.value.id, ItemId(uuid)) *> NoContent()
+    case DELETE -> Root / ItemIdVar(itemId) as user =>
+      shoppingCart.removeItem(user.value.id, itemId) *> NoContent()
   }
 
   def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
