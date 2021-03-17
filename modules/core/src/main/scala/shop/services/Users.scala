@@ -42,7 +42,7 @@ object Users {
               cmd
                 .execute(User(id, username) ~ crypto.encrypt(password))
                 .as(id)
-                .handleErrorWith {
+                .recoverWith {
                   case SqlState.UniqueViolation(_) =>
                     UserNameInUse(username).raiseError[F, UserId]
                 }
