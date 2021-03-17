@@ -7,6 +7,7 @@ import shop.optics.uuid
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
+import eu.timepit.refined.auto._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.Decoder
 import io.circe.refined._
@@ -23,7 +24,7 @@ object category {
 
   @newtype
   case class CategoryParam(value: NonEmptyString) {
-    def toDomain: CategoryName = CategoryName(value.value.toLowerCase.capitalize)
+    def toDomain: CategoryName = CategoryName(value.toLowerCase.capitalize)
   }
 
   object CategoryParam {

@@ -10,6 +10,7 @@ import shop.optics.uuid
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
+import eu.timepit.refined.auto._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe._
 import io.circe.refined._
@@ -44,13 +45,13 @@ object auth {
   @derive(decoder, encoder)
   @newtype
   case class UserNameParam(value: NonEmptyString) {
-    def toDomain: UserName = UserName(value.value.toLowerCase)
+    def toDomain: UserName = UserName(value.toLowerCase)
   }
 
   @derive(decoder, encoder)
   @newtype
   case class PasswordParam(value: NonEmptyString) {
-    def toDomain: Password = Password(value.value)
+    def toDomain: Password = Password(value)
   }
 
   @derive(decoder, encoder)

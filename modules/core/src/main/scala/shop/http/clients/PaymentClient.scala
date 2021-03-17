@@ -6,6 +6,7 @@ import shop.domain.payment._
 
 import cats.effect.BracketThrow
 import cats.syntax.all._
+import eu.timepit.refined.auto._
 import org.http4s.Method._
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
@@ -18,13 +19,13 @@ trait PaymentClient[F[_]] {
 }
 
 object PaymentClient {
-  def make[F[_]: JsonDecoder: BracketThrow](
+  def make[F[_]: BracketThrow: JsonDecoder](
       cfg: PaymentConfig,
       client: Client[F]
   ): PaymentClient[F] =
     new PaymentClient[F] with Http4sClientDsl[F] {
       def process(payment: Payment): F[PaymentId] =
-        Uri.fromString(cfg.uri.value.value + "/payments").liftTo[F].flatMap { uri =>
+        Uri.fromString(cfg.uri.value + "/payments").liftTo[F].flatMap { uri =>
           POST(payment, uri).flatMap { req =>
             client.run(req).use { r =>
               if (r.status == Status.Ok || r.status == Status.Conflict)
@@ -37,5 +38,4 @@ object PaymentClient {
           }
         }
     }
-
 }
