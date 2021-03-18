@@ -2,7 +2,7 @@ package shop.http.routes
 
 import shop.domain._
 import shop.domain.auth._
-import shop.http.decoder._
+import shop.ext.http4s.refined._
 import shop.services.Auth
 
 import cats._

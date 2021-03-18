@@ -3,8 +3,8 @@ package shop.http.routes.secured
 import shop.domain.cart._
 import shop.domain.checkout._
 import shop.domain.order._
+import shop.ext.http4s.refined._
 import shop.http.auth.users.CommonUser
-import shop.http.decoder._
 import shop.programs.Checkout
 
 import cats.Defer
