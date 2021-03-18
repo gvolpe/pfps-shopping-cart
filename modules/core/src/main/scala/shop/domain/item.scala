@@ -4,7 +4,7 @@ import java.util.UUID
 
 import shop.domain.brand._
 import shop.domain.category._
-import shop.ext.http4s.{ keyDecoder, keyEncoder }
+import shop.ext.circe.{ keyDecoder, keyEncoder }
 import shop.optics.uuid
 
 import derevo.cats._

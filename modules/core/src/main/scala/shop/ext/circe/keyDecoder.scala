@@ -1,4 +1,4 @@
-package shop.ext.http4s
+package shop.ext.circe
 
 import derevo.{ Derivation, NewTypeDerivation }
 import io.circe.KeyDecoder
