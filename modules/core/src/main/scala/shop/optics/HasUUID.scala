@@ -8,7 +8,7 @@ import cats.Functor
 import cats.syntax.all._
 import derevo._
 
-trait HasUUID[A] {
+trait IsUUID[A] {
   def _UUID: Iso[A, UUID]
 
   def uuid[F[_]: Functor: GenUUID]: F[A] =
@@ -18,16 +18,16 @@ trait HasUUID[A] {
     GenUUID[F].read(str).map(_UUID.reverse)
 }
 
-object HasUUID {
-  def apply[A: HasUUID]: HasUUID[A] = implicitly
+object IsUUID {
+  def apply[A: IsUUID]: IsUUID[A] = implicitly
 
-  implicit val identityUUID: HasUUID[UUID] = new HasUUID[UUID] {
+  implicit val identityUUID: IsUUID[UUID] = new IsUUID[UUID] {
     val _UUID = Iso[UUID, UUID](identity, identity)
   }
 }
 
-object uuid extends Derivation[HasUUID] with NewTypeDerivation[HasUUID] {
-  def instance[A]: HasUUID[A] = new HasUUID[A] {
+object uuid extends Derivation[IsUUID] with NewTypeDerivation[IsUUID] {
+  def instance[A]: IsUUID[A] = new IsUUID[A] {
     val _UUID: Iso[A, UUID] = Iso[A, UUID](_.asInstanceOf[UUID], _.asInstanceOf[A])
   }
 }
