@@ -11,7 +11,7 @@ import derevo._
 trait IsUUID[A] {
   def _UUID: Iso[A, UUID]
 
-  def uuid[F[_]: Functor: GenUUID]: F[A] =
+  def make[F[_]: Functor: GenUUID]: F[A] =
     GenUUID[F].make.map(_UUID.reverse)
 
   def read[F[_]: Functor: GenUUID](str: String): F[A] =
