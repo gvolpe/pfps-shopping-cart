@@ -22,7 +22,7 @@ Here's an overview of the different components that make this application.
 
 ## Authentication Data
 
-For didactic purposes, this is made available to the readers but in a real application *THIS SHOULD NEVER BE MADE PUBLIC*.
+For didactic purposes, this is made available but in a real application **THIS SHOULD NEVER BE MADE PUBLIC**.
 
 For Admin users, the following environment variables are needed:
 
@@ -38,7 +38,7 @@ For password encryption:
 
 - `SC_PASSWORD_SALT`
 
-See the [docker-compose.yml](app/docker-compose.yml) file for more details.
+See the files [docker-compose.yml](app/docker-compose.yml) or [.env](./.env) for more details.
 
 ### Generate your own auth data
 
