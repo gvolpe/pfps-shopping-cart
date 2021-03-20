@@ -10,7 +10,7 @@ let
           version = "1.4.7";
 
           src = builtins.fetchurl {
-            url = "https://github.com/sbt/sbt/releases/download/v${version}/sbt-${version}.tgz";
+            url    = "https://github.com/sbt/sbt/releases/download/v${version}/sbt-${version}.tgz";
             sha256 = "1zal5lxbips276v63sp4443nzbzkcv6h13d8nlb1mhm383z5k9y2";
           };
 
@@ -32,9 +32,14 @@ let
 in
 pkgs.mkShell {
   name = "scala-shell";
+
   buildInputs = [
     pkgs.coursier
     pkgs.${jdk}
     pkgs.sbt
   ];
+
+  shellHook = ''
+    set -o allexport; source .env; set +o allexport
+  '';
 }

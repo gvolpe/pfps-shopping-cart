@@ -6,6 +6,7 @@ import cats.effect._
 import cats.syntax.all._
 import eu.timepit.refined.auto._
 import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.server.Server
 import org.http4s.server.defaults.Banner
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -13,6 +14,9 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 object Main extends IOApp {
 
   implicit val logger = Slf4jLogger.getLogger[IO]
+
+  def showEmberBanner(s: Server[IO]): IO[Unit] =
+    Logger[IO].info(s"\n${Banner.mkString("\n")}\nHTTP Server started at ${s.address}")
 
   override def run(args: List[String]): IO[ExitCode] =
     config.load[IO].flatMap { cfg =>
@@ -37,10 +41,7 @@ object Main extends IOApp {
                 .withHttpApp(api.httpApp)
                 .build
           }
-          .use { server =>
-            Logger[IO].info(s"\n${Banner.mkString("\n")}\nHTTP Server started at ${server.address}") >>
-              IO.never.as(ExitCode.Success)
-          }
+          .use(showEmberBanner(_) >> IO.never.as(ExitCode.Success))
     }
 
 }

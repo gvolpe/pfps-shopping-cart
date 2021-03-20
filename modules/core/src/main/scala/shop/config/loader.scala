@@ -44,8 +44,9 @@ object load {
       env("SC_JWT_CLAIM").as[NonEmptyString].secret,
       env("SC_ACCESS_TOKEN_SECRET_KEY").as[NonEmptyString].secret,
       env("SC_ADMIN_USER_TOKEN").as[NonEmptyString].secret,
-      env("SC_PASSWORD_SALT").as[NonEmptyString].secret
-    ).parMapN { (secretKey, claimStr, tokenKey, adminToken, salt) =>
+      env("SC_PASSWORD_SALT").as[NonEmptyString].secret,
+      env("SC_POSTGRES_PASSWORD").as[NonEmptyString].secret
+    ).parMapN { (secretKey, claimStr, tokenKey, adminToken, salt, postgresPassword) =>
       AppConfig(
         AdminJwtConfig(
           JwtSecretKeyConfig(secretKey),
@@ -69,6 +70,7 @@ object load {
           host = "localhost",
           port = 5432,
           user = "postgres",
+          password = postgresPassword,
           database = "store",
           max = 10
         ),

@@ -1,17 +1,18 @@
 PostgreSQL:
   restart: always
-  image: postgres:12.0-alpine
+  image: postgres:13.0-alpine
   ports:
     - "5432:5432"
   environment:
     - DEBUG=false
     - POSTGRES_DB=store
+    - POSTGRES_PASSWORD=my-password
   volumes:
     - ./modules/core/src/main/resources/tables.sql:/docker-entrypoint-initdb.d/init.sql
 
 Redis:
   restart: always
-  image: redis:5.0.0
+  image: redis:6.2.0
   ports:
     - "6379:6379"
   environment:

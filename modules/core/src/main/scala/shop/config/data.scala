@@ -48,6 +48,7 @@ object data {
       host: NonEmptyString,
       port: UserPortNumber,
       user: NonEmptyString,
+      password: Secret[NonEmptyString],
       database: NonEmptyString,
       max: PosInt
   )
