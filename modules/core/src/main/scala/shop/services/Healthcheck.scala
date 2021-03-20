@@ -19,7 +19,7 @@ trait HealthCheck[F[_]] {
 
 object HealthCheck {
   def make[F[_]: Concurrent: Parallel: Timer](
-      sessionPool: Resource[F, Session[F]],
+      pool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   ): HealthCheck[F] =
     new HealthCheck[F] {
@@ -35,7 +35,7 @@ object HealthCheck {
           .map(RedisStatus.apply)
 
       val postgresHealth: F[PostgresStatus] =
-        sessionPool
+        pool
           .use(_.execute(q))
           .map(_.nonEmpty)
           .timeout(1.second)

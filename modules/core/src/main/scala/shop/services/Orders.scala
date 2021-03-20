@@ -11,7 +11,6 @@ import cats.effect._
 import cats.syntax.all._
 import skunk._
 import skunk.circe.codec.all._
-import skunk.codec.all._
 import skunk.implicits._
 import squants.market._
 
@@ -28,20 +27,20 @@ trait Orders[F[_]] {
 
 object Orders {
   def make[F[_]: Sync](
-      sessionPool: Resource[F, Session[F]]
+      pool: Resource[F, Session[F]]
   ): Orders[F] =
     new Orders[F] {
       import OrderQueries._
 
       def get(userId: UserId, orderId: OrderId): F[Option[Order]] =
-        sessionPool.use { session =>
+        pool.use { session =>
           session.prepare(selectByUserIdAndOrderId).use { q =>
             q.option(userId ~ orderId)
           }
         }
 
       def findBy(userId: UserId): F[List[Order]] =
-        sessionPool.use { session =>
+        pool.use { session =>
           session.prepare(selectByUserId).use { q =>
             q.stream(userId, 1024).compile.toList
           }
@@ -53,7 +52,7 @@ object Orders {
           items: List[CartItem],
           total: Money
       ): F[OrderId] =
-        sessionPool.use { session =>
+        pool.use { session =>
           session.prepare(insertOrder).use { cmd =>
             ID.make[F, OrderId].flatMap { id =>
               val itMap = items.map(x => x.item.uuid -> x.quantity).toMap
@@ -69,13 +68,13 @@ object Orders {
 private object OrderQueries {
 
   val decoder: Decoder[Order] =
-    (orderId ~ uuid ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ numeric.map(USD.apply)).map {
+    (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ money).map {
       case o ~ _ ~ p ~ i ~ t =>
         Order(o, p, i, t)
     }
 
   val encoder: Encoder[UserId ~ Order] =
-    (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ numeric.contramap[Money](_.amount)).contramap {
+    (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ money).contramap {
       case id ~ o =>
         o.id ~ id ~ o.paymentId ~ o.items ~ o.total
     }

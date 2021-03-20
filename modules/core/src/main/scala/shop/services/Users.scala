@@ -19,14 +19,14 @@ trait Users[F[_]] {
 
 object Users {
   def make[F[_]: BracketThrow: GenUUID](
-      sessionPool: Resource[F, Session[F]],
+      pool: Resource[F, Session[F]],
       crypto: Crypto
   ): Users[F] =
     new Users[F] {
       import UserQueries._
 
       def find(username: UserName): F[Option[UserWithPassword]] =
-        sessionPool.use { session =>
+        pool.use { session =>
           session.prepare(selectUser).use { q =>
             q.option(username).map {
               case Some(u ~ p) => UserWithPassword(u.id, u.name, p).some
@@ -36,7 +36,7 @@ object Users {
         }
 
       def create(username: UserName, password: Password): F[UserId] =
-        sessionPool.use { session =>
+        pool.use { session =>
           session.prepare(insertUser).use { cmd =>
             ID.make[F, UserId].flatMap { id =>
               cmd

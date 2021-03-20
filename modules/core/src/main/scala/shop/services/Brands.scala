@@ -17,16 +17,16 @@ trait Brands[F[_]] {
 
 object Brands {
   def make[F[_]: BracketThrow: GenUUID](
-      sessionPool: Resource[F, Session[F]]
+      pool: Resource[F, Session[F]]
   ): Brands[F] =
     new Brands[F] {
       import BrandQueries._
 
       def findAll: F[List[Brand]] =
-        sessionPool.use(_.execute(selectAll))
+        pool.use(_.execute(selectAll))
 
       def create(name: BrandName): F[Unit] =
-        sessionPool.use { session =>
+        pool.use { session =>
           session.prepare(insertBrand).use { cmd =>
             ID.make[F, BrandId].flatMap { id =>
               cmd.execute(Brand(id, name)).void

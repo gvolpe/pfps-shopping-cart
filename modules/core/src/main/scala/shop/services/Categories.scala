@@ -17,16 +17,16 @@ trait Categories[F[_]] {
 
 object Categories {
   def make[F[_]: BracketThrow: GenUUID](
-      sessionPool: Resource[F, Session[F]]
+      pool: Resource[F, Session[F]]
   ): Categories[F] =
     new Categories[F] {
       import CategoryQueries._
 
       def findAll: F[List[Category]] =
-        sessionPool.use(_.execute(selectAll))
+        pool.use(_.execute(selectAll))
 
       def create(name: CategoryName): F[Unit] =
-        sessionPool.use { session =>
+        pool.use { session =>
           session.prepare(insertCategory).use { cmd =>
             ID.make[F, CategoryId].flatMap { id =>
               cmd.execute(Category(id, name)).void
