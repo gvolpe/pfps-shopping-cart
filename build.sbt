@@ -29,6 +29,8 @@ lazy val tests = (project in file("modules/tests"))
           CompilerPlugin.kindProjector,
           CompilerPlugin.betterMonadicFor,
           CompilerPlugin.semanticDB,
+          Libraries.catsLaws,
+          Libraries.discipline,
           Libraries.weaverCats,
           Libraries.weaverScalaCheck
         )

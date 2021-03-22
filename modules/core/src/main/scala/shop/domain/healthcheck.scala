@@ -14,7 +14,7 @@ object healthcheck {
     case object Unreachable extends Status
 
     val _Bool: Iso[Boolean, Status] =
-      Iso(b => if (b) Okay else Unreachable, {
+      Iso(if (_) Okay else Unreachable, {
         case Okay        => true
         case Unreachable => false
       })

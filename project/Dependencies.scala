@@ -10,6 +10,7 @@ object Dependencies {
     val circe         = "0.13.0"
     val ciris         = "1.2.1"
     val derevo        = "0.12.2"
+    val discipline    = "1.1.4"
     val javaxCrypto   = "1.0.1"
     val fs2           = "2.5.3"
     val http4s        = "0.21.20"
@@ -81,6 +82,8 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % V.logback
 
     // Test
+    val catsLaws         = "org.typelevel"       %% "cats-laws"         % V.cats
+    val discipline       = "org.typelevel"       %% "discipline-core"   % V.discipline
     val weaverCats       = "com.disneystreaming" %% "weaver-cats"       % V.weaver
     val weaverScalaCheck = "com.disneystreaming" %% "weaver-scalacheck" % V.weaver
 
