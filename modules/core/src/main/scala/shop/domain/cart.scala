@@ -5,6 +5,7 @@ import java.util.UUID
 import scala.util.control.NoStackTrace
 
 import shop.domain.auth.UserId
+import shop.domain.item._
 import shop.optics.uuid
 
 import derevo.cats._
@@ -12,9 +13,7 @@ import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import io.circe.{ Decoder, Encoder }
 import io.estatico.newtype.macros.newtype
-import squants.market.Money
-
-import item._
+import squants.market.{ Money, USD }
 
 object cart {
   @derive(decoder, encoder, eqv, show)
@@ -37,7 +36,9 @@ object cart {
   case class CartId(value: UUID)
 
   @derive(decoder, encoder, eqv, show)
-  case class CartItem(item: Item, quantity: Quantity)
+  case class CartItem(item: Item, quantity: Quantity) {
+    def subTotal: Money = USD(item.price.value * quantity.value)
+  }
 
   @derive(decoder, encoder, eqv, show)
   case class CartTotal(items: List[CartItem], total: Money)

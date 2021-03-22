@@ -3,6 +3,7 @@ package shop.domain
 import java.util.UUID
 
 import shop.domain.brand._
+import shop.domain.cart.{ CartItem, Quantity }
 import shop.domain.category._
 import shop.ext.circe.{ keyDecoder, keyEncoder }
 import shop.optics.uuid
@@ -40,7 +41,10 @@ object item {
       price: Money,
       brand: Brand,
       category: Category
-  )
+  ) {
+    def cart(q: Quantity): CartItem =
+      CartItem(this, q)
+  }
 
   // ----- Create item ------
 
