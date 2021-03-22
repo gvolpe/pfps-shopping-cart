@@ -31,7 +31,8 @@ object HealthCheck {
         redis.ping
           .map(_.nonEmpty)
           .timeout(1.second)
-          .orElse(false.pure[F])
+          .map(Status._Bool.get)
+          .orElse(Status.Unreachable.pure[F].widen)
           .map(RedisStatus.apply)
 
       val postgresHealth: F[PostgresStatus] =
@@ -39,7 +40,8 @@ object HealthCheck {
           .use(_.execute(q))
           .map(_.nonEmpty)
           .timeout(1.second)
-          .orElse(false.pure[F])
+          .map(Status._Bool.get)
+          .orElse(Status.Unreachable.pure[F].widen)
           .map(PostgresStatus.apply)
 
       val status: F[AppStatus] =

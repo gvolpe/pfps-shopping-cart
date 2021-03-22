@@ -1,7 +1,7 @@
 package shop.services
 
 import shop.config.data.ShoppingCartExpiration
-import shop.domain.ID
+import shop.domain._
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
@@ -10,7 +10,6 @@ import shop.effects._
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.redis4cats.RedisCommands
-import squants.market._
 
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit]
@@ -28,49 +27,43 @@ object ShoppingCart {
   ): ShoppingCart[F] =
     new ShoppingCart[F] {
 
-      private def calcTotal(items: List[CartItem]): Money =
-        USD(
-          items
-            .foldMap { i =>
-              i.item.price.value * i.quantity.value
-            }
-        )
-
       def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
-        redis.hSet(userId.value.toString, itemId.value.toString, quantity.value.toString) *>
-            redis.expire(userId.value.toString, exp.value).void
+        redis.hSet(userId.value.show, itemId.value.show, quantity.value.show) *>
+            redis.expire(userId.value.show, exp.value).void
 
       def get(userId: UserId): F[CartTotal] =
-        redis.hGetAll(userId.value.toString).flatMap { it =>
-          it.toList
+        redis.hGetAll(userId.value.show).flatMap {
+          _.toList
             .traverseFilter {
               case (k, v) =>
                 for {
                   id <- ID.read[F, ItemId](k)
                   qt <- ApThrow[F].catchNonFatal(Quantity(v.toInt))
-                  rs <- items.findById(id).map(_.map(i => CartItem(i, qt)))
+                  rs <- items.findById(id).map(_.map(_.cart(qt)))
                 } yield rs
             }
-            .map(items => CartTotal(items, calcTotal(items)))
+            .map { items =>
+              CartTotal(items, items.foldMap(_.subTotal))
+            }
         }
 
       def delete(userId: UserId): F[Unit] =
-        redis.del(userId.value.toString).void
+        redis.del(userId.value.show).void
 
       def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
-        redis.hDel(userId.value.toString, itemId.value.toString).void
+        redis.hDel(userId.value.show, itemId.value.show).void
 
       def update(userId: UserId, cart: Cart): F[Unit] =
-        redis.hGetAll(userId.value.toString).flatMap {
+        redis.hGetAll(userId.value.show).flatMap {
           _.toList.traverse_ {
             case (k, _) =>
               ID.read[F, ItemId](k).flatMap { id =>
                 cart.items.get(id).traverse_ { q =>
-                  redis.hSet(userId.value.toString, k, q.value.toString)
+                  redis.hSet(userId.value.show, k, q.value.show)
                 }
               }
           } *>
-            redis.expire(userId.value.toString, exp.value).void
+            redis.expire(userId.value.show, exp.value).void
         }
     }
 }
