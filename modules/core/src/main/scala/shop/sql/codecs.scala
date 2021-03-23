@@ -1,4 +1,4 @@
-package shop.database
+package shop.sql
 
 import shop.domain.auth._
 import shop.domain.brand._

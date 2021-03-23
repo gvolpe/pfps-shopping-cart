@@ -1,11 +1,11 @@
 package shop.services
 
-import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
+import shop.sql.codecs._
 
 import cats.effect._
 import cats.syntax.all._
@@ -30,7 +30,7 @@ object Orders {
       pool: Resource[F, Session[F]]
   ): Orders[F] =
     new Orders[F] {
-      import OrderQueries._
+      import OrderSQL._
 
       def get(userId: UserId, orderId: OrderId): F[Option[Order]] =
         pool.use { session =>
@@ -65,7 +65,7 @@ object Orders {
 
 }
 
-private object OrderQueries {
+private object OrderSQL {
 
   val decoder: Decoder[Order] =
     (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ money).map {

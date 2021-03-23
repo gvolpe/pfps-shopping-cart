@@ -1,9 +1,9 @@
 package shop.services
 
-import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.brand._
 import shop.effects.GenUUID
+import shop.sql.codecs._
 
 import cats.effect._
 import cats.syntax.all._
@@ -20,7 +20,7 @@ object Brands {
       pool: Resource[F, Session[F]]
   ): Brands[F] =
     new Brands[F] {
-      import BrandQueries._
+      import BrandSQL._
 
       def findAll: F[List[Brand]] =
         pool.use(_.execute(selectAll))
@@ -36,7 +36,7 @@ object Brands {
     }
 }
 
-private object BrandQueries {
+private object BrandSQL {
 
   val codec: Codec[Brand] =
     (brandId ~ brandName).imap {
