@@ -1,10 +1,10 @@
 package shop.services
 
-import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.brand.{ Brand, _ }
 import shop.domain.category._
 import shop.domain.item._
+import shop.sql.codecs._
 
 import cats.effect._
 import cats.syntax.all._
@@ -24,7 +24,7 @@ object Items {
       pool: Resource[F, Session[F]]
   ): Items[F] =
     new Items[F] {
-      import ItemQueries._
+      import ItemSQL._
 
       // In the book we'll see how to retrieve results in chunks using stream or cursor
       def findAll: F[List[Item]] =
@@ -63,7 +63,7 @@ object Items {
 
 }
 
-private object ItemQueries {
+private object ItemSQL {
 
   val decoder: Decoder[Item] =
     (itemId ~ itemName ~ itemDesc ~ money ~ brandId ~ brandName ~ categoryId ~ categoryName).map {

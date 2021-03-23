@@ -1,11 +1,11 @@
 package shop.services
 
 import shop.auth.Crypto
-import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.auth._
 import shop.effects.GenUUID
 import shop.http.auth.users._
+import shop.sql.codecs._
 
 import cats.effect._
 import cats.syntax.all._
@@ -23,7 +23,7 @@ object Users {
       crypto: Crypto
   ): Users[F] =
     new Users[F] {
-      import UserQueries._
+      import UserSQL._
 
       def find(username: UserName): F[Option[UserWithPassword]] =
         pool.use { session =>
@@ -53,7 +53,7 @@ object Users {
 
 }
 
-private object UserQueries {
+private object UserSQL {
 
   val codec: Codec[User ~ EncryptedPassword] =
     (userId ~ userName ~ encPassword).imap {

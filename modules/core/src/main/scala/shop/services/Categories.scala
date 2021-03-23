@@ -1,9 +1,9 @@
 package shop.services
 
-import shop.database.codecs._
 import shop.domain.ID
 import shop.domain.category._
 import shop.effects.GenUUID
+import shop.sql.codecs._
 
 import cats.effect._
 import cats.syntax.all._
@@ -20,7 +20,7 @@ object Categories {
       pool: Resource[F, Session[F]]
   ): Categories[F] =
     new Categories[F] {
-      import CategoryQueries._
+      import CategorySQL._
 
       def findAll: F[List[Category]] =
         pool.use(_.execute(selectAll))
@@ -36,7 +36,7 @@ object Categories {
     }
 }
 
-private object CategoryQueries {
+private object CategorySQL {
 
   val codec: Codec[Category] =
     (categoryId ~ categoryName).imap {
