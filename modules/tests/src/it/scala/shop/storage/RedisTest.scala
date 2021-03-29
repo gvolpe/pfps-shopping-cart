@@ -19,7 +19,6 @@ import shop.services._
 
 import cats.Eq
 import cats.effect._
-import cats.effect.concurrent.Ref
 import cats.implicits._
 import ciris.Secret
 import dev.profunktor.auth.jwt._
@@ -31,6 +30,7 @@ import eu.timepit.refined.types.string.NonEmptyString
 import pdi.jwt._
 import weaver.IOSuite
 import weaver.scalacheck.{ CheckConfig, Checkers }
+import cats.effect.Ref
 
 object RedisTest extends IOSuite with Checkers {
 

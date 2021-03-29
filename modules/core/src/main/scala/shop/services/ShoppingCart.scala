@@ -10,6 +10,7 @@ import shop.effects._
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.redis4cats.RedisCommands
+import cats.MonadThrow
 
 trait ShoppingCart[F[_]] {
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit]

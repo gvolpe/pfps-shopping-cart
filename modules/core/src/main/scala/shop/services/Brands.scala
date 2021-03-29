@@ -9,6 +9,7 @@ import cats.effect._
 import cats.syntax.all._
 import skunk._
 import skunk.implicits._
+import cats.effect.MonadCancelThrow
 
 trait Brands[F[_]] {
   def findAll: F[List[Brand]]
@@ -16,7 +17,7 @@ trait Brands[F[_]] {
 }
 
 object Brands {
-  def make[F[_]: BracketThrow: GenUUID](
+  def make[F[_]: MonadCancelThrow: GenUUID](
       pool: Resource[F, Session[F]]
   ): Brands[F] =
     new Brands[F] {

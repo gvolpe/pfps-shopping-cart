@@ -7,9 +7,10 @@ import cats.Parallel
 import cats.effect._
 import dev.profunktor.redis4cats.RedisCommands
 import skunk._
+import cats.effect.Temporal
 
 object Services {
-  def make[F[_]: Concurrent: Parallel: Timer](
+  def make[F[_]: Concurrent: Parallel: Temporal](
       redis: RedisCommands[F, String, String],
       sessionPool: Resource[F, Session[F]],
       cartExpiration: ShoppingCartExpiration

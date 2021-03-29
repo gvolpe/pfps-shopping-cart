@@ -4,7 +4,6 @@ import shop.config.data.PaymentConfig
 import shop.domain.order._
 import shop.domain.payment._
 
-import cats.effect.BracketThrow
 import cats.syntax.all._
 import eu.timepit.refined.auto._
 import org.http4s.Method._
@@ -13,13 +12,14 @@ import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe._
 import org.http4s.client._
 import org.http4s.client.dsl.Http4sClientDsl
+import cats.effect.MonadCancelThrow
 
 trait PaymentClient[F[_]] {
   def process(payment: Payment): F[PaymentId]
 }
 
 object PaymentClient {
-  def make[F[_]: BracketThrow: JsonDecoder](
+  def make[F[_]: MonadCancelThrow: JsonDecoder](
       cfg: PaymentConfig,
       client: Client[F]
   ): PaymentClient[F] =

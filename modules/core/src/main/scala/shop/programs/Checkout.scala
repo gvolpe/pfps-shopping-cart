@@ -11,14 +11,15 @@ import shop.effects._
 import shop.http.clients.PaymentClient
 import shop.services._
 
-import cats.effect.{ MonadThrow, Timer }
 import cats.syntax.all._
 import org.typelevel.log4cats.Logger
 import retry.RetryDetails._
 import retry._
 import squants.market.Money
+import cats.MonadThrow
+import cats.effect.Temporal
 
-final class Checkout[F[_]: Background: Logger: MonadThrow: Timer](
+final class Checkout[F[_]: Background: Logger: MonadThrow: Temporal](
     paymentClient: PaymentClient[F],
     shoppingCart: ShoppingCart[F],
     orders: Orders[F],

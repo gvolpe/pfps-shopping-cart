@@ -9,6 +9,7 @@ import cats.effect._
 import cats.syntax.all._
 import skunk._
 import skunk.implicits._
+import cats.effect.MonadCancelThrow
 
 trait Categories[F[_]] {
   def findAll: F[List[Category]]
@@ -16,7 +17,7 @@ trait Categories[F[_]] {
 }
 
 object Categories {
-  def make[F[_]: BracketThrow: GenUUID](
+  def make[F[_]: MonadCancelThrow: GenUUID](
       pool: Resource[F, Session[F]]
   ): Categories[F] =
     new Categories[F] {

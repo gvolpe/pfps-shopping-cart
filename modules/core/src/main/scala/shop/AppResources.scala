@@ -14,6 +14,7 @@ import org.typelevel.log4cats.Logger
 import skunk._
 import skunk.codec.text._
 import skunk.implicits._
+import cats.effect.Temporal
 
 final case class AppResources[F[_]](
     client: Client[F],
@@ -23,7 +24,7 @@ final case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: Concurrent: ContextShift: Logger: Timer](
+  def make[F[_]: Concurrent: ContextShift: Logger: Temporal](
       cfg: AppConfig
   ): Resource[F, AppResources[F]] = {
 

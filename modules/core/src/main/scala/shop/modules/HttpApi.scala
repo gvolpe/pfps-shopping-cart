@@ -14,9 +14,10 @@ import org.http4s._
 import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.middleware._
+import cats.effect.Temporal
 
 object HttpApi {
-  def make[F[_]: Concurrent: Timer](
+  def make[F[_]: Concurrent: Temporal](
       services: Services[F],
       programs: Programs[F],
       security: Security[F]
@@ -24,7 +25,7 @@ object HttpApi {
     HttpApi[F](services, programs, security)
 }
 
-final case class HttpApi[F[_]: Concurrent: Timer] private (
+final case class HttpApi[F[_]: Concurrent: Temporal] private (
     services: Services[F],
     programs: Programs[F],
     security: Security[F]
