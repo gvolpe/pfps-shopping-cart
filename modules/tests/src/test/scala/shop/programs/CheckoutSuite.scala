@@ -17,7 +17,7 @@ import cats.implicits._
 import retry.RetryPolicies._
 import retry.RetryPolicy
 import squants.market._
-import weaver._
+import weaver.SimpleIOSuite
 import weaver.scalacheck.Checkers
 
 object CheckoutSuite extends SimpleIOSuite with Checkers {
@@ -110,8 +110,10 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
             .flatMap {
               case Left(PaymentError(_)) =>
                 logs.get.map {
-                  case (x :: xs) => expect.all(x.contains("Giving up"), xs.size === MaxRetries)
-                  case _         => failure(s"Expected $MaxRetries retries")
+                  case (x :: xs) =>
+                    // Expectations forms a multiplicative Monoid but we can also use syntax like `expect.all`
+                    expect(x.contains("Giving up")) |+| expect.same(xs.size, MaxRetries)
+                  case _ => failure(s"Expected $MaxRetries retries")
                 }
               case _ => IO.pure(failure("Expected payment error"))
             }

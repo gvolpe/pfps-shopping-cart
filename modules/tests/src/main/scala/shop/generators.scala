@@ -1,5 +1,7 @@
 package shop
 
+import java.util.UUID
+
 import shop.domain.auth._
 import shop.domain.brand._
 import shop.domain.cart._
@@ -21,44 +23,50 @@ object generators {
         Gen.buildableOfN[String, Char](n, Gen.alphaChar)
       }
 
+  def nesGen[A](f: String => A): Gen[A] =
+    nonEmptyStringGen.map(f)
+
+  def idGen[A](f: UUID => A): Gen[A] =
+    Gen.uuid.map(f)
+
   val brandIdGen: Gen[BrandId] =
-    Gen.uuid.map(BrandId(_))
+    idGen(BrandId.apply)
 
   val brandNameGen: Gen[BrandName] =
-    nonEmptyStringGen.map(BrandName(_))
+    nesGen(BrandName.apply)
 
   val categoryIdGen: Gen[CategoryId] =
-    Gen.uuid.map(CategoryId(_))
+    idGen(CategoryId.apply)
 
   val categoryNameGen: Gen[CategoryName] =
-    nonEmptyStringGen.map(CategoryName(_))
+    nesGen(CategoryName.apply)
 
   val itemIdGen: Gen[ItemId] =
-    Gen.uuid.map(ItemId(_))
+    idGen(ItemId.apply)
 
   val itemNameGen: Gen[ItemName] =
-    nonEmptyStringGen.map(ItemName(_))
+    nesGen(ItemName.apply)
 
   val itemDescriptionGen: Gen[ItemDescription] =
-    nonEmptyStringGen.map(ItemDescription(_))
+    nesGen(ItemDescription.apply)
 
   val userIdGen: Gen[UserId] =
-    Gen.uuid.map(UserId(_))
+    idGen(UserId.apply)
 
   val orderIdGen: Gen[OrderId] =
-    Gen.uuid.map(OrderId(_))
+    idGen(OrderId.apply)
 
   val paymentIdGen: Gen[PaymentId] =
-    Gen.uuid.map(PaymentId(_))
+    idGen(PaymentId.apply)
 
   val userNameGen: Gen[UserName] =
-    nonEmptyStringGen.map(UserName(_))
+    nesGen(UserName.apply)
 
   val passwordGen: Gen[Password] =
-    nonEmptyStringGen.map(Password(_))
+    nesGen(Password.apply)
 
   val quantityGen: Gen[Quantity] =
-    Gen.posNum[Int].map(Quantity(_))
+    Gen.posNum[Int].map(Quantity.apply)
 
   val moneyGen: Gen[Money] =
     Gen.posNum[Long].map(n => USD(BigDecimal(n)))
