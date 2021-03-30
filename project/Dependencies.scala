@@ -3,8 +3,8 @@ import sbt._
 object Dependencies {
 
   object V {
-    val cats          = "2.5.0"
-    val catsEffect    = "2.4.0"
+    val cats          = "2.4.2"
+    val catsEffect    = "2.4.1"
     val catsMeowMtl   = "0.4.1"
     val catsRetry     = "2.1.0"
     val circe         = "0.13.0"
@@ -17,7 +17,7 @@ object Dependencies {
     val http4sJwtAuth = "0.0.6"
     val log4cats      = "1.2.1"
     val newtype       = "0.4.4"
-    val refined       = "0.9.21"
+    val refined       = "0.9.22"
     val redis4cats    = "0.12.0"
     val skunk         = "0.0.24"
     val squants       = "1.7.4"
