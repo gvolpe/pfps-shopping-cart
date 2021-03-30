@@ -7,7 +7,6 @@ import shop.domain.auth._
 import shop.http.auth.users._
 
 import cats._
-import cats.effect.Sync
 import cats.syntax.all._
 import dev.profunktor.auth.jwt.JwtToken
 import dev.profunktor.redis4cats.RedisCommands
@@ -55,7 +54,7 @@ object UsersAuth {
 }
 
 object Auth {
-  def make[F[_]: Sync](
+  def make[F[_]: MonadThrow](
       tokenExpiration: TokenExpiration,
       tokens: Tokens[F],
       users: Users[F],

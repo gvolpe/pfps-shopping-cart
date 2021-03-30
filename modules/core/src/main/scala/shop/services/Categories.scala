@@ -16,7 +16,7 @@ trait Categories[F[_]] {
 }
 
 object Categories {
-  def make[F[_]: BracketThrow: GenUUID](
+  def make[F[_]: GenUUID: MonadCancelThrow](
       pool: Resource[F, Session[F]]
   ): Categories[F] =
     new Categories[F] {

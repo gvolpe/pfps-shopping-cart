@@ -4,6 +4,7 @@ import shop.domain.ID
 import shop.domain.brand.{ Brand, _ }
 import shop.domain.category._
 import shop.domain.item._
+import shop.effects.GenUUID
 import shop.sql.codecs._
 
 import cats.effect._
@@ -20,7 +21,7 @@ trait Items[F[_]] {
 }
 
 object Items {
-  def make[F[_]: Sync](
+  def make[F[_]: Concurrent: GenUUID](
       pool: Resource[F, Session[F]]
   ): Items[F] =
     new Items[F] {

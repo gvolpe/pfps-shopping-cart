@@ -19,7 +19,7 @@ import shop.services._
 
 import cats.Eq
 import cats.effect._
-import cats.effect.concurrent.Ref
+import cats.effect.kernel.Ref
 import cats.implicits._
 import ciris.Secret
 import dev.profunktor.auth.jwt._

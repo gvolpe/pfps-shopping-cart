@@ -3,7 +3,6 @@ package shop
 import shop.modules._
 
 import cats.effect._
-import cats.syntax.all._
 import eu.timepit.refined.auto._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Server
@@ -15,7 +14,7 @@ object Main extends IOApp {
 
   implicit val logger = Slf4jLogger.getLogger[IO]
 
-  def showEmberBanner(s: Server[IO]): IO[Unit] =
+  def showEmberBanner(s: Server): IO[Unit] =
     Logger[IO].info(s"\n${Banner.mkString("\n")}\nHTTP Server started at ${s.address}")
 
   override def run(args: List[String]): IO[ExitCode] =

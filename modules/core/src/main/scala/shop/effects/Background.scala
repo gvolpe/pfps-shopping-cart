@@ -11,11 +11,11 @@ trait Background[F[_]] {
 }
 
 object Background {
-  def apply[F[_]](implicit ev: Background[F]): Background[F] = ev
+  def apply[F[_]: Background]: Background[F] = implicitly
 
-  implicit def concurrentBackground[F[_]: Concurrent: Timer]: Background[F] =
+  implicit def concurrentBackground[F[_]: Temporal]: Background[F] =
     new Background[F] {
       def schedule[A](fa: F[A], duration: FiniteDuration): F[Unit] =
-        (Timer[F].sleep(duration) *> fa).start.void
+        (Temporal[F].sleep(duration) *> fa).start.void
     }
 }

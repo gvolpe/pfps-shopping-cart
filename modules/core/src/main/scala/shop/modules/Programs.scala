@@ -4,14 +4,14 @@ import shop.config.data.CheckoutConfig
 import shop.effects._
 import shop.programs._
 
-import cats.effect._
+import cats.effect.Temporal
 import cats.syntax.all._
 import org.typelevel.log4cats.Logger
 import retry.RetryPolicies._
 import retry.RetryPolicy
 
 object Programs {
-  def make[F[_]: Background: Logger: Sync: Timer](
+  def make[F[_]: Background: Logger: Temporal](
       checkoutConfig: CheckoutConfig,
       services: Services[F],
       clients: HttpClients[F]
@@ -19,7 +19,7 @@ object Programs {
     Programs[F](checkoutConfig, services, clients)
 }
 
-final case class Programs[F[_]: Background: Logger: MonadThrow: Timer] private (
+final case class Programs[F[_]: Background: Logger: Temporal] private (
     cfg: CheckoutConfig,
     services: Services[F],
     clients: HttpClients[F]

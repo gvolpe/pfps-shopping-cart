@@ -2,13 +2,13 @@ package shop.http.routes
 
 import shop.services.Categories
 
-import cats._
+import cats.Monad
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
-final class CategoryRoutes[F[_]: Defer: Monad](
+final class CategoryRoutes[F[_]: Monad](
     categories: Categories[F]
 ) extends Http4sDsl[F] {
 

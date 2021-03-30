@@ -12,7 +12,7 @@ import shop.http.clients._
 import shop.services._
 
 import cats.effect._
-import cats.effect.concurrent.Ref
+import cats.effect.kernel.Ref
 import cats.implicits._
 import retry.RetryPolicies._
 import retry.RetryPolicy

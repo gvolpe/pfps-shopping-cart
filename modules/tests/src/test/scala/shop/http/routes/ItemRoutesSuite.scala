@@ -29,10 +29,9 @@ object ItemRoutesSuite extends HttpSuite {
 
   test("GET items succeeds") {
     forall(Gen.listOf(itemGen)) { it =>
-      GET(Uri.uri("/items")).flatMap { req =>
-        val routes = new ItemRoutes[IO](dataItems(it)).routes
-        assertHttp(routes, req)(Status.Ok, it)
-      }
+      val req    = GET(Uri.uri("/items"))
+      val routes = new ItemRoutes[IO](dataItems(it)).routes
+      assertHttp(routes, req)(Status.Ok, it)
     }
   }
 
@@ -44,19 +43,17 @@ object ItemRoutesSuite extends HttpSuite {
 
     forall(gen) {
       case (it, b) =>
-        GET(Uri.uri("/items").withQueryParam(b.name.value)).flatMap { req =>
-          val routes = new ItemRoutes[IO](dataItems(it)).routes
-          assertHttp(routes, req)(Status.Ok, it)
-        }
+        val req    = GET(Uri.uri("/items").withQueryParam(b.name.value))
+        val routes = new ItemRoutes[IO](dataItems(it)).routes
+        assertHttp(routes, req)(Status.Ok, it)
     }
   }
 
   test("GET items fails") {
     forall(Gen.listOf(itemGen)) { it =>
-      GET(Uri.uri("/items")).flatMap { req =>
-        val routes = new ItemRoutes[IO](failingItems(it)).routes
-        assertHttpFailure(routes, req)
-      }
+      val req    = GET(Uri.uri("/items"))
+      val routes = new ItemRoutes[IO](failingItems(it)).routes
+      assertHttpFailure(routes, req)
     }
   }
 

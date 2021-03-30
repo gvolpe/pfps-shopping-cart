@@ -7,8 +7,8 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.effects._
 
-import cats.effect._
 import cats.syntax.all._
+import cats.{ ApplicativeThrow, MonadThrow }
 import dev.profunktor.redis4cats.RedisCommands
 
 trait ShoppingCart[F[_]] {
@@ -38,7 +38,7 @@ object ShoppingCart {
               case (k, v) =>
                 for {
                   id <- ID.read[F, ItemId](k)
-                  qt <- ApThrow[F].catchNonFatal(Quantity(v.toInt))
+                  qt <- ApplicativeThrow[F].catchNonFatal(Quantity(v.toInt))
                   rs <- items.findById(id).map(_.map(_.cart(qt)))
                 } yield rs
             }

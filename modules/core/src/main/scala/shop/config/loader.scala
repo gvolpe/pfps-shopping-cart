@@ -1,13 +1,15 @@
 package shop.config
 
 import scala.concurrent.duration._
+import scala.util.control.NoStackTrace
 
 import shop.config.data._
 
-import cats.effect._
+import cats.effect.Async
 import cats.syntax.all._
 import ciris._
 import ciris.refined._
+import com.comcast.ip4s.{ Host, Port }
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
@@ -17,28 +19,38 @@ import environments.AppEnvironment._
 
 object load {
 
-  // Ciris promotes configuration as code
-  def apply[F[_]: Async: ContextShift]: F[AppConfig] =
-    env("SC_APP_ENV")
-      .as[AppEnvironment]
-      .flatMap {
-        case Test =>
-          default(
-            redisUri = RedisURI("redis://localhost"),
-            paymentUri = PaymentURI("https://payments.free.beeceptor.com")
-          )
-        case Prod =>
-          default(
-            redisUri = RedisURI("redis://10.123.154.176"),
-            paymentUri = PaymentURI("https://payments.net/api")
-          )
-      }
-      .load[F]
+  case object InvalidHostOrPort extends NoStackTrace
 
-  private def default(
+  // Ciris promotes configuration as code
+  def apply[F[_]: Async]: F[AppConfig] =
+    (Host.fromString("0.0.0.0"), Port.fromInt(8080)).tupled
+      .liftTo[F](InvalidHostOrPort)
+      .map { case (h, p) => default[F](h, p) _ }
+      .flatMap { mkCfg =>
+        env("SC_APP_ENV")
+          .as[AppEnvironment]
+          .flatMap {
+            case Test =>
+              mkCfg(
+                RedisURI("redis://localhost"),
+                PaymentURI("https://payments.free.beeceptor.com")
+              )
+            case Prod =>
+              mkCfg(
+                RedisURI("redis://10.123.154.176"),
+                PaymentURI("https://payments.net/api")
+              )
+          }
+          .load[F]
+      }
+
+  private def default[F[_]](
+      host: Host,
+      port: Port
+  )(
       redisUri: RedisURI,
       paymentUri: PaymentURI
-  ): ConfigValue[AppConfig] =
+  ): ConfigValue[F, AppConfig] =
     (
       env("SC_JWT_SECRET_KEY").as[NonEmptyString].secret,
       env("SC_JWT_CLAIM").as[NonEmptyString].secret,
@@ -75,10 +87,7 @@ object load {
           max = 10
         ),
         RedisConfig(redisUri),
-        HttpServerConfig(
-          host = "0.0.0.0",
-          port = 8080
-        )
+        HttpServerConfig(host, port)
       )
     }
 

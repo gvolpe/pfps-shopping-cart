@@ -25,19 +25,17 @@ object BrandRoutesSuite extends HttpSuite {
 
   test("GET brands succeeds") {
     forall(Gen.listOf(brandGen)) { b =>
-      GET(Uri.uri("/brands")).flatMap { req =>
-        val routes = new BrandRoutes[IO](dataBrands(b)).routes
-        assertHttp(routes, req)(Status.Ok, b)
-      }
+      val req    = GET(Uri.uri("/brands"))
+      val routes = new BrandRoutes[IO](dataBrands(b)).routes
+      assertHttp(routes, req)(Status.Ok, b)
     }
   }
 
   test("GET brands fails") {
     forall(Gen.listOf(brandGen)) { b =>
-      GET(Uri.uri("/brands")).flatMap { req =>
-        val routes = new BrandRoutes[IO](failingBrands(b)).routes
-        assertHttpFailure(routes, req)
-      }
+      val req    = GET(Uri.uri("/brands"))
+      val routes = new BrandRoutes[IO](failingBrands(b)).routes
+      assertHttpFailure(routes, req)
     }
   }
 

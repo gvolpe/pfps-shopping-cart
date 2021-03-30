@@ -3,10 +3,12 @@ package shop
 import shop.config.data._
 
 import cats.effect._
+import cats.effect.std.Console
 import cats.syntax.all._
 import dev.profunktor.redis4cats.log4cats._
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import eu.timepit.refined.auto._
+import fs2.io.net.Network
 import natchez.Trace.Implicits.noop
 import org.http4s.client.Client
 import org.http4s.ember.client.EmberClientBuilder
@@ -23,7 +25,7 @@ final case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: Concurrent: ContextShift: Logger: Timer](
+  def make[F[_]: Async: Console: Logger: Network](
       cfg: AppConfig
   ): Resource[F, AppResources[F]] = {
 
