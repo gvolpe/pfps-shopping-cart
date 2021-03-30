@@ -12,13 +12,14 @@ import dev.profunktor.redis4cats.RedisCommands
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._
+import cats.effect.Temporal
 
 trait HealthCheck[F[_]] {
   def status: F[AppStatus]
 }
 
 object HealthCheck {
-  def make[F[_]: Concurrent: Parallel: Timer](
+  def make[F[_]: Concurrent: Parallel: Temporal](
       pool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   ): HealthCheck[F] =

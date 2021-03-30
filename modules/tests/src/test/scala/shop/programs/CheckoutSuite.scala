@@ -12,13 +12,13 @@ import shop.http.clients._
 import shop.services._
 
 import cats.effect._
-import cats.effect.concurrent.Ref
 import cats.implicits._
 import retry.RetryPolicies._
 import retry.RetryPolicy
 import squants.market._
 import weaver.SimpleIOSuite
 import weaver.scalacheck.Checkers
+import cats.effect.Ref
 
 object CheckoutSuite extends SimpleIOSuite with Checkers {
 

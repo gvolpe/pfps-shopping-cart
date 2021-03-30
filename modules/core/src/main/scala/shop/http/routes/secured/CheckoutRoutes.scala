@@ -8,13 +8,13 @@ import shop.http.auth.users.CommonUser
 import shop.programs.Checkout
 
 import cats.Defer
-import cats.effect.MonadThrow
 import cats.syntax.all._
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
+import cats.MonadThrow
 
 final class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     checkout: Checkout[F]

@@ -6,9 +6,10 @@ import shop.http.clients.PaymentClient
 import cats.effect._
 import org.http4s.circe.JsonDecoder
 import org.http4s.client.Client
+import cats.effect.MonadCancelThrow
 
 object HttpClients {
-  def make[F[_]: BracketThrow: JsonDecoder](
+  def make[F[_]: MonadCancelThrow: JsonDecoder](
       cfg: PaymentConfig,
       client: Client[F]
   ): HttpClients[F] =

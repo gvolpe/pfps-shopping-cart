@@ -11,6 +11,7 @@ import cats.effect._
 import cats.syntax.all._
 import skunk._
 import skunk.implicits._
+import cats.effect.MonadCancelThrow
 
 trait Users[F[_]] {
   def find(username: UserName): F[Option[UserWithPassword]]
@@ -18,7 +19,7 @@ trait Users[F[_]] {
 }
 
 object Users {
-  def make[F[_]: BracketThrow: GenUUID](
+  def make[F[_]: MonadCancelThrow: GenUUID](
       pool: Resource[F, Session[F]],
       crypto: Crypto
   ): Users[F] =

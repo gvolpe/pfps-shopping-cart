@@ -5,7 +5,7 @@ import scala.concurrent.duration.FiniteDuration
 import shop.effects.Background
 
 import cats.effect._
-import cats.effect.concurrent.Ref
+import cats.effect.Ref
 
 object background {
 

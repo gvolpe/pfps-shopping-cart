@@ -1,6 +1,5 @@
 package shop.ext.http4s
 
-import cats.effect.MonadThrow
 import cats.syntax.all._
 import eu.timepit.refined._
 import eu.timepit.refined.api.{ Refined, Validate }
@@ -8,6 +7,7 @@ import io.circe.Decoder
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
+import cats.MonadThrow
 
 object refined {
 
