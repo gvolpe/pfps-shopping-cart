@@ -4,7 +4,6 @@ import scala.concurrent.duration._
 
 import shop.domain.healthcheck._
 
-import cats.Parallel
 import cats.effect._
 import cats.effect.implicits._
 import cats.syntax.all._
@@ -18,7 +17,7 @@ trait HealthCheck[F[_]] {
 }
 
 object HealthCheck {
-  def make[F[_]: Concurrent: Parallel: Timer](
+  def make[F[_]: Temporal](
       pool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   ): HealthCheck[F] =

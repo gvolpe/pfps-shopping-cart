@@ -3,10 +3,10 @@ package shop.modules
 import shop.auth._
 import shop.config.data._
 import shop.domain.auth._
-import shop.effects._
 import shop.http.auth.users._
 import shop.services._
 
+import cats.ApplicativeThrow
 import cats.effect._
 import cats.syntax.all._
 import dev.profunktor.auth.jwt._
@@ -45,7 +45,7 @@ object Security {
 
     for {
       adminClaim <- jwtDecode[F](adminToken, adminJwtAuth.value)
-      content <- ApThrow[F].fromEither(jsonDecode[ClaimContent](adminClaim.content))
+      content <- ApplicativeThrow[F].fromEither(jsonDecode[ClaimContent](adminClaim.content))
       adminUser = AdminUser(User(UserId(content.uuid), UserName("admin")))
       tokens <- JwtExpire.make[F].map(Tokens.make[F](_, cfg.tokenConfig, cfg.tokenExpiration))
       crypto <- Crypto.make[F](cfg.passwordSalt)

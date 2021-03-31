@@ -5,6 +5,7 @@ import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
+import shop.effects.GenUUID
 import shop.sql.codecs._
 
 import cats.effect._
@@ -26,7 +27,7 @@ trait Orders[F[_]] {
 }
 
 object Orders {
-  def make[F[_]: Sync](
+  def make[F[_]: Concurrent: GenUUID](
       pool: Resource[F, Session[F]]
   ): Orders[F] =
     new Orders[F] {

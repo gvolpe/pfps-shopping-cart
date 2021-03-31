@@ -18,7 +18,7 @@ trait Users[F[_]] {
 }
 
 object Users {
-  def make[F[_]: BracketThrow: GenUUID](
+  def make[F[_]: GenUUID: MonadCancelThrow](
       pool: Resource[F, Session[F]],
       crypto: Crypto
   ): Users[F] =

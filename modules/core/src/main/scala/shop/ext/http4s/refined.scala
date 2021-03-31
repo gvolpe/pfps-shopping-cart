@@ -1,6 +1,6 @@
 package shop.ext.http4s
 
-import cats.effect.MonadThrow
+import cats.MonadThrow
 import cats.syntax.all._
 import eu.timepit.refined._
 import eu.timepit.refined.api.{ Refined, Validate }

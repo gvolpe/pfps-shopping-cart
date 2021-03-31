@@ -7,7 +7,7 @@ import shop.http.routes._
 import shop.http.routes.admin._
 import shop.http.routes.secured._
 
-import cats.effect._
+import cats.effect.Async
 import cats.syntax.all._
 import dev.profunktor.auth.JwtAuthMiddleware
 import org.http4s._
@@ -16,7 +16,7 @@ import org.http4s.server.Router
 import org.http4s.server.middleware._
 
 object HttpApi {
-  def make[F[_]: Concurrent: Timer](
+  def make[F[_]: Async](
       services: Services[F],
       programs: Programs[F],
       security: Security[F]
@@ -24,7 +24,7 @@ object HttpApi {
     HttpApi[F](services, programs, security)
 }
 
-final case class HttpApi[F[_]: Concurrent: Timer] private (
+final case class HttpApi[F[_]: Async] private (
     services: Services[F],
     programs: Programs[F],
     security: Security[F]

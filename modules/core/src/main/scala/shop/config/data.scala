@@ -3,6 +3,7 @@ package shop.config
 import scala.concurrent.duration._
 
 import ciris._
+import com.comcast.ip4s.{ Host, Port }
 import eu.timepit.refined.types.net.UserPortNumber
 import eu.timepit.refined.types.numeric.PosInt
 import eu.timepit.refined.types.string.NonEmptyString
@@ -60,8 +61,8 @@ object data {
   @newtype case class PaymentConfig(uri: PaymentURI)
 
   case class HttpServerConfig(
-      host: NonEmptyString,
-      port: UserPortNumber
+      host: Host,
+      port: Port
   )
 
   case class HttpClientConfig(

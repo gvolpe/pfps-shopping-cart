@@ -1,7 +1,7 @@
 package shop
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
+import cats.effect.kernel.Ref
 import org.typelevel.log4cats.Logger
 
 object logger {

@@ -3,12 +3,12 @@ package shop.modules
 import shop.config.data.PaymentConfig
 import shop.http.clients.PaymentClient
 
-import cats.effect._
+import cats.effect.MonadCancelThrow
 import org.http4s.circe.JsonDecoder
 import org.http4s.client.Client
 
 object HttpClients {
-  def make[F[_]: BracketThrow: JsonDecoder](
+  def make[F[_]: JsonDecoder: MonadCancelThrow](
       cfg: PaymentConfig,
       client: Client[F]
   ): HttpClients[F] =

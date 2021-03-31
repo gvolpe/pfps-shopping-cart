@@ -7,9 +7,8 @@ import shop.ext.http4s.refined._
 import shop.http.auth.users.CommonUser
 import shop.programs.Checkout
 
-import cats.Defer
-import cats.effect.MonadThrow
 import cats.syntax.all._
+import cats.{ Defer, MonadThrow }
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe.JsonDecoder

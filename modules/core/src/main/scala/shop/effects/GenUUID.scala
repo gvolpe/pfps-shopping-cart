@@ -2,6 +2,7 @@ package shop.effects
 
 import java.util.UUID
 
+import cats.ApplicativeThrow
 import cats.effect.Sync
 
 trait GenUUID[F[_]] {
@@ -17,6 +18,6 @@ object GenUUID {
       def make: F[UUID] = Sync[F].delay(UUID.randomUUID())
 
       def read(str: String): F[UUID] =
-        ApThrow[F].catchNonFatal(UUID.fromString(str))
+        ApplicativeThrow[F].catchNonFatal(UUID.fromString(str))
     }
 }

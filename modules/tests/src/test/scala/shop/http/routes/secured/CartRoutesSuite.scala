@@ -33,19 +33,17 @@ object CartRoutesSuite extends HttpSuite {
 
   test("GET shopping cart succeeds") {
     forall(cartTotalGen) { ct =>
-      GET(Uri.uri("/cart")).flatMap { req =>
-        val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
-        assertHttp(routes, req)(Status.Ok, ct)
-      }
+      val req    = GET(Uri.uri("/cart"))
+      val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
+      assertHttp(routes, req)(Status.Ok, ct)
     }
   }
 
   test("POST add item to shopping cart succeeds") {
     forall(cartGen) { c =>
-      POST(c, Uri.uri("/cart")).flatMap { req =>
-        val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
-        assertHttpStatus(routes, req)(Status.Created)
-      }
+      val req    = POST(c, Uri.uri("/cart"))
+      val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
+      assertHttpStatus(routes, req)(Status.Created)
     }
   }
 
