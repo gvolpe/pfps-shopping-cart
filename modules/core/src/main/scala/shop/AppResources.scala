@@ -2,10 +2,10 @@ package shop
 
 import shop.config.data._
 
-import cats.effect._
 import cats.effect.std.Console
+import cats.effect.{ Async, Concurrent, Resource }
 import cats.syntax.all._
-import dev.profunktor.redis4cats.log4cats._
+import dev.profunktor.redis4cats.effect.MkRedis
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import eu.timepit.refined.auto._
 import fs2.io.net.Network
@@ -25,7 +25,7 @@ final case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: Async: Console: Logger: Network](
+  def make[F[_]: Concurrent: Console: Logger: MkHttpClient: MkRedis: Network](
       cfg: AppConfig
   ): Resource[F, AppResources[F]] = {
 
@@ -62,19 +62,31 @@ object AppResources {
     def mkRedisResource(c: RedisConfig): Resource[F, RedisCommands[F, String, String]] =
       Redis[F].utf8(c.uri.value).evalTap(checkRedisConnection)
 
-    def mkHttpClient(c: HttpClientConfig): Resource[F, Client[F]] =
-      EmberClientBuilder
-        .default[F]
-        .withTimeout(c.timeout)
-        .withIdleTimeInPool(c.idleTimeInPool)
-        .build
-
     (
-      mkHttpClient(cfg.httpClientConfig),
+      MkHttpClient[F].newEmber(cfg.httpClientConfig),
       mkPostgreSqlResource(cfg.postgreSQL),
       mkRedisResource(cfg.redis)
     ).mapN(AppResources.apply[F])
 
   }
 
+}
+
+// Just to demonstrate how far we can take this pattern and void hard constraints like Async
+trait MkHttpClient[F[_]] {
+  def newEmber(c: HttpClientConfig): Resource[F, Client[F]]
+}
+
+object MkHttpClient {
+  def apply[F[_]: MkHttpClient]: MkHttpClient[F] = implicitly
+
+  implicit def forAsync[F[_]: Async]: MkHttpClient[F] =
+    new MkHttpClient[F] {
+      def newEmber(c: HttpClientConfig): Resource[F, Client[F]] =
+        EmberClientBuilder
+          .default[F]
+          .withTimeout(c.timeout)
+          .withIdleTimeInPool(c.idleTimeInPool)
+          .build
+    }
 }
