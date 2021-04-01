@@ -4,6 +4,7 @@ import shop.modules._
 
 import cats.effect._
 import cats.effect.std.Supervisor
+import dev.profunktor.redis4cats.log4cats._
 import eu.timepit.refined.auto._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Server
