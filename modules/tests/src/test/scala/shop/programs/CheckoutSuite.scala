@@ -103,15 +103,15 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
   test("unreachable payment client") {
     forall(gen) {
       case (uid, _, oid, ct, card) =>
-        Ref.of[IO, Option[GivingUp]](None).flatMap { giveups =>
-          implicit val rh = shop.retries.handler(giveups)
+        Ref.of[IO, Option[GivingUp]](None).flatMap { retries =>
+          implicit val rh = shop.retries.TestHandler.givingUp(retries)
 
           Checkout[IO](unreachableClient, successfulCart(ct), successfulOrders(oid), retryPolicy)
             .process(uid, card)
             .attempt
             .flatMap {
               case Left(PaymentError(_)) =>
-                giveups.get.map {
+                retries.get.map {
                   forEach(_)(g => expect.same(g.totalRetries, MaxRetries))
                 }
               case _ => IO.pure(failure("Expected payment error"))
@@ -123,8 +123,10 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
   test("failing payment client succeeds after one retry") {
     forall(gen) {
       case (uid, pid, oid, ct, card) =>
-        (Ref.of[IO, Option[GivingUp]](None), Ref.of[IO, Int](0)).tupled.flatMap {
-          case (giveups, cliRef) =>
+        (Ref.of[IO, List[WillDelayAndRetry]](List.empty), Ref.of[IO, Int](0)).tupled.flatMap {
+          case (retries, cliRef) =>
+            implicit val rh = shop.retries.TestHandler.recovering(retries)
+
             Checkout[IO](
               recoveringClient(cliRef, pid),
               successfulCart(ct),
@@ -134,9 +136,8 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
               .attempt
               .flatMap {
                 case Right(id) =>
-                  giveups.get.map { xs =>
-                    expect.same(id, oid) |+|
-                      forEach(xs)(g => expect.same(g.totalRetries, MaxRetries))
+                  retries.get.map { xs =>
+                    expect.same(id, oid) |+| expect.same(xs.size, 1)
                   }
                 case Left(_) => IO.pure(failure("Expected Payment Id"))
               }
@@ -148,15 +149,16 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
     forall(gen) {
       case (uid, pid, _, ct, card) =>
         (Ref.of[IO, Int](0), Ref.of[IO, Option[GivingUp]](None)).tupled.flatMap {
-          case (ref, giveups) =>
+          case (ref, retries) =>
             implicit val bg = shop.background.counter(ref)
+            implicit val rh = shop.retries.TestHandler.givingUp(retries)
 
             Checkout[IO](successfulClient(pid), successfulCart(ct), failingOrders, retryPolicy)
               .process(uid, card)
               .attempt
               .flatMap {
                 case Left(OrderError(_)) =>
-                  (ref.get, giveups.get).mapN {
+                  (ref.get, retries.get).mapN {
                     case (c, xs) =>
                       expect.same(c, 1) |+|
                           forEach(xs)(g => expect.same(g.totalRetries, MaxRetries))

@@ -7,8 +7,9 @@ import shop.domain.cart._
 import shop.domain.checkout._
 import shop.domain.order._
 import shop.domain.payment._
-import shop.effects._
+import shop.effects.Background
 import shop.http.clients.PaymentClient
+import shop.retries.{ Retriable, RetryHandler }
 import shop.services._
 
 import cats.effect.Temporal
@@ -24,11 +25,11 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
     retryPolicy: RetryPolicy[F]
 ) {
 
-  private def retriable[A](action: String)(fa: F[A]): F[A] =
-    retryingOnAllErrors[A](retryPolicy, RetryHandler[F].onError(action))(fa)
+  private def retry[A](retriable: Retriable)(fa: F[A]): F[A] =
+    retryingOnAllErrors[A](retryPolicy, RetryHandler[F].onError(retriable))(fa)
 
   private def processPayment(payment: Payment): F[PaymentId] =
-    retriable("Payments")(paymentClient.process(payment))
+    retry(Retriable.Payments)(paymentClient.process(payment))
       .adaptError {
         case e =>
           PaymentError(Option(e.getMessage).getOrElse("Unknown"))
@@ -36,7 +37,7 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
 
   private def createOrder(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): F[OrderId] = {
     val action =
-      retriable("Order")(orders.create(userId, paymentId, items, total))
+      retry(Retriable.Orders)(orders.create(userId, paymentId, items, total))
         .adaptError {
           case e => OrderError(e.getMessage)
         }
