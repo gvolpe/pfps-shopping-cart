@@ -27,7 +27,7 @@ object BrandRoutesSuite extends HttpSuite {
     forall(Gen.listOf(brandGen)) { b =>
       val req    = GET(Uri.uri("/brands"))
       val routes = new BrandRoutes[IO](dataBrands(b)).routes
-      assertHttp(routes, req)(Status.Ok, b)
+      expectHttpBodyAndStatus(routes, req)(b, Status.Ok)
     }
   }
 
@@ -35,7 +35,7 @@ object BrandRoutesSuite extends HttpSuite {
     forall(Gen.listOf(brandGen)) { b =>
       val req    = GET(Uri.uri("/brands"))
       val routes = new BrandRoutes[IO](failingBrands(b)).routes
-      assertHttpFailure(routes, req)
+      expectHttpFailure(routes, req)
     }
   }
 
