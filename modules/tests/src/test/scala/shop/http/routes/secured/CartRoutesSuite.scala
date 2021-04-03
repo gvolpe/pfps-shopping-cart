@@ -35,7 +35,7 @@ object CartRoutesSuite extends HttpSuite {
     forall(cartTotalGen) { ct =>
       val req    = GET(Uri.uri("/cart"))
       val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
-      assertHttp(routes, req)(Status.Ok, ct)
+      expectHttpBodyAndStatus(routes, req)(ct, Status.Ok)
     }
   }
 
@@ -43,7 +43,7 @@ object CartRoutesSuite extends HttpSuite {
     forall(cartGen) { c =>
       val req    = POST(c, Uri.uri("/cart"))
       val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
-      assertHttpStatus(routes, req)(Status.Created)
+      expectHttpStatus(routes, req)(Status.Created)
     }
   }
 

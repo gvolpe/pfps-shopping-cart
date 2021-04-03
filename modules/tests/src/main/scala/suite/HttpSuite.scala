@@ -8,32 +8,34 @@ import io.circe._
 import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe._
-import weaver.SimpleIOSuite
 import weaver.scalacheck.Checkers
+import weaver.{ Expectations, SimpleIOSuite }
 
 trait HttpSuite extends SimpleIOSuite with Checkers {
 
   case object DummyError extends NoStackTrace
 
-  def assertHttp[A: Encoder](routes: HttpRoutes[IO], req: Request[IO])(
-      expectedStatus: Status,
-      expectedBody: A
-  ) =
+  def expectHttpBodyAndStatus[A: Encoder](routes: HttpRoutes[IO], req: Request[IO])(
+      expectedBody: A,
+      expectedStatus: Status
+  ): IO[Expectations] =
     routes.run(req).value.flatMap {
       case Some(resp) =>
         resp.asJson.map { json =>
-          expect.all(resp.status === expectedStatus, json.dropNullValues === expectedBody.asJson.dropNullValues)
+          // Expectations form a multiplicative Monoid but we can also use other combinators like `expect.all`
+          expect.same(resp.status, expectedStatus) |+| expect
+            .same(json.dropNullValues, expectedBody.asJson.dropNullValues)
         }
       case None => IO.pure(failure("route nout found"))
     }
 
-  def assertHttpStatus(routes: HttpRoutes[IO], req: Request[IO])(expectedStatus: Status) =
+  def expectHttpStatus(routes: HttpRoutes[IO], req: Request[IO])(expectedStatus: Status): IO[Expectations] =
     routes.run(req).value.map {
       case Some(resp) => expect.same(resp.status, expectedStatus)
       case None       => failure("route nout found")
     }
 
-  def assertHttpFailure(routes: HttpRoutes[IO], req: Request[IO]) =
+  def expectHttpFailure(routes: HttpRoutes[IO], req: Request[IO]): IO[Expectations] =
     routes.run(req).value.attempt.map {
       case Left(_)  => success
       case Right(_) => failure("expected a failure")

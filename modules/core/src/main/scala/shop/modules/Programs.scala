@@ -28,7 +28,7 @@ final case class Programs[F[_]: Background: Logger: Temporal] private (
   val retryPolicy: RetryPolicy[F] =
     limitRetries[F](cfg.retriesLimit.value) |+| exponentialBackoff[F](cfg.retriesBackoff)
 
-  val checkout: Checkout[F] = new Checkout[F](
+  val checkout: Checkout[F] = Checkout[F](
     clients.payment,
     services.cart,
     services.orders,

@@ -43,6 +43,7 @@ object PostgresTest extends IOSuite with Checkers {
         host = "localhost",
         port = 5432,
         user = "postgres",
+        password = Some("my-password"),
         database = "store",
         max = 10
       )
