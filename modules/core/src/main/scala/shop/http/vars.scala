@@ -13,6 +13,6 @@ object vars {
       Either.catchNonFatal(f(UUID.fromString(str))).toOption
   }
 
-  object ItemIdVar extends UUIDVar(ItemId.apply)
+  object ItemIdVar  extends UUIDVar(ItemId.apply)
   object OrderIdVar extends UUIDVar(OrderId.apply)
 }

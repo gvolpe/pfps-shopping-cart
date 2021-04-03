@@ -60,10 +60,10 @@ object auth {
       password: PasswordParam
   )
 
-  case class UserNotFound(username: UserName) extends NoStackTrace
-  case class UserNameInUse(username: UserName) extends NoStackTrace
+  case class UserNotFound(username: UserName)    extends NoStackTrace
+  case class UserNameInUse(username: UserName)   extends NoStackTrace
   case class InvalidPassword(username: UserName) extends NoStackTrace
-  case object UnsupportedOperation extends NoStackTrace
+  case object UnsupportedOperation               extends NoStackTrace
 
   case object TokenNotFound extends NoStackTrace
 

@@ -10,7 +10,7 @@ import io.estatico.newtype.macros._
 object healthcheck {
   sealed trait Status
   object Status {
-    case object Okay extends Status
+    case object Okay        extends Status
     case object Unreachable extends Status
 
     val _Bool: Iso[Boolean, Status] =
