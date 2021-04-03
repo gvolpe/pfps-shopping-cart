@@ -10,16 +10,15 @@ trait DisciplineSuite extends SimpleIOSuite {
   override def maxParallelism = 1
 
   def checkAll(name: String, ruleSet: Laws#RuleSet): Unit =
-    ruleSet.all.properties.toList.foreach {
-      case (id, prop) =>
-        pureTest(s"$name: $id") {
-          expect {
-            Test.check(prop)(identity).status match {
-              case Passed | Proved(_) => true
-              case _                  => false
-            }
+    ruleSet.all.properties.toList.foreach { case (id, prop) =>
+      pureTest(s"$name: $id") {
+        expect {
+          Test.check(prop)(identity).status match {
+            case Passed | Proved(_) => true
+            case _                  => false
           }
         }
+      }
     }
 
 }

@@ -69,15 +69,13 @@ object Orders {
 private object OrderSQL {
 
   val decoder: Decoder[Order] =
-    (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ money).map {
-      case o ~ _ ~ p ~ i ~ t =>
-        Order(o, p, i, t)
+    (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ money).map { case o ~ _ ~ p ~ i ~ t =>
+      Order(o, p, i, t)
     }
 
   val encoder: Encoder[UserId ~ Order] =
-    (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ money).contramap {
-      case id ~ o =>
-        o.id ~ id ~ o.paymentId ~ o.items ~ o.total
+    (orderId ~ userId ~ paymentId ~ jsonb[Map[ItemId, Quantity]] ~ money).contramap { case id ~ o =>
+      o.id ~ id ~ o.paymentId ~ o.items ~ o.total
     }
 
   val selectByUserId: Query[UserId, Order] =

@@ -39,8 +39,8 @@ object Categories {
 private object CategorySQL {
 
   val codec: Codec[Category] =
-    (categoryId ~ categoryName).imap {
-      case i ~ n => Category(i, n)
+    (categoryId ~ categoryName).imap { case i ~ n =>
+      Category(i, n)
     }(c => c.uuid ~ c.name)
 
   val selectAll: Query[Void, Category] =

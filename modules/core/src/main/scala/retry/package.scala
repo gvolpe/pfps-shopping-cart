@@ -11,8 +11,7 @@ package object retry {
       onError: (Throwable, RetryDetails) => M[Unit],
       status: RetryStatus,
       attempt: Either[Throwable, A]
-  )(
-      implicit
+  )(implicit
       ME: MonadThrow[M],
       S: Temporal[M]
   ): M[Either[RetryStatus, A]] = attempt match {
@@ -43,8 +42,7 @@ package object retry {
         onError: (Throwable, RetryDetails) => M[Unit]
     )(
         action: => M[A]
-    )(
-        implicit
+    )(implicit
         ME: MonadThrow[M],
         S: Temporal[M]
     ): M[A] = ME.tailRecM(RetryStatus.NoRetriesYet) { status =>

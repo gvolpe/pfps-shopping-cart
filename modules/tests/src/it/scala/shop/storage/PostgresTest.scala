@@ -112,15 +112,14 @@ object PostgresTest extends IOSuite with Checkers {
       p <- passwordGen
     } yield u -> p
 
-    forall(gen) {
-      case (username, password) =>
-        for {
-          c <- Crypto.make[IO](salt)
-          u = Users.make[IO](pool, c)
-          d <- u.create(username, password)
-          x <- u.find(username)
-          z <- u.create(username, password).attempt
-        } yield expect.all(x.count(_.id === d) === 1, z.isLeft)
+    forall(gen) { case (username, password) =>
+      for {
+        c <- Crypto.make[IO](salt)
+        u = Users.make[IO](pool, c)
+        d <- u.create(username, password)
+        x <- u.find(username)
+        z <- u.create(username, password).attempt
+      } yield expect.all(x.count(_.id === d) === 1, z.isLeft)
     }
   }
 
@@ -128,23 +127,22 @@ object PostgresTest extends IOSuite with Checkers {
     val gen = for {
       oid <- orderIdGen
       pid <- paymentIdGen
-      un <- userNameGen
-      pw <- passwordGen
-      it <- Gen.listOf(cartItemGen)
-      pr <- moneyGen
+      un  <- userNameGen
+      pw  <- passwordGen
+      it  <- Gen.listOf(cartItemGen)
+      pr  <- moneyGen
     } yield (oid, pid, un, pw, it, pr)
 
-    forall(gen) {
-      case (oid, pid, un, pw, items, price) =>
-        val o = Orders.make[IO](pool)
-        for {
-          c <- Crypto.make[IO](salt)
-          u = Users.make[IO](pool, c)
-          d <- u.create(un, pw)
-          x <- o.findBy(d)
-          y <- o.get(d, oid)
-          i <- o.create(d, pid, items, price)
-        } yield expect.all(x.isEmpty, y.isEmpty, i.value.version === 4)
+    forall(gen) { case (oid, pid, un, pw, items, price) =>
+      val o = Orders.make[IO](pool)
+      for {
+        c <- Crypto.make[IO](salt)
+        u = Users.make[IO](pool, c)
+        d <- u.create(un, pw)
+        x <- o.findBy(d)
+        y <- o.get(d, oid)
+        i <- o.create(d, pid, items, price)
+      } yield expect.all(x.isEmpty, y.isEmpty, i.value.version === 4)
     }
   }
 

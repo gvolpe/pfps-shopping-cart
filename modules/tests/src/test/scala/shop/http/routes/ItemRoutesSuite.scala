@@ -41,11 +41,10 @@ object ItemRoutesSuite extends HttpSuite {
       b <- brandGen
     } yield i -> b
 
-    forall(gen) {
-      case (it, b) =>
-        val req    = GET(Uri.uri("/items").withQueryParam(b.name.value))
-        val routes = new ItemRoutes[IO](dataItems(it)).routes
-        expectHttpBodyAndStatus(routes, req)(it, Status.Ok)
+    forall(gen) { case (it, b) =>
+      val req    = GET(Uri.uri("/items").withQueryParam(b.name.value))
+      val routes = new ItemRoutes[IO](dataItems(it)).routes
+      expectHttpBodyAndStatus(routes, req)(it, Status.Ok)
     }
   }
 

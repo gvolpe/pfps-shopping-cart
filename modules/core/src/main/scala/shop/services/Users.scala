@@ -42,9 +42,8 @@ object Users {
               cmd
                 .execute(User(id, username) ~ crypto.encrypt(password))
                 .as(id)
-                .recoverWith {
-                  case SqlState.UniqueViolation(_) =>
-                    UserNameInUse(username).raiseError[F, UserId]
+                .recoverWith { case SqlState.UniqueViolation(_) =>
+                  UserNameInUse(username).raiseError[F, UserId]
                 }
             }
           }
@@ -56,12 +55,10 @@ object Users {
 private object UserSQL {
 
   val codec: Codec[User ~ EncryptedPassword] =
-    (userId ~ userName ~ encPassword).imap {
-      case i ~ n ~ p =>
-        User(i, n) ~ p
-    } {
-      case u ~ p =>
-        u.id ~ u.name ~ p
+    (userId ~ userName ~ encPassword).imap { case i ~ n ~ p =>
+      User(i, n) ~ p
+    } { case u ~ p =>
+      u.id ~ u.name ~ p
     }
 
   val selectUser: Query[UserName, User ~ EncryptedPassword] =

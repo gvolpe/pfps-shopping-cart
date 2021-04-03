@@ -34,14 +34,13 @@ object Main extends IOApp {
                 cfg.httpServerConfig -> api
               }
             }
-            .flatMap {
-              case (cfg, api) =>
-                EmberServerBuilder
-                  .default[IO]
-                  .withHost(cfg.host)
-                  .withPort(cfg.port)
-                  .withHttpApp(api.httpApp)
-                  .build
+            .flatMap { case (cfg, api) =>
+              EmberServerBuilder
+                .default[IO]
+                .withHost(cfg.host)
+                .withPort(cfg.port)
+                .withHttpApp(api.httpApp)
+                .build
             }
             .use(showEmberBanner(_) >> IO.never.as(ExitCode.Success))
         }

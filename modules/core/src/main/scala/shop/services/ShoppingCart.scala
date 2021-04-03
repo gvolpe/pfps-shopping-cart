@@ -34,13 +34,12 @@ object ShoppingCart {
       def get(userId: UserId): F[CartTotal] =
         redis.hGetAll(userId.value.show).flatMap {
           _.toList
-            .traverseFilter {
-              case (k, v) =>
-                for {
-                  id <- ID.read[F, ItemId](k)
-                  qt <- ApplicativeThrow[F].catchNonFatal(Quantity(v.toInt))
-                  rs <- items.findById(id).map(_.map(_.cart(qt)))
-                } yield rs
+            .traverseFilter { case (k, v) =>
+              for {
+                id <- ID.read[F, ItemId](k)
+                qt <- ApplicativeThrow[F].catchNonFatal(Quantity(v.toInt))
+                rs <- items.findById(id).map(_.map(_.cart(qt)))
+              } yield rs
             }
             .map { items =>
               CartTotal(items, items.foldMap(_.subTotal))
@@ -55,13 +54,12 @@ object ShoppingCart {
 
       def update(userId: UserId, cart: Cart): F[Unit] =
         redis.hGetAll(userId.value.show).flatMap {
-          _.toList.traverse_ {
-            case (k, _) =>
-              ID.read[F, ItemId](k).flatMap { id =>
-                cart.items.get(id).traverse_ { q =>
-                  redis.hSet(userId.value.show, k, q.value.show)
-                }
+          _.toList.traverse_ { case (k, _) =>
+            ID.read[F, ItemId](k).flatMap { id =>
+              cart.items.get(id).traverse_ { q =>
+                redis.hSet(userId.value.show, k, q.value.show)
               }
+            }
           } *>
             redis.expire(userId.value.show, exp.value).void
         }

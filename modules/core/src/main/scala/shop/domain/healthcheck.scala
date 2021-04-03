@@ -14,10 +14,13 @@ object healthcheck {
     case object Unreachable extends Status
 
     val _Bool: Iso[Boolean, Status] =
-      Iso(if (_) Okay else Unreachable, {
-        case Okay        => true
-        case Unreachable => false
-      })
+      Iso(
+        if (_) Okay else Unreachable,
+        {
+          case Okay        => true
+          case Unreachable => false
+        }
+      )
 
     implicit val jsonEncoder: Encoder[Status] =
       Encoder.forProduct1("status")(_.toString)

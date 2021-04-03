@@ -88,8 +88,7 @@ case class RetryPolicy[M[_]](
 object RetryPolicy {
   def lift[M[_]](
       f: RetryStatus => PolicyDecision
-  )(
-      implicit
+  )(implicit
       M: Applicative[M]
   ): RetryPolicy[M] =
     RetryPolicy[M](decideNextRetry = retryStatus => M.pure(f(retryStatus)))
@@ -109,8 +108,7 @@ object RetryPolicy {
   ): RetryPolicy[M] =
     withShow(rs => Applicative[M].pure(decideNextRetry(rs)), pretty)
 
-  implicit def boundedSemilatticeForRetryPolicy[M[_]](
-      implicit
+  implicit def boundedSemilatticeForRetryPolicy[M[_]](implicit
       M: Applicative[M]
   ): BoundedSemilattice[RetryPolicy[M]] =
     new BoundedSemilattice[RetryPolicy[M]] {

@@ -36,11 +36,11 @@ object Dependencies {
     def derevo(artifact: String): ModuleID = "tf.tofu"    %% s"derevo-$artifact" % V.derevo
     def http4s(artifact: String): ModuleID = "org.http4s" %% s"http4s-$artifact" % V.http4s
 
-    val cats        = "org.typelevel"    %% "cats-core"     % V.cats
-    val catsEffect  = "org.typelevel"    %% "cats-effect"   % V.catsEffect
-    val catsRetry   = "com.github.cb372" %% "cats-retry"    % V.catsRetry
-    val squants     = "org.typelevel"    %% "squants"       % V.squants
-    val fs2         = "co.fs2"           %% "fs2-core"      % V.fs2
+    val cats       = "org.typelevel"    %% "cats-core"   % V.cats
+    val catsEffect = "org.typelevel"    %% "cats-effect" % V.catsEffect
+    val catsRetry  = "com.github.cb372" %% "cats-retry"  % V.catsRetry
+    val squants    = "org.typelevel"    %% "squants"     % V.squants
+    val fs2        = "co.fs2"           %% "fs2-core"    % V.fs2
 
     val circeCore    = circe("core")
     val circeGeneric = circe("generic")

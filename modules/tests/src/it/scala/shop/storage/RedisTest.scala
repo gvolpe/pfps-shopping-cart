@@ -52,34 +52,33 @@ object RedisTest extends IOSuite with Checkers {
       uid <- userIdGen
       it1 <- itemGen
       it2 <- itemGen
-      q1 <- quantityGen
-      q2 <- quantityGen
+      q1  <- quantityGen
+      q2  <- quantityGen
     } yield (uid, it1, it2, q1, q2)
 
-    forall(gen) {
-      case (uid, it1, it2, q1, q2) =>
-        Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
-          val items = new TestItems(ref)
-          val c     = ShoppingCart.make[IO](items, cmd, Exp)
-          for {
-            x <- c.get(uid)
-            _ <- c.add(uid, it1.uuid, q1)
-            _ <- c.add(uid, it2.uuid, q1)
-            y <- c.get(uid)
-            _ <- c.removeItem(uid, it1.uuid)
-            z <- c.get(uid)
-            _ <- c.update(uid, Cart(Map(it2.uuid -> q2)))
-            w <- c.get(uid)
-            _ <- c.delete(uid)
-            v <- c.get(uid)
-          } yield expect.all(
-            x.items.isEmpty,
-            y.items.size === 2,
-            z.items.size === 1,
-            v.items.isEmpty,
-            w.items.headOption.fold(false)(_.quantity === q2)
-          )
-        }
+    forall(gen) { case (uid, it1, it2, q1, q2) =>
+      Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
+        val items = new TestItems(ref)
+        val c     = ShoppingCart.make[IO](items, cmd, Exp)
+        for {
+          x <- c.get(uid)
+          _ <- c.add(uid, it1.uuid, q1)
+          _ <- c.add(uid, it2.uuid, q1)
+          y <- c.get(uid)
+          _ <- c.removeItem(uid, it1.uuid)
+          z <- c.get(uid)
+          _ <- c.update(uid, Cart(Map(it2.uuid -> q2)))
+          w <- c.get(uid)
+          _ <- c.delete(uid)
+          v <- c.get(uid)
+        } yield expect.all(
+          x.items.isEmpty,
+          y.items.size === 2,
+          z.items.size === 1,
+          v.items.isEmpty,
+          w.items.headOption.fold(false)(_.quantity === q2)
+        )
+      }
     }
   }
 
@@ -89,29 +88,28 @@ object RedisTest extends IOSuite with Checkers {
     val gen = for {
       un1 <- userNameGen
       un2 <- userNameGen
-      pw <- passwordGen
+      pw  <- passwordGen
     } yield (un1, un2, pw)
 
-    forall(gen) {
-      case (un1, un2, pw) =>
-        for {
-          t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
-          c <- Crypto.make[IO](salt)
-          a = Auth.make(tokenExp, t, new TestUsers(un2), cmd, c)
-          u = UsersAuth.common[IO](cmd)
-          x <- u.findUser(JwtToken("invalid"))(jwtClaim)
-          y <- a.login(un1, pw).attempt // UserNotFound
-          j <- a.newUser(un1, pw)
-          e <- jwtDecode[IO](j, userJwtAuth.value).attempt
-          k <- a.login(un2, pw).attempt // InvalidPassword
-          w <- u.findUser(j)(jwtClaim)
-        } yield expect.all(
-          x.isEmpty,
-          y == Left(UserNotFound(un1)),
-          e.isRight,
-          k == Left(InvalidPassword(un2)),
-          w.fold(false)(_.value.name === un1)
-        )
+    forall(gen) { case (un1, un2, pw) =>
+      for {
+        t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
+        c <- Crypto.make[IO](salt)
+        a = Auth.make(tokenExp, t, new TestUsers(un2), cmd, c)
+        u = UsersAuth.common[IO](cmd)
+        x <- u.findUser(JwtToken("invalid"))(jwtClaim)
+        y <- a.login(un1, pw).attempt // UserNotFound
+        j <- a.newUser(un1, pw)
+        e <- jwtDecode[IO](j, userJwtAuth.value).attempt
+        k <- a.login(un2, pw).attempt // InvalidPassword
+        w <- u.findUser(j)(jwtClaim)
+      } yield expect.all(
+        x.isEmpty,
+        y == Left(UserNotFound(un1)),
+        e.isRight,
+        k == Left(InvalidPassword(un2)),
+        w.fold(false)(_.value.name === un1)
+      )
     }
   }
 

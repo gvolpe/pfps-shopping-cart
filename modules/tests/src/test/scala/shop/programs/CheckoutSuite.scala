@@ -88,108 +88,100 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
   import shop.logger.NoOp
 
   test("empty cart") {
-    forall(gen) {
-      case (uid, pid, oid, _, card) =>
-        Checkout[IO](successfulClient(pid), emptyCart, successfulOrders(oid), retryPolicy)
-          .process(uid, card)
-          .attempt
-          .map {
-            case Left(EmptyCartError) => success
-            case _                    => failure("Cart was not empty as expected")
-          }
+    forall(gen) { case (uid, pid, oid, _, card) =>
+      Checkout[IO](successfulClient(pid), emptyCart, successfulOrders(oid), retryPolicy)
+        .process(uid, card)
+        .attempt
+        .map {
+          case Left(EmptyCartError) => success
+          case _                    => failure("Cart was not empty as expected")
+        }
     }
   }
 
   test("unreachable payment client") {
-    forall(gen) {
-      case (uid, _, oid, ct, card) =>
-        Ref.of[IO, Option[GivingUp]](None).flatMap { retries =>
-          implicit val rh = shop.retries.TestHandler.givingUp(retries)
+    forall(gen) { case (uid, _, oid, ct, card) =>
+      Ref.of[IO, Option[GivingUp]](None).flatMap { retries =>
+        implicit val rh = shop.retries.TestHandler.givingUp(retries)
 
-          Checkout[IO](unreachableClient, successfulCart(ct), successfulOrders(oid), retryPolicy)
-            .process(uid, card)
-            .attempt
-            .flatMap {
-              case Left(PaymentError(_)) =>
-                retries.get.map {
-                  forEach(_)(g => expect.same(g.totalRetries, MaxRetries))
-                }
-              case _ => IO.pure(failure("Expected payment error"))
-            }
-        }
+        Checkout[IO](unreachableClient, successfulCart(ct), successfulOrders(oid), retryPolicy)
+          .process(uid, card)
+          .attempt
+          .flatMap {
+            case Left(PaymentError(_)) =>
+              retries.get.map {
+                forEach(_)(g => expect.same(g.totalRetries, MaxRetries))
+              }
+            case _ => IO.pure(failure("Expected payment error"))
+          }
+      }
     }
   }
 
   test("failing payment client succeeds after one retry") {
-    forall(gen) {
-      case (uid, pid, oid, ct, card) =>
-        (Ref.of[IO, List[WillDelayAndRetry]](List.empty), Ref.of[IO, Int](0)).tupled.flatMap {
-          case (retries, cliRef) =>
-            implicit val rh = shop.retries.TestHandler.recovering(retries)
+    forall(gen) { case (uid, pid, oid, ct, card) =>
+      (Ref.of[IO, List[WillDelayAndRetry]](List.empty), Ref.of[IO, Int](0)).tupled.flatMap { case (retries, cliRef) =>
+        implicit val rh = shop.retries.TestHandler.recovering(retries)
 
-            Checkout[IO](
-              recoveringClient(cliRef, pid),
-              successfulCart(ct),
-              successfulOrders(oid),
-              retryPolicy
-            ).process(uid, card)
-              .attempt
-              .flatMap {
-                case Right(id) =>
-                  retries.get.map { xs =>
-                    expect.same(id, oid) |+| expect.same(xs.size, 1)
-                  }
-                case Left(_) => IO.pure(failure("Expected Payment Id"))
+        Checkout[IO](
+          recoveringClient(cliRef, pid),
+          successfulCart(ct),
+          successfulOrders(oid),
+          retryPolicy
+        ).process(uid, card)
+          .attempt
+          .flatMap {
+            case Right(id) =>
+              retries.get.map { xs =>
+                expect.same(id, oid) |+| expect.same(xs.size, 1)
               }
-        }
+            case Left(_) => IO.pure(failure("Expected Payment Id"))
+          }
+      }
     }
   }
 
   test("cannot create order, run in the background") {
-    forall(gen) {
-      case (uid, pid, _, ct, card) =>
-        (Ref.of[IO, Int](0), Ref.of[IO, Option[GivingUp]](None)).tupled.flatMap {
-          case (ref, retries) =>
-            implicit val bg = shop.background.counter(ref)
-            implicit val rh = shop.retries.TestHandler.givingUp(retries)
+    forall(gen) { case (uid, pid, _, ct, card) =>
+      (Ref.of[IO, Int](0), Ref.of[IO, Option[GivingUp]](None)).tupled.flatMap { case (ref, retries) =>
+        implicit val bg = shop.background.counter(ref)
+        implicit val rh = shop.retries.TestHandler.givingUp(retries)
 
-            Checkout[IO](successfulClient(pid), successfulCart(ct), failingOrders, retryPolicy)
-              .process(uid, card)
-              .attempt
-              .flatMap {
-                case Left(OrderError(_)) =>
-                  (ref.get, retries.get).mapN {
-                    case (c, xs) =>
-                      expect.same(c, 1) |+|
-                          forEach(xs)(g => expect.same(g.totalRetries, MaxRetries))
-                    case _ => failure(s"Expected $MaxRetries retries and reschedule")
-                  }
-                case _ =>
-                  IO.pure(failure("Expected order error"))
+        Checkout[IO](successfulClient(pid), successfulCart(ct), failingOrders, retryPolicy)
+          .process(uid, card)
+          .attempt
+          .flatMap {
+            case Left(OrderError(_)) =>
+              (ref.get, retries.get).mapN {
+                case (c, xs) =>
+                  expect.same(c, 1) |+|
+                    forEach(xs)(g => expect.same(g.totalRetries, MaxRetries))
+                case _ => failure(s"Expected $MaxRetries retries and reschedule")
               }
-        }
+            case _ =>
+              IO.pure(failure("Expected order error"))
+          }
+      }
     }
   }
 
   test("failing to delete cart does not affect checkout") {
-    forall(gen) {
-      case (uid, pid, oid, ct, card) =>
-        Checkout[IO](
-          successfulClient(pid),
-          failingCart(ct),
-          successfulOrders(oid),
-          retryPolicy
-        ).process(uid, card)
-          .map(expect.same(oid, _))
+    forall(gen) { case (uid, pid, oid, ct, card) =>
+      Checkout[IO](
+        successfulClient(pid),
+        failingCart(ct),
+        successfulOrders(oid),
+        retryPolicy
+      ).process(uid, card)
+        .map(expect.same(oid, _))
     }
   }
 
   test(s"successful checkout") {
-    forall(gen) {
-      case (uid, pid, oid, ct, card) =>
-        Checkout[IO](successfulClient(pid), successfulCart(ct), successfulOrders(oid), retryPolicy)
-          .process(uid, card)
-          .map(expect.same(oid, _))
+    forall(gen) { case (uid, pid, oid, ct, card) =>
+      Checkout[IO](successfulClient(pid), successfulCart(ct), successfulOrders(oid), retryPolicy)
+        .process(uid, card)
+        .map(expect.same(oid, _))
     }
   }
 

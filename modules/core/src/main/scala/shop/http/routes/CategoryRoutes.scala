@@ -14,9 +14,8 @@ final class CategoryRoutes[F[_]: Monad](
 
   private[routes] val prefixPath = "/categories"
 
-  private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
-    case GET -> Root =>
-      Ok(categories.findAll)
+  private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root =>
+    Ok(categories.findAll)
   }
 
   val routes: HttpRoutes[F] = Router(

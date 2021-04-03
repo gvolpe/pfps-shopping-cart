@@ -30,9 +30,8 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
 
   private def processPayment(payment: Payment): F[PaymentId] =
     retry(Retriable.Payments)(paymentClient.process(payment))
-      .adaptError {
-        case e =>
-          PaymentError(Option(e.getMessage).getOrElse("Unknown"))
+      .adaptError { case e =>
+        PaymentError(Option(e.getMessage).getOrElse("Unknown"))
       }
 
   private def createOrder(
@@ -43,17 +42,16 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
   ): F[OrderId] = {
     val action =
       retry(Retriable.Orders)(orders.create(userId, paymentId, items, total))
-        .adaptError {
-          case e => OrderError(e.getMessage)
+        .adaptError { case e =>
+          OrderError(e.getMessage)
         }
 
     def bgAction(fa: F[OrderId]): F[OrderId] =
-      fa.onError {
-        case _ =>
-          Logger[F].error(
-            s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action"
-          ) *>
-            Background[F].schedule(bgAction(fa), 1.hour)
+      fa.onError { case _ =>
+        Logger[F].error(
+          s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action"
+        ) *>
+          Background[F].schedule(bgAction(fa), 1.hour)
       }
 
     bgAction(action)
@@ -63,13 +61,12 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
     shoppingCart
       .get(userId)
       .ensure(EmptyCartError)(_.items.nonEmpty)
-      .flatMap {
-        case CartTotal(items, total) =>
-          for {
-            pid <- processPayment(Payment(userId, total, card))
-            oid <- createOrder(userId, pid, items, total)
-            _   <- shoppingCart.delete(userId).attempt.void
-          } yield oid
+      .flatMap { case CartTotal(items, total) =>
+        for {
+          pid <- processPayment(Payment(userId, total, card))
+          oid <- createOrder(userId, pid, items, total)
+          _   <- shoppingCart.delete(userId).attempt.void
+        } yield oid
       }
 
 }

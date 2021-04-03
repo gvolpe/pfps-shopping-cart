@@ -36,23 +36,22 @@ object Crypto {
         dCipher.value.init(Cipher.DECRYPT_MODE, sKeySpec, iv)
         (eCipher, dCipher)
       }
-      .map {
-        case (ec, dc) =>
-          new Crypto {
-            def encrypt(password: Password): EncryptedPassword = {
-              val base64 = Base64.getEncoder()
-              val bytes  = password.value.getBytes("UTF-8")
-              val result = new String(base64.encode(ec.value.doFinal(bytes)), "UTF-8")
-              EncryptedPassword(result)
-            }
-
-            def decrypt(password: EncryptedPassword): Password = {
-              val base64 = Base64.getDecoder()
-              val bytes  = base64.decode(password.value.getBytes("UTF-8"))
-              val result = new String(dc.value.doFinal(bytes), "UTF-8")
-              Password(result)
-            }
+      .map { case (ec, dc) =>
+        new Crypto {
+          def encrypt(password: Password): EncryptedPassword = {
+            val base64 = Base64.getEncoder()
+            val bytes  = password.value.getBytes("UTF-8")
+            val result = new String(base64.encode(ec.value.doFinal(bytes)), "UTF-8")
+            EncryptedPassword(result)
           }
+
+          def decrypt(password: EncryptedPassword): Password = {
+            val base64 = Base64.getDecoder()
+            val bytes  = base64.decode(password.value.getBytes("UTF-8"))
+            val result = new String(dc.value.doFinal(bytes), "UTF-8")
+            Password(result)
+          }
+        }
       }
 
 }
