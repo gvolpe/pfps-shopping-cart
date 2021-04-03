@@ -16,12 +16,12 @@ object RetryHandler {
     new RetryHandler[F] {
       def onError(retriable: Retriable)(e: Throwable, details: RetryDetails): F[Unit] =
         details match {
-          case r: WillDelayAndRetry =>
+          case WillDelayAndRetry(_, retriesSoFar, _) =>
             Logger[F].error(
-              s"Failed to process ${retriable.show} with ${e.getMessage}. So far we have retried ${r.retriesSoFar} times."
+              s"Failed to process ${retriable.show} with ${e.getMessage}. So far we have retried $retriesSoFar times."
             )
-          case g: GivingUp =>
-            Logger[F].error(s"Giving up on ${retriable.show} after ${g.totalRetries} retries.")
+          case GivingUp(totalRetries, _) =>
+            Logger[F].error(s"Giving up on ${retriable.show} after $totalRetries retries.")
         }
     }
 }
