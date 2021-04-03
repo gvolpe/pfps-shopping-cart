@@ -23,7 +23,7 @@ object Tokens {
     new Tokens[F] {
       def create: F[JwtToken] =
         for {
-          uuid <- GenUUID[F].make
+          uuid  <- GenUUID[F].make
           claim <- jwtExpire.expiresIn(JwtClaim(uuid.asJson.noSpaces), exp)
           secretKey = JwtSecretKey(config.secret.value)
           token <- jwtEncode[F](claim, secretKey, JwtAlgorithm.HS256)

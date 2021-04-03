@@ -58,15 +58,15 @@ final case class HttpApi[F[_]: Async] private (
   // Combining all the http routes
   private val openRoutes: HttpRoutes[F] =
     healthRoutes <+> itemRoutes <+> brandRoutes <+>
-        categoryRoutes <+> loginRoutes <+> userRoutes <+>
-        logoutRoutes <+> cartRoutes <+> orderRoutes <+>
-        checkoutRoutes
+      categoryRoutes <+> loginRoutes <+> userRoutes <+>
+      logoutRoutes <+> cartRoutes <+> orderRoutes <+>
+      checkoutRoutes
 
   private val adminRoutes: HttpRoutes[F] =
     adminItemRoutes <+> adminBrandRoutes <+> adminCategoryRoutes
 
   private val routes: HttpRoutes[F] = Router(
-    version.v1 -> openRoutes,
+    version.v1            -> openRoutes,
     version.v1 + "/admin" -> adminRoutes
   )
 

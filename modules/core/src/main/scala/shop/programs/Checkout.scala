@@ -35,7 +35,12 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
           PaymentError(Option(e.getMessage).getOrElse("Unknown"))
       }
 
-  private def createOrder(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): F[OrderId] = {
+  private def createOrder(
+      userId: UserId,
+      paymentId: PaymentId,
+      items: List[CartItem],
+      total: Money
+  ): F[OrderId] = {
     val action =
       retry(Retriable.Orders)(orders.create(userId, paymentId, items, total))
         .adaptError {
@@ -45,8 +50,10 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
     def bgAction(fa: F[OrderId]): F[OrderId] =
       fa.onError {
         case _ =>
-          Logger[F].error(s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action") *>
-              Background[F].schedule(bgAction(fa), 1.hour)
+          Logger[F].error(
+            s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action"
+          ) *>
+            Background[F].schedule(bgAction(fa), 1.hour)
       }
 
     bgAction(action)
@@ -61,7 +68,7 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
           for {
             pid <- processPayment(Payment(userId, total, card))
             oid <- createOrder(userId, pid, items, total)
-            _ <- shoppingCart.delete(userId).attempt.void
+            _   <- shoppingCart.delete(userId).attempt.void
           } yield oid
       }
 

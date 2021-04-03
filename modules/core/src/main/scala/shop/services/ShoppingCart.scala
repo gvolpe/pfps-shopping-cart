@@ -29,7 +29,7 @@ object ShoppingCart {
 
       def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
         redis.hSet(userId.value.show, itemId.value.show, quantity.value.show) *>
-            redis.expire(userId.value.show, exp.value).void
+          redis.expire(userId.value.show, exp.value).void
 
       def get(userId: UserId): F[CartTotal] =
         redis.hGetAll(userId.value.show).flatMap {

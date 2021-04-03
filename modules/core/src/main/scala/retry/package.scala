@@ -19,14 +19,14 @@ package object retry {
     case Left(error) if isWorthRetrying(error) =>
       for {
         nextStep <- applyPolicy(policy, status)
-        _ <- onError(error, buildRetryDetails(status, nextStep))
+        _        <- onError(error, buildRetryDetails(status, nextStep))
         result <- nextStep match {
-                   case NextStep.RetryAfterDelay(delay, updatedStatus) =>
-                     S.sleep(delay) *>
-                         ME.pure(Left(updatedStatus)) // continue recursion
-                   case NextStep.GiveUp =>
-                     ME.raiseError[A](error).map(Right(_)) // stop the recursion
-                 }
+          case NextStep.RetryAfterDelay(delay, updatedStatus) =>
+            S.sleep(delay) *>
+              ME.pure(Left(updatedStatus)) // continue recursion
+          case NextStep.GiveUp =>
+            ME.raiseError[A](error).map(Right(_)) // stop the recursion
+        }
       } yield result
     case Left(error) =>
       ME.raiseError[A](error).map(Right(_)) // stop the recursion
