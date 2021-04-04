@@ -1,8 +1,8 @@
 package shop.domain
 
 import cats.kernel.laws.discipline.MonoidTests
-import org.scalacheck.{Arbitrary, Gen}
-import squants.market.{Money, USD}
+import org.scalacheck.{ Arbitrary, Gen }
+import squants.market.{ Money, USD }
 import suite.DisciplineSuite
 
 object OrphanSuite extends DisciplineSuite {
