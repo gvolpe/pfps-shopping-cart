@@ -1,5 +1,6 @@
 package shop.programs
 
+import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
 
 import shop.domain.auth._
@@ -7,13 +8,16 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.domain.order._
 import shop.domain.payment._
+import shop.effects.TestBackground
 import shop.generators._
 import shop.http.clients._
+import shop.retries.TestHandler
 import shop.services._
 
 import cats.effect._
 import cats.effect.kernel.Ref
 import cats.implicits._
+import org.typelevel.log4cats.noop.NoOpLogger
 import retry.RetryDetails._
 import retry.RetryPolicies._
 import retry.RetryPolicy
@@ -83,9 +87,8 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
     crd <- cardGen
   } yield (uid, pid, oid, crt, crd)
 
-  // by default we use these two NoOp instances and override them in the test when necessary
-  implicit val bg = shop.background.NoOp
-  import shop.logger.NoOp
+  implicit val bg = TestBackground.NoOp
+  implicit val lg = NoOpLogger[IO]
 
   test("empty cart") {
     forall(gen) {
@@ -104,7 +107,7 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
     forall(gen) {
       case (uid, _, oid, ct, card) =>
         Ref.of[IO, Option[GivingUp]](None).flatMap { retries =>
-          implicit val rh = shop.retries.TestHandler.givingUp(retries)
+          implicit val rh = TestHandler.givingUp(retries)
 
           Checkout[IO](unreachableClient, successfulCart(ct), successfulOrders(oid), retryPolicy)
             .process(uid, card)
@@ -112,7 +115,8 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
             .flatMap {
               case Left(PaymentError(_)) =>
                 retries.get.map {
-                  forEach(_)(g => expect.same(g.totalRetries, MaxRetries))
+                  case Some(g) => expect.same(g.totalRetries, MaxRetries)
+                  case None    => failure("expected GivingUp")
                 }
               case _ => IO.pure(failure("Expected payment error"))
             }
@@ -123,9 +127,9 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
   test("failing payment client succeeds after one retry") {
     forall(gen) {
       case (uid, pid, oid, ct, card) =>
-        (Ref.of[IO, List[WillDelayAndRetry]](List.empty), Ref.of[IO, Int](0)).tupled.flatMap {
+        (Ref.of[IO, Option[WillDelayAndRetry]](None), Ref.of[IO, Int](0)).tupled.flatMap {
           case (retries, cliRef) =>
-            implicit val rh = shop.retries.TestHandler.recovering(retries)
+            implicit val rh = TestHandler.recovering(retries)
 
             Checkout[IO](
               recoveringClient(cliRef, pid),
@@ -136,8 +140,10 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
               .attempt
               .flatMap {
                 case Right(id) =>
-                  retries.get.map { xs =>
-                    expect.same(id, oid) |+| expect.same(xs.size, 1)
+                  retries.get.map {
+                    case Some(w) =>
+                      expect.same(id, oid) |+| expect.same(0, w.retriesSoFar)
+                    case None => failure("Expected one retry")
                   }
                 case Left(_) => IO.pure(failure("Expected Payment Id"))
               }
@@ -148,20 +154,20 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
   test("cannot create order, run in the background") {
     forall(gen) {
       case (uid, pid, _, ct, card) =>
-        (Ref.of[IO, Int](0), Ref.of[IO, Option[GivingUp]](None)).tupled.flatMap {
-          case (ref, retries) =>
-            implicit val bg = shop.background.counter(ref)
-            implicit val rh = shop.retries.TestHandler.givingUp(retries)
+        (Ref.of[IO, (Int, FiniteDuration)](0 -> 0.seconds), Ref.of[IO, Option[GivingUp]](None)).tupled.flatMap {
+          case (bgActions, retries) =>
+            implicit val bg = TestBackground.counter(bgActions)
+            implicit val rh = TestHandler.givingUp(retries)
 
             Checkout[IO](successfulClient(pid), successfulCart(ct), failingOrders, retryPolicy)
               .process(uid, card)
               .attempt
               .flatMap {
                 case Left(OrderError(_)) =>
-                  (ref.get, retries.get).mapN {
-                    case (c, xs) =>
-                      expect.same(c, 1) |+|
-                          forEach(xs)(g => expect.same(g.totalRetries, MaxRetries))
+                  (bgActions.get, retries.get).mapN {
+                    case (c, Some(g)) =>
+                      expect.same(c, 1 -> 1.hour) |+|
+                        expect.same(g.totalRetries, MaxRetries)
                     case _ => failure(s"Expected $MaxRetries retries and reschedule")
                   }
                 case _ =>

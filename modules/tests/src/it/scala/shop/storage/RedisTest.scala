@@ -14,7 +14,6 @@ import shop.domain.category._
 import shop.domain.item._
 import shop.generators._
 import shop.http.auth.users._
-import shop.logger.NoOp
 import shop.services._
 
 import cats.Eq
@@ -28,6 +27,7 @@ import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
+import org.typelevel.log4cats.noop.NoOpLogger
 import pdi.jwt._
 import weaver.IOSuite
 import weaver.scalacheck.{ CheckConfig, Checkers }
@@ -36,6 +36,8 @@ object RedisTest extends IOSuite with Checkers {
 
   // For it:tests, one test is enough
   override def checkConfig: CheckConfig = CheckConfig.default.copy(minimumSuccessful = 1)
+
+  implicit val logger = NoOpLogger[IO]
 
   override type Res = RedisCommands[IO, String, String]
   override def sharedResource: Resource[IO, Res] =

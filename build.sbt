@@ -31,6 +31,7 @@ lazy val tests = (project in file("modules/tests"))
           CompilerPlugin.semanticDB,
           Libraries.catsLaws,
           Libraries.discipline,
+          Libraries.log4catsNoOp,
           Libraries.weaverCats,
           Libraries.weaverScalaCheck
         )
