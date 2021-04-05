@@ -30,7 +30,7 @@ object ItemRoutesSuite extends HttpSuite {
   test("GET items succeeds") {
     forall(Gen.listOf(itemGen)) { it =>
       val req    = GET(Uri.uri("/items"))
-      val routes = new ItemRoutes[IO](dataItems(it)).routes
+      val routes = ItemRoutes[IO](dataItems(it)).routes
       expectHttpBodyAndStatus(routes, req)(it, Status.Ok)
     }
   }
@@ -44,7 +44,7 @@ object ItemRoutesSuite extends HttpSuite {
     forall(gen) {
       case (it, b) =>
         val req    = GET(Uri.uri("/items").withQueryParam(b.name.value))
-        val routes = new ItemRoutes[IO](dataItems(it)).routes
+        val routes = ItemRoutes[IO](dataItems(it)).routes
         expectHttpBodyAndStatus(routes, req)(it, Status.Ok)
     }
   }
@@ -52,7 +52,7 @@ object ItemRoutesSuite extends HttpSuite {
   test("GET items fails") {
     forall(Gen.listOf(itemGen)) { it =>
       val req    = GET(Uri.uri("/items"))
-      val routes = new ItemRoutes[IO](failingItems(it)).routes
+      val routes = ItemRoutes[IO](failingItems(it)).routes
       expectHttpFailure(routes, req)
     }
   }

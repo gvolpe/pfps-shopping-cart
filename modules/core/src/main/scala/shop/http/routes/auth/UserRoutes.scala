@@ -13,7 +13,7 @@ import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
-final class UserRoutes[F[_]: JsonDecoder: MonadThrow](
+final case class UserRoutes[F[_]: JsonDecoder: MonadThrow](
     auth: Auth[F]
 ) extends Http4sDsl[F] {
 

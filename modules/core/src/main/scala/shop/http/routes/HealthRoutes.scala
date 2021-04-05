@@ -8,7 +8,7 @@ import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
-final class HealthRoutes[F[_]: Monad](
+final case class HealthRoutes[F[_]: Monad](
     healthCheck: HealthCheck[F]
 ) extends Http4sDsl[F] {
 

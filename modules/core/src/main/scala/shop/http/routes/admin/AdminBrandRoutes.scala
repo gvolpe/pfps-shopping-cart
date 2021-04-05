@@ -12,7 +12,7 @@ import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 
-final class AdminBrandRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
+final case class AdminBrandRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     brands: Brands[F]
 ) extends Http4sDsl[F] {
 

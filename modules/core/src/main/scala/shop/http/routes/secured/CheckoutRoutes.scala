@@ -15,7 +15,7 @@ import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 
-final class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
+final case class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     checkout: Checkout[F]
 ) extends Http4sDsl[F] {
 
