@@ -12,24 +12,22 @@ import shop.http.clients.PaymentClient
 import shop.retries.{ Retriable, RetryHandler }
 import shop.services._
 
-import cats.effect.Temporal
+import cats.MonadThrow
 import cats.syntax.all._
 import org.typelevel.log4cats.Logger
 import retry._
 import squants.market.Money
 
-final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
-    paymentClient: PaymentClient[F],
-    shoppingCart: ShoppingCart[F],
+final case class Checkout[F[_]: Background: Logger: MonadThrow: RetryHandler](
+    payments: PaymentClient[F],
+    cart: ShoppingCart[F],
     orders: Orders[F],
-    retryPolicy: RetryPolicy[F]
+    policy: RetryPolicy[F]
 ) {
 
-  private def retry[A](retriable: Retriable)(fa: F[A]): F[A] =
-    retryingOnAllErrors[A](retryPolicy, RetryHandler[F].onError(retriable))(fa)
-
-  private def processPayment(payment: Payment): F[PaymentId] =
-    retry(Retriable.Payments)(paymentClient.process(payment))
+  private def processPayment(in: Payment): F[PaymentId] =
+    RetryHandler[F]
+      .retry(policy, Retriable.Payments)(payments.process(in))
       .adaptError {
         case e =>
           PaymentError(Option(e.getMessage).getOrElse("Unknown"))
@@ -42,7 +40,8 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
       total: Money
   ): F[OrderId] = {
     val action =
-      retry(Retriable.Orders)(orders.create(userId, paymentId, items, total))
+      RetryHandler[F]
+        .retry(policy, Retriable.Orders)(orders.create(userId, paymentId, items, total))
         .adaptError {
           case e => OrderError(e.getMessage)
         }
@@ -51,7 +50,7 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
       fa.onError {
         case _ =>
           Logger[F].error(
-            s"Failed to create order for Payment: ${paymentId}. Rescheduling as a background action"
+            s"Failed to create order for Payment: ${paymentId.show}. Rescheduling as a background action"
           ) *>
             Background[F].schedule(bgAction(fa), 1.hour)
       }
@@ -60,7 +59,7 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
   }
 
   def process(userId: UserId, card: Card): F[OrderId] =
-    shoppingCart
+    cart
       .get(userId)
       .ensure(EmptyCartError)(_.items.nonEmpty)
       .flatMap {
@@ -68,7 +67,7 @@ final case class Checkout[F[_]: Background: Logger: RetryHandler: Temporal](
           for {
             pid <- processPayment(Payment(userId, total, card))
             oid <- createOrder(userId, pid, items, total)
-            _   <- shoppingCart.delete(userId).attempt.void
+            _   <- cart.delete(userId).attempt.void
           } yield oid
       }
 

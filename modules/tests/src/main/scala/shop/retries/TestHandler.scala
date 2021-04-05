@@ -16,6 +16,9 @@ object TestHandler {
           case a: A => ref.set(Some(a))
           case _    => IO.unit
         }
+
+      def retry[T](policy: RetryPolicy[IO], retriable: Retriable)(fa: IO[T]): IO[T] =
+        retryingOnAllErrors[T](policy, onError(retriable))(fa)
     }
 
   def givingUp(ref: Ref[IO, Option[GivingUp]]): RetryHandler[IO] =
