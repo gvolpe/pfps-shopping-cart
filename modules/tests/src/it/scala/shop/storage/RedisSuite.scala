@@ -16,7 +16,6 @@ import shop.generators._
 import shop.http.auth.users._
 import shop.services._
 
-import cats.Eq
 import cats.effect._
 import cats.effect.kernel.Ref
 import cats.implicits._
@@ -26,36 +25,34 @@ import dev.profunktor.redis4cats.log4cats._
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
-import eu.timepit.refined.types.string.NonEmptyString
 import org.typelevel.log4cats.noop.NoOpLogger
 import pdi.jwt._
-import weaver.IOSuite
-import weaver.scalacheck.{ CheckConfig, Checkers }
+import suite.ResourceSuite
 
-object RedisTest extends IOSuite with Checkers {
-
-  // For it:tests, one test is enough
-  override def checkConfig: CheckConfig = CheckConfig.default.copy(minimumSuccessful = 1)
+object RedisSuite extends ResourceSuite {
 
   implicit val logger = NoOpLogger[IO]
 
-  override type Res = RedisCommands[IO, String, String]
-  override def sharedResource: Resource[IO, Res] =
-    Redis[IO].utf8("redis://localhost")
+  type Res = RedisCommands[IO, String, String]
 
-  lazy val Exp         = ShoppingCartExpiration(30.seconds)
-  lazy val tokenConfig = JwtSecretKeyConfig(Secret("bar": NonEmptyString))
-  lazy val tokenExp    = TokenExpiration(30.seconds)
-  lazy val jwtClaim    = JwtClaim("test")
-  lazy val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
+  override def sharedResource: Resource[IO, Res] =
+    Redis[IO]
+      .utf8("redis://localhost")
+      .beforeAll(_.flushAll)
+
+  val Exp         = ShoppingCartExpiration(30.seconds)
+  val tokenConfig = JwtSecretKeyConfig(Secret("bar"))
+  val tokenExp    = TokenExpiration(30.seconds)
+  val jwtClaim    = JwtClaim("test")
+  val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
 
   test("Shopping Cart") { cmd =>
     val gen = for {
       uid <- userIdGen
       it1 <- itemGen
       it2 <- itemGen
-      q1 <- quantityGen
-      q2 <- quantityGen
+      q1  <- quantityGen
+      q2  <- quantityGen
     } yield (uid, it1, it2, q1, q2)
 
     forall(gen) {
@@ -85,13 +82,13 @@ object RedisTest extends IOSuite with Checkers {
     }
   }
 
-  private val salt = PasswordSalt(Secret("test": NonEmptyString))
+  private val salt = PasswordSalt(Secret("test"))
 
   test("Authentication") { cmd =>
     val gen = for {
       un1 <- userNameGen
       un2 <- userNameGen
-      pw <- passwordGen
+      pw  <- passwordGen
     } yield (un1, un2, pw)
 
     forall(gen) {
@@ -121,8 +118,7 @@ object RedisTest extends IOSuite with Checkers {
 
 protected class TestUsers(un: UserName) extends Users[IO] {
   def find(username: UserName): IO[Option[UserWithPassword]] = IO.pure {
-    Eq[UserName]
-      .eqv(username, un)
+    (username === un)
       .guard[Option]
       .as(UserWithPassword(UserId(UUID.randomUUID), un, EncryptedPassword("foo")))
   }

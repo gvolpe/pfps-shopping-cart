@@ -14,28 +14,22 @@ import cats.implicits._
 import ciris._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
-import eu.timepit.refined.types.string.NonEmptyString
-import io.estatico.newtype.ops._
 import natchez.Trace.Implicits.noop
 import org.scalacheck.Gen
 import skunk._
 import skunk.implicits._
-import weaver.IOSuite
-import weaver.scalacheck.{ CheckConfig, Checkers }
+import suite.ResourceSuite
 
-object PostgresTest extends IOSuite with Checkers {
+object PostgresSuite extends ResourceSuite {
 
-  // For it:tests, one test is enough
-  override def checkConfig: CheckConfig = CheckConfig.default.copy(minimumSuccessful = 1)
-
-  lazy val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
+  val salt = PasswordSalt(Secret("53kr3t"))
 
   val flushTables: List[Command[Void]] =
     List("items", "brands", "categories", "orders", "users").map { table =>
       sql"DELETE FROM #$table".command
     }
 
-  override type Res = Resource[IO, Session[IO]]
+  type Res = Resource[IO, Session[IO]]
 
   override def sharedResource: Resource[IO, Res] =
     Session
@@ -47,7 +41,7 @@ object PostgresTest extends IOSuite with Checkers {
         database = "store",
         max = 10
       )
-      .evalTap {
+      .beforeAll {
         _.use { s =>
           flushTables.traverse_(s.execute)
         }
@@ -128,10 +122,10 @@ object PostgresTest extends IOSuite with Checkers {
     val gen = for {
       oid <- orderIdGen
       pid <- paymentIdGen
-      un <- userNameGen
-      pw <- passwordGen
-      it <- Gen.listOf(cartItemGen)
-      pr <- moneyGen
+      un  <- userNameGen
+      pw  <- passwordGen
+      it  <- Gen.listOf(cartItemGen)
+      pr  <- moneyGen
     } yield (oid, pid, un, pw, it, pr)
 
     forall(gen) {
