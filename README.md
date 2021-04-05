@@ -79,6 +79,15 @@ sbt it:test
 docker-compose down
 ```
 
+### Access Redis & Postgres
+
+We can interact with both servers directly using the following commands:
+
+```
+$ docker-compose exec Redis /usr/local/bin/redis-cli
+$ docker-compose exec Postgres usr/local/bin/psql -d store -U postgres
+```
+
 ## Build Docker image
 
 ```
