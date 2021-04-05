@@ -13,7 +13,7 @@ import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 
-final class CartRoutes[F[_]: Defer: JsonDecoder: Monad](
+final case class CartRoutes[F[_]: Defer: JsonDecoder: Monad](
     shoppingCart: ShoppingCart[F]
 ) extends Http4sDsl[F] {
 

@@ -8,7 +8,7 @@ import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
-final class BrandRoutes[F[_]: Monad](
+final case class BrandRoutes[F[_]: Monad](
     brands: Brands[F]
 ) extends Http4sDsl[F] {
 

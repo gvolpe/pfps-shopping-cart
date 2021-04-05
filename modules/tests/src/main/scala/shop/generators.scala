@@ -9,6 +9,7 @@ import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
+import shop.http.auth.users._
 
 import eu.timepit.refined.api.Refined
 import org.scalacheck.Gen
@@ -121,5 +122,16 @@ object generators {
       x <- Gen.posNum[Int].map[CardExpirationPred](x => Refined.unsafeApply(x.toString))
       c <- Gen.posNum[Int].map[CardCVVPred](Refined.unsafeApply)
     } yield Card(CardName(n), CardNumber(u), CardExpiration(x), CardCVV(c))
+
+  // http routes generators
+
+  val userGen: Gen[User] =
+    for {
+      i <- userIdGen
+      n <- userNameGen
+    } yield User(i, n)
+
+  val commonUserGen: Gen[CommonUser] =
+    userGen.map(CommonUser(_))
 
 }

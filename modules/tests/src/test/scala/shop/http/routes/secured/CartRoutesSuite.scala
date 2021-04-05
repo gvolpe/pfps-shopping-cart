@@ -1,7 +1,5 @@
 package shop.http.routes.secured
 
-import java.util.UUID
-
 import shop.domain.auth._
 import shop.domain.cart._
 import shop.domain.item._
@@ -21,9 +19,7 @@ import suite.HttpSuite
 
 object CartRoutesSuite extends HttpSuite {
 
-  val authUser = CommonUser(User(UserId(UUID.randomUUID), UserName("user")))
-
-  val authMiddleware: AuthMiddleware[IO, CommonUser] =
+  def authMiddleware(authUser: CommonUser): AuthMiddleware[IO, CommonUser] =
     AuthMiddleware(Kleisli.pure(authUser))
 
   def dataCart(cartTotal: CartTotal) = new TestShoppingCart {
@@ -32,18 +28,30 @@ object CartRoutesSuite extends HttpSuite {
   }
 
   test("GET shopping cart succeeds") {
-    forall(cartTotalGen) { ct =>
-      val req    = GET(Uri.uri("/cart"))
-      val routes = new CartRoutes[IO](dataCart(ct)).routes(authMiddleware)
-      expectHttpBodyAndStatus(routes, req)(ct, Status.Ok)
+    val gen = for {
+      u <- commonUserGen
+      c <- cartTotalGen
+    } yield u -> c
+
+    forall(gen) {
+      case (user, ct) =>
+        val req    = GET(Uri.uri("/cart"))
+        val routes = CartRoutes[IO](dataCart(ct)).routes(authMiddleware(user))
+        expectHttpBodyAndStatus(routes, req)(ct, Status.Ok)
     }
   }
 
   test("POST add item to shopping cart succeeds") {
-    forall(cartGen) { c =>
-      val req    = POST(c, Uri.uri("/cart"))
-      val routes = new CartRoutes[IO](new TestShoppingCart).routes(authMiddleware)
-      expectHttpStatus(routes, req)(Status.Created)
+    val gen = for {
+      u <- commonUserGen
+      c <- cartGen
+    } yield u -> c
+
+    forall(gen) {
+      case (user, c) =>
+        val req    = POST(c, Uri.uri("/cart"))
+        val routes = CartRoutes[IO](new TestShoppingCart).routes(authMiddleware(user))
+        expectHttpStatus(routes, req)(Status.Created)
     }
   }
 
