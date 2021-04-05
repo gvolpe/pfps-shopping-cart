@@ -1,8 +1,8 @@
 package suite
 
 import cats.effect._
-import weaver.IOSuite
 import weaver.scalacheck.{ CheckConfig, Checkers }
+import weaver.{ Expectations, IOSuite }
 
 abstract class ResourceSuite extends IOSuite with Checkers {
 
@@ -20,5 +20,11 @@ abstract class ResourceSuite extends IOSuite with Checkers {
         _ <- p.get.background.onFinalize(f(x))
       } yield x
   }
+
+  def testAfterEach(name: String)(afterEach: Res => IO[Unit])(fa: Res => IO[Expectations]): Unit =
+    test(name)(res => fa(res) <* afterEach(res))
+
+  def testBeforeEach(name: String)(beforeEach: Res => IO[Unit])(fa: Res => IO[Expectations]): Unit =
+    test(name)(res => beforeEach(res) *> fa(res))
 
 }
