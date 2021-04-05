@@ -21,10 +21,16 @@ abstract class ResourceSuite extends IOSuite with Checkers {
       } yield x
   }
 
-  def testAfterEach(name: String)(afterEach: Res => IO[Unit])(fa: Res => IO[Expectations]): Unit =
-    test(name)(res => fa(res) <* afterEach(res))
+  def testBeforeAfterEach(
+      before: Res => IO[Unit],
+      after: Res => IO[Unit]
+  ): String => (Res => IO[Expectations]) => Unit =
+    name => fa => test(name)(res => before(res) *> fa(res) <* after(res))
 
-  def testBeforeEach(name: String)(beforeEach: Res => IO[Unit])(fa: Res => IO[Expectations]): Unit =
-    test(name)(res => beforeEach(res) *> fa(res))
+  def testAfterEach(after: Res => IO[Unit]): String => (Res => IO[Expectations]) => Unit =
+    testBeforeAfterEach(_ => IO.unit, after)
+
+  def testBeforeEach(before: Res => IO[Unit]): String => (Res => IO[Expectations]) => Unit =
+    testBeforeAfterEach(before, _ => IO.unit)
 
 }

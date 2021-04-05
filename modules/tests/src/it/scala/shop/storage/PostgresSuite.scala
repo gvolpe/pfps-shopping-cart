@@ -14,8 +14,6 @@ import cats.implicits._
 import ciris._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
-import eu.timepit.refined.types.string.NonEmptyString
-import io.estatico.newtype.ops._
 import natchez.Trace.Implicits.noop
 import org.scalacheck.Gen
 import skunk._
@@ -24,7 +22,7 @@ import suite.ResourceSuite
 
 object PostgresSuite extends ResourceSuite {
 
-  lazy val salt = Secret("53kr3t": NonEmptyString).coerce[PasswordSalt]
+  val salt = PasswordSalt(Secret("53kr3t"))
 
   val flushTables: List[Command[Void]] =
     List("items", "brands", "categories", "orders", "users").map { table =>

@@ -25,7 +25,6 @@ import dev.profunktor.redis4cats.log4cats._
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
-import eu.timepit.refined.types.string.NonEmptyString
 import org.typelevel.log4cats.noop.NoOpLogger
 import pdi.jwt._
 import suite.ResourceSuite
@@ -41,11 +40,11 @@ object RedisSuite extends ResourceSuite {
       .utf8("redis://localhost")
       .beforeAll(_.flushAll)
 
-  lazy val Exp         = ShoppingCartExpiration(30.seconds)
-  lazy val tokenConfig = JwtSecretKeyConfig(Secret("bar": NonEmptyString))
-  lazy val tokenExp    = TokenExpiration(30.seconds)
-  lazy val jwtClaim    = JwtClaim("test")
-  lazy val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
+  val Exp         = ShoppingCartExpiration(30.seconds)
+  val tokenConfig = JwtSecretKeyConfig(Secret("bar"))
+  val tokenExp    = TokenExpiration(30.seconds)
+  val jwtClaim    = JwtClaim("test")
+  val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
 
   test("Shopping Cart") { cmd =>
     val gen = for {
@@ -83,7 +82,7 @@ object RedisSuite extends ResourceSuite {
     }
   }
 
-  private val salt = PasswordSalt(Secret("test": NonEmptyString))
+  private val salt = PasswordSalt(Secret("test"))
 
   test("Authentication") { cmd =>
     val gen = for {
