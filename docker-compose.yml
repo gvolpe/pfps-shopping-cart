@@ -1,4 +1,4 @@
-PostgreSQL:
+Postgres:
   restart: always
   image: postgres:13.0-alpine
   ports:

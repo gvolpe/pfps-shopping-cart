@@ -82,8 +82,6 @@ object RedisSuite extends ResourceSuite {
     }
   }
 
-  private val salt = PasswordSalt(Secret("test"))
-
   test("Authentication") { cmd =>
     val gen = for {
       un1 <- userNameGen
@@ -95,7 +93,7 @@ object RedisSuite extends ResourceSuite {
       case (un1, un2, pw) =>
         for {
           t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
-          c <- Crypto.make[IO](salt)
+          c <- Crypto.make[IO](PasswordSalt(Secret("test")))
           a = Auth.make(tokenExp, t, new TestUsers(un2), cmd, c)
           u = UsersAuth.common[IO](cmd)
           x <- u.findUser(JwtToken("invalid"))(jwtClaim)
@@ -104,12 +102,17 @@ object RedisSuite extends ResourceSuite {
           e <- jwtDecode[IO](j, userJwtAuth.value).attempt
           k <- a.login(un2, pw).attempt // InvalidPassword
           w <- u.findUser(j)(jwtClaim)
+          s <- cmd.get(j.value)
+          _ <- a.logout(j, un1)
+          z <- cmd.get(j.value)
         } yield expect.all(
           x.isEmpty,
           y == Left(UserNotFound(un1)),
           e.isRight,
           k == Left(InvalidPassword(un2)),
-          w.fold(false)(_.value.name === un1)
+          w.fold(false)(_.value.name === un1),
+          s.nonEmpty,
+          z.isEmpty
         )
     }
   }
