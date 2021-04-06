@@ -1,5 +1,6 @@
 package shop.retries
 
+import scala.annotation.nowarn
 import scala.reflect.ClassTag
 
 import cats.effect.IO
@@ -11,14 +12,16 @@ object TestHandler {
 
   private[retries] def handlerFor[A <: RetryDetails: ClassTag](ref: Ref[IO, Option[A]]): RetryHandler[IO] =
     new RetryHandler[IO] {
-      def onError(retriable: Retriable)(e: Throwable, details: RetryDetails): IO[Unit] =
-        details match {
-          case a: A => ref.set(Some(a))
-          case _    => IO.unit
-        }
+      def retry[T](policy: RetryPolicy[IO], retriable: Retriable)(fa: IO[T]): IO[T] = {
+        @nowarn
+        def onError(e: Throwable, details: RetryDetails): IO[Unit] =
+          details match {
+            case a: A => ref.set(Some(a))
+            case _    => IO.unit
+          }
 
-      def retry[T](policy: RetryPolicy[IO], retriable: Retriable)(fa: IO[T]): IO[T] =
-        retryingOnAllErrors[T](policy, onError(retriable))(fa)
+        retryingOnAllErrors[T](policy, onError)(fa)
+      }
     }
 
   def givingUp(ref: Ref[IO, Option[GivingUp]]): RetryHandler[IO] =
