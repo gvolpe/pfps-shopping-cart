@@ -9,7 +9,7 @@ import shop.domain.order._
 import shop.domain.payment._
 import shop.effects.Background
 import shop.http.clients.PaymentClient
-import shop.retries.{ Retriable, RetryHandler }
+import shop.retries.{ Retriable, Retry }
 import shop.services._
 
 import cats.MonadThrow
@@ -18,7 +18,7 @@ import org.typelevel.log4cats.Logger
 import retry._
 import squants.market.Money
 
-final case class Checkout[F[_]: Background: Logger: MonadThrow: RetryHandler](
+final case class Checkout[F[_]: Background: Logger: MonadThrow: Retry](
     payments: PaymentClient[F],
     cart: ShoppingCart[F],
     orders: Orders[F],
@@ -26,7 +26,7 @@ final case class Checkout[F[_]: Background: Logger: MonadThrow: RetryHandler](
 ) {
 
   private def processPayment(in: Payment): F[PaymentId] =
-    RetryHandler[F]
+    Retry[F]
       .retry(policy, Retriable.Payments)(payments.process(in))
       .adaptError {
         case e =>
@@ -40,7 +40,7 @@ final case class Checkout[F[_]: Background: Logger: MonadThrow: RetryHandler](
       total: Money
   ): F[OrderId] = {
     val action =
-      RetryHandler[F]
+      Retry[F]
         .retry(policy, Retriable.Orders)(orders.create(userId, paymentId, items, total))
         .adaptError {
           case e => OrderError(e.getMessage)
