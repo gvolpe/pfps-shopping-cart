@@ -6,15 +6,15 @@ import org.typelevel.log4cats.Logger
 import retry.RetryDetails._
 import retry._
 
-trait RetryHandler[F[_]] {
+trait Retry[F[_]] {
   def retry[A](policy: RetryPolicy[F], retriable: Retriable)(fa: F[A]): F[A]
 }
 
-object RetryHandler {
-  def apply[F[_]: RetryHandler]: RetryHandler[F] = implicitly
+object Retry {
+  def apply[F[_]: Retry]: Retry[F] = implicitly
 
-  implicit def forLoggerTemporal[F[_]: Logger: Temporal]: RetryHandler[F] =
-    new RetryHandler[F] {
+  implicit def forLoggerTemporal[F[_]: Logger: Temporal]: Retry[F] =
+    new Retry[F] {
       def retry[A](policy: RetryPolicy[F], retriable: Retriable)(fa: F[A]): F[A] = {
         def onError(e: Throwable, details: RetryDetails): F[Unit] =
           details match {

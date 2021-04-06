@@ -8,10 +8,10 @@ import cats.effect.kernel.Ref
 import retry.RetryDetails._
 import retry._
 
-object TestHandler {
+object TestRetry {
 
-  private[retries] def handlerFor[A <: RetryDetails: ClassTag](ref: Ref[IO, Option[A]]): RetryHandler[IO] =
-    new RetryHandler[IO] {
+  private[retries] def handlerFor[A <: RetryDetails: ClassTag](ref: Ref[IO, Option[A]]): Retry[IO] =
+    new Retry[IO] {
       def retry[T](policy: RetryPolicy[IO], retriable: Retriable)(fa: IO[T]): IO[T] = {
         @nowarn
         def onError(e: Throwable, details: RetryDetails): IO[Unit] =
@@ -24,10 +24,10 @@ object TestHandler {
       }
     }
 
-  def givingUp(ref: Ref[IO, Option[GivingUp]]): RetryHandler[IO] =
+  def givingUp(ref: Ref[IO, Option[GivingUp]]): Retry[IO] =
     handlerFor[GivingUp](ref)
 
-  def recovering(ref: Ref[IO, Option[WillDelayAndRetry]]): RetryHandler[IO] =
+  def recovering(ref: Ref[IO, Option[WillDelayAndRetry]]): Retry[IO] =
     handlerFor[WillDelayAndRetry](ref)
 
 }

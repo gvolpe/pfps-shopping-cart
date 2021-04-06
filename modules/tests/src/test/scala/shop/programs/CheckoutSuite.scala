@@ -11,7 +11,7 @@ import shop.domain.payment._
 import shop.effects.TestBackground
 import shop.generators._
 import shop.http.clients._
-import shop.retries.TestHandler
+import shop.retries.TestRetry
 import shop.services._
 
 import cats.effect._
@@ -107,7 +107,7 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
     forall(gen) {
       case (uid, _, oid, ct, card) =>
         Ref.of[IO, Option[GivingUp]](None).flatMap { retries =>
-          implicit val rh = TestHandler.givingUp(retries)
+          implicit val rh = TestRetry.givingUp(retries)
 
           Checkout[IO](unreachableClient, successfulCart(ct), successfulOrders(oid), retryPolicy)
             .process(uid, card)
@@ -129,7 +129,7 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
       case (uid, pid, oid, ct, card) =>
         (Ref.of[IO, Option[WillDelayAndRetry]](None), Ref.of[IO, Int](0)).tupled.flatMap {
           case (retries, cliRef) =>
-            implicit val rh = TestHandler.recovering(retries)
+            implicit val rh = TestRetry.recovering(retries)
 
             Checkout[IO](
               recoveringClient(cliRef, pid),
@@ -157,7 +157,7 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
         (Ref.of[IO, (Int, FiniteDuration)](0 -> 0.seconds), Ref.of[IO, Option[GivingUp]](None)).tupled.flatMap {
           case (bgActions, retries) =>
             implicit val bg = TestBackground.counter(bgActions)
-            implicit val rh = TestHandler.givingUp(retries)
+            implicit val rh = TestRetry.givingUp(retries)
 
             Checkout[IO](successfulClient(pid), successfulCart(ct), failingOrders, retryPolicy)
               .process(uid, card)
