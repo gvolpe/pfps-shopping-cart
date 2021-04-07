@@ -8,11 +8,11 @@ object keyDecoder extends Derivation[KeyDecoder] with NewTypeDerivation[KeyDecod
   type Typeclass[T] = KeyDecoder[T]
 
   def combine[T](ctx: CaseClass[KeyDecoder, T]): KeyDecoder[T] = new KeyDecoder[T] {
-    def apply(key: String): Option[T] =
-      ctx.parameters.toList match {
-        case (p :: _) => p.typeclass.apply(key).map(_.asInstanceOf[T])
-        case _        => None
-      }
+    def apply(key: String): Option[T] = {
+      val parts = key.split("::")
+      if (parts.length != ctx.parameters.length) None
+      else ctx.constructMonadic(p => p.typeclass.apply(parts(p.index)))
+    }
   }
 
   def instance[T]: KeyDecoder[T] = macro Magnolia.gen[T]
