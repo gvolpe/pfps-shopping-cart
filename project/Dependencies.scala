@@ -9,7 +9,6 @@ object Dependencies {
     val circe         = "0.14.0-M5"
     val ciris         = "2.0.0-RC2"
     val derevo        = "0.12.2"
-    val discipline    = "1.1.4"
     val javaxCrypto   = "1.0.1"
     val fs2           = "3.0.1"
     val http4s        = "1.0.0-M20"
@@ -81,9 +80,9 @@ object Dependencies {
 
     // Test
     val catsLaws         = "org.typelevel"       %% "cats-laws"         % V.cats
-    val discipline       = "org.typelevel"       %% "discipline-core"   % V.discipline
     val log4catsNoOp     = "org.typelevel"       %% "log4cats-noop"     % V.log4cats
     val weaverCats       = "com.disneystreaming" %% "weaver-cats"       % V.weaver
+    val weaverDiscipline = "com.disneystreaming" %% "weaver-discipline" % V.weaver
     val weaverScalaCheck = "com.disneystreaming" %% "weaver-scalacheck" % V.weaver
 
     // Scalafix rules

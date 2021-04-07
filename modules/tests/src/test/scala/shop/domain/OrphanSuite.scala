@@ -3,9 +3,10 @@ package shop.domain
 import cats.kernel.laws.discipline.MonoidTests
 import org.scalacheck.{ Arbitrary, Gen }
 import squants.market.{ Money, USD }
-import suite.DisciplineSuite
+import weaver.FunSuite
+import weaver.discipline.Discipline
 
-object OrphanSuite extends DisciplineSuite {
+object OrphanSuite extends FunSuite with Discipline {
 
   implicit val arbMoney: Arbitrary[Money] =
     Arbitrary {
