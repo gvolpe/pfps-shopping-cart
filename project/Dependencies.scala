@@ -11,7 +11,7 @@ object Dependencies {
     val derevo        = "0.12.2"
     val javaxCrypto   = "1.0.1"
     val fs2           = "3.0.1"
-    val http4s        = "1.0.0-M20"
+    val http4s        = "1.0.0-M21"
     val http4sJwtAuth = "1.0.0-RC1"
     val log4cats      = "2.0.1"
     val newtype       = "0.4.4"
