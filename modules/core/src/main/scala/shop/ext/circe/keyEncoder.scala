@@ -2,7 +2,7 @@ package shop.ext.circe
 
 import derevo.{ Derivation, NewTypeDerivation }
 import io.circe.KeyEncoder
-import magnolia.{CaseClass, Magnolia, SealedTrait}
+import magnolia.{ CaseClass, Magnolia, SealedTrait }
 
 class keyEncoder(sep: String = "::") {
   type Typeclass[T] = KeyEncoder[T]

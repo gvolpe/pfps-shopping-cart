@@ -9,6 +9,7 @@ import shop.domain.category._
 import shop.domain.checkout._
 import shop.domain.item._
 import shop.domain.order._
+import shop.domain.payment.Payment
 import shop.http.auth.users._
 
 import eu.timepit.refined.api.Refined
@@ -133,5 +134,12 @@ object generators {
 
   val commonUserGen: Gen[CommonUser] =
     userGen.map(CommonUser(_))
+
+  val paymentGen: Gen[Payment] =
+    for {
+      i <- userIdGen
+      m <- moneyGen
+      c <- cardGen
+    } yield Payment(i, m, c)
 
 }

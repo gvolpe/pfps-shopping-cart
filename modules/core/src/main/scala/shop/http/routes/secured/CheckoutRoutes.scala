@@ -33,10 +33,8 @@ final case class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
               NotFound(s"Cart not found for user: ${userId.value}")
             case EmptyCartError =>
               BadRequest("Shopping cart is empty!")
-            case PaymentError(cause) =>
-              BadRequest(cause)
-            case OrderError(cause) =>
-              BadRequest(cause)
+            case e: OrderOrPaymentError =>
+              BadRequest(e.show)
           }
       }
 

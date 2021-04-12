@@ -28,7 +28,7 @@ final case class UserRoutes[F[_]: JsonDecoder: MonadThrow](
             .newUser(user.username.toDomain, user.password.toDomain)
             .flatMap(Created(_))
             .recoverWith {
-              case UserNameInUse(u) => Conflict(u.value)
+              case UserNameInUse(u) => Conflict(u.show)
             }
         }
 

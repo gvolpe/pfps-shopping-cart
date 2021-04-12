@@ -11,7 +11,6 @@ import shop.optics.uuid
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
-import io.circe.Decoder
 import io.estatico.newtype.macros.newtype
 import squants.market.Money
 
@@ -20,13 +19,9 @@ object order {
   @newtype
   case class OrderId(value: UUID)
 
-  @derive(encoder, eqv, show, uuid)
+  @derive(decoder, encoder, eqv, show, uuid)
   @newtype
   case class PaymentId(value: UUID)
-  object PaymentId {
-    implicit val jsonDecoder: Decoder[PaymentId] =
-      Decoder.forProduct1("paymentId")(PaymentId.apply)
-  }
 
   @derive(decoder, encoder)
   case class Order(
@@ -36,7 +31,15 @@ object order {
       total: Money
   )
 
-  case object EmptyCartError             extends NoStackTrace
-  case class OrderError(cause: String)   extends NoStackTrace
-  case class PaymentError(cause: String) extends NoStackTrace
+  @derive(show)
+  case object EmptyCartError extends NoStackTrace
+
+  @derive(show)
+  sealed trait OrderOrPaymentError extends NoStackTrace {
+    def cause: String
+  }
+
+  @derive(eqv, show)
+  case class OrderError(cause: String)   extends OrderOrPaymentError
+  case class PaymentError(cause: String) extends OrderOrPaymentError
 }
