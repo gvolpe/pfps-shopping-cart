@@ -11,7 +11,6 @@ import shop.optics.uuid
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
-import io.circe.{ Decoder, Encoder }
 import io.estatico.newtype.macros.newtype
 import squants.market.Money
 
@@ -20,16 +19,9 @@ object order {
   @newtype
   case class OrderId(value: UUID)
 
-  @derive(eqv, show, uuid)
+  @derive(decoder, encoder, eqv, show, uuid)
   @newtype
   case class PaymentId(value: UUID)
-  object PaymentId {
-    implicit val jsonEncoder: Encoder[PaymentId] =
-      Encoder.forProduct1("paymentId")(_.value)
-
-    implicit val jsonDecoder: Decoder[PaymentId] =
-      Decoder.forProduct1("paymentId")(PaymentId.apply)
-  }
 
   @derive(decoder, encoder)
   case class Order(
