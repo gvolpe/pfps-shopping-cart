@@ -12,14 +12,14 @@ import org.http4s.server.defaults.Banner
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-object Main extends IOApp {
+object Main extends IOApp.Simple {
 
   implicit val logger = Slf4jLogger.getLogger[IO]
 
   def showEmberBanner(s: Server): IO[Unit] =
     Logger[IO].info(s"\n${Banner.mkString("\n")}\nHTTP Server started at ${s.address}")
 
-  override def run(args: List[String]): IO[ExitCode] =
+  override def run: IO[Unit] =
     config.load[IO].flatMap { cfg =>
       Logger[IO].info(s"Loaded config $cfg") >>
         Supervisor[IO].use { implicit sp =>
@@ -43,7 +43,7 @@ object Main extends IOApp {
                   .withHttpApp(api.httpApp)
                   .build
             }
-            .use(showEmberBanner(_) >> IO.never.as(ExitCode.Success))
+            .use(showEmberBanner(_) >> IO.never.void)
         }
     }
 
