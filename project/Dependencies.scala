@@ -14,6 +14,7 @@ object Dependencies {
     val http4s        = "1.0.0-M21"
     val http4sJwtAuth = "1.0.0-RC1"
     val log4cats      = "2.0.1"
+    val monocle       = "3.0.0-M4"
     val newtype       = "0.4.4"
     val refined       = "0.9.23"
     val redis4cats    = "1.0.0-RC2"
@@ -61,6 +62,8 @@ object Dependencies {
 
     val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % V.http4sJwtAuth
 
+    val monocleCore = "com.github.julien-truffaut" %% "monocle-core" % V.monocle
+
     val refinedCore = "eu.timepit" %% "refined"      % V.refined
     val refinedCats = "eu.timepit" %% "refined-cats" % V.refined
 
@@ -79,11 +82,12 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % V.logback
 
     // Test
-    val catsLaws         = "org.typelevel"       %% "cats-laws"         % V.cats
-    val log4catsNoOp     = "org.typelevel"       %% "log4cats-noop"     % V.log4cats
-    val weaverCats       = "com.disneystreaming" %% "weaver-cats"       % V.weaver
-    val weaverDiscipline = "com.disneystreaming" %% "weaver-discipline" % V.weaver
-    val weaverScalaCheck = "com.disneystreaming" %% "weaver-scalacheck" % V.weaver
+    val catsLaws         = "org.typelevel"              %% "cats-laws"         % V.cats
+    val log4catsNoOp     = "org.typelevel"              %% "log4cats-noop"     % V.log4cats
+    val monocleLaw       = "com.github.julien-truffaut" %% "monocle-law"       % V.monocle
+    val weaverCats       = "com.disneystreaming"        %% "weaver-cats"       % V.weaver
+    val weaverDiscipline = "com.disneystreaming"        %% "weaver-discipline" % V.weaver
+    val weaverScalaCheck = "com.disneystreaming"        %% "weaver-scalacheck" % V.weaver
 
     // Scalafix rules
     val organizeImports = "com.github.liancheng" %% "organize-imports" % V.organizeImports

@@ -30,7 +30,7 @@ object HealthCheck {
         redis.ping
           .map(_.nonEmpty)
           .timeout(1.second)
-          .map(Status._Bool.get)
+          .map(Status._Bool.reverseGet)
           .orElse(Status.Unreachable.pure[F].widen)
           .map(RedisStatus.apply)
 
@@ -39,7 +39,7 @@ object HealthCheck {
           .use(_.execute(q))
           .map(_.nonEmpty)
           .timeout(1.second)
-          .map(Status._Bool.get)
+          .map(Status._Bool.reverseGet)
           .orElse(Status.Unreachable.pure[F].widen)
           .map(PostgresStatus.apply)
 
