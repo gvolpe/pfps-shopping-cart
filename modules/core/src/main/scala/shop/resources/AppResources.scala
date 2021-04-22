@@ -1,9 +1,9 @@
-package shop
+package shop.resources
 
 import shop.config.data._
 
 import cats.effect.std.Console
-import cats.effect.{ Async, Concurrent, Resource }
+import cats.effect.{ Concurrent, Resource }
 import cats.syntax.all._
 import dev.profunktor.redis4cats.effect.MkRedis
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
@@ -11,16 +11,15 @@ import eu.timepit.refined.auto._
 import fs2.io.net.Network
 import natchez.Trace.Implicits.noop
 import org.http4s.client.Client
-import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.Logger
 import skunk._
 import skunk.codec.text._
 import skunk.implicits._
 
-final case class AppResources[F[_]](
-    client: Client[F],
-    psql: Resource[F, Session[F]],
-    redis: RedisCommands[F, String, String]
+sealed abstract class AppResources[F[_]](
+    val client: Client[F],
+    val postgres: Resource[F, Session[F]],
+    val redis: RedisCommands[F, String, String]
 )
 
 object AppResources {
@@ -30,9 +29,9 @@ object AppResources {
   ): Resource[F, AppResources[F]] = {
 
     def checkPostgresConnection(
-        psql: Resource[F, Session[F]]
+        postgres: Resource[F, Session[F]]
     ): F[Unit] =
-      psql.use { session =>
+      postgres.use { session =>
         session.unique(sql"select version();".query(text)).flatMap { v =>
           Logger[F].info(s"Connected to Postgres $v")
         }
@@ -66,27 +65,8 @@ object AppResources {
       MkHttpClient[F].newEmber(cfg.httpClientConfig),
       mkPostgreSqlResource(cfg.postgreSQL),
       mkRedisResource(cfg.redis)
-    ).mapN(AppResources.apply[F])
+    ).parMapN(new AppResources[F](_, _, _) {})
 
   }
 
-}
-
-// Just to demonstrate how far we can take this pattern and void hard constraints like Async
-trait MkHttpClient[F[_]] {
-  def newEmber(c: HttpClientConfig): Resource[F, Client[F]]
-}
-
-object MkHttpClient {
-  def apply[F[_]: MkHttpClient]: MkHttpClient[F] = implicitly
-
-  implicit def forAsync[F[_]: Async]: MkHttpClient[F] =
-    new MkHttpClient[F] {
-      def newEmber(c: HttpClientConfig): Resource[F, Client[F]] =
-        EmberClientBuilder
-          .default[F]
-          .withTimeout(c.timeout)
-          .withIdleTimeInPool(c.idleTimeInPool)
-          .build
-    }
 }

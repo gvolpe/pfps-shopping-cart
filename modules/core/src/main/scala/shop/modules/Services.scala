@@ -6,27 +6,27 @@ import shop.services._
 
 import cats.effect._
 import dev.profunktor.redis4cats.RedisCommands
-import skunk._
+import skunk.Session
 
 object Services {
   def make[F[_]: GenUUID: Temporal](
       redis: RedisCommands[F, String, String],
-      sessionPool: Resource[F, Session[F]],
+      postgres: Resource[F, Session[F]],
       cartExpiration: ShoppingCartExpiration
   ): Services[F] = {
-    val _items = Items.make[F](sessionPool)
-    Services[F](
+    val _items = Items.make[F](postgres)
+    new Services[F](
       cart = ShoppingCart.make[F](_items, redis, cartExpiration),
-      brands = Brands.make[F](sessionPool),
-      categories = Categories.make[F](sessionPool),
+      brands = Brands.make[F](postgres),
+      categories = Categories.make[F](postgres),
       items = _items,
-      orders = Orders.make[F](sessionPool),
-      healthCheck = HealthCheck.make[F](sessionPool, redis)
-    )
+      orders = Orders.make[F](postgres),
+      healthCheck = HealthCheck.make[F](postgres, redis)
+    ) {}
   }
 }
 
-final case class Services[F[_]] private (
+sealed abstract class Services[F[_]] private (
     val cart: ShoppingCart[F],
     val brands: Brands[F],
     val categories: Categories[F],

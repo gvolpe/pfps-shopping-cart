@@ -21,10 +21,10 @@ object HttpApi {
       programs: Programs[F],
       security: Security[F]
   ): HttpApi[F] =
-    HttpApi[F](services, programs, security)
+    new HttpApi[F](services, programs, security) {}
 }
 
-final case class HttpApi[F[_]: Async] private (
+sealed abstract class HttpApi[F[_]: Async] private (
     services: Services[F],
     programs: Programs[F],
     security: Security[F]
