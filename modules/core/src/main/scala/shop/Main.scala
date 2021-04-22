@@ -1,23 +1,18 @@
 package shop
 
 import shop.modules._
+import shop.resources._
 
 import cats.effect._
 import cats.effect.std.Supervisor
 import dev.profunktor.redis4cats.log4cats._
 import eu.timepit.refined.auto._
-import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.server.Server
-import org.http4s.server.defaults.Banner
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object Main extends IOApp.Simple {
 
   implicit val logger = Slf4jLogger.getLogger[IO]
-
-  def showEmberBanner(s: Server): IO[Unit] =
-    Logger[IO].info(s"\n${Banner.mkString("\n")}\nHTTP Server started at ${s.address}")
 
   override def run: IO[Unit] =
     config.load[IO].flatMap { cfg =>
@@ -26,24 +21,19 @@ object Main extends IOApp.Simple {
           AppResources
             .make[IO](cfg)
             .evalMap { res =>
-              Security.make[IO](cfg, res.psql, res.redis).map { security =>
+              Security.make[IO](cfg, res.postgres, res.redis).map { security =>
                 val clients  = HttpClients.make[IO](cfg.paymentConfig, res.client)
-                val services = Services.make[IO](res.redis, res.psql, cfg.cartExpiration)
+                val services = Services.make[IO](res.redis, res.postgres, cfg.cartExpiration)
                 val programs = Programs.make[IO](cfg.checkoutConfig, services, clients)
                 val api      = HttpApi.make[IO](services, programs, security)
-                cfg.httpServerConfig -> api
+                cfg.httpServerConfig -> api.httpApp
               }
             }
             .flatMap {
-              case (cfg, api) =>
-                EmberServerBuilder
-                  .default[IO]
-                  .withHost(cfg.host)
-                  .withPort(cfg.port)
-                  .withHttpApp(api.httpApp)
-                  .build
+              case (cfg, httpApp) =>
+                MkHttpServer[IO].newEmber(cfg, httpApp)
             }
-            .use(showEmberBanner(_) >> IO.never.void)
+            .useForever
         }
     }
 

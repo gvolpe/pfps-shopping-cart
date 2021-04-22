@@ -16,10 +16,10 @@ object Programs {
       services: Services[F],
       clients: HttpClients[F]
   ): Programs[F] =
-    Programs[F](checkoutConfig, services, clients)
+    new Programs[F](checkoutConfig, services, clients) {}
 }
 
-final case class Programs[F[_]: Background: Logger: Temporal] private (
+sealed abstract class Programs[F[_]: Background: Logger: Temporal] private (
     cfg: CheckoutConfig,
     services: Services[F],
     clients: HttpClients[F]

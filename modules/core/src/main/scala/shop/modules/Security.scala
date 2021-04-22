@@ -19,7 +19,7 @@ import skunk.Session
 object Security {
   def make[F[_]: Sync](
       cfg: AppConfig,
-      sessionPool: Resource[F, Session[F]],
+      postgres: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   ): F[Security[F]] = {
 
@@ -49,16 +49,16 @@ object Security {
       adminUser = AdminUser(User(UserId(content.uuid), UserName("admin")))
       tokens <- JwtExpire.make[F].map(Tokens.make[F](_, cfg.tokenConfig, cfg.tokenExpiration))
       crypto <- Crypto.make[F](cfg.passwordSalt)
-      users     = Users.make[F](sessionPool, crypto)
+      users     = Users.make[F](postgres, crypto)
       auth      = Auth.make[F](cfg.tokenExpiration, tokens, users, redis, crypto)
       adminAuth = UsersAuth.admin[F](adminToken, adminUser)
       usersAuth = UsersAuth.common[F](redis)
-    } yield new Security[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)
+    } yield new Security[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth) {}
 
   }
 }
 
-final class Security[F[_]] private (
+sealed abstract class Security[F[_]] private (
     val auth: Auth[F],
     val adminAuth: UsersAuth[F, AdminUser],
     val usersAuth: UsersAuth[F, CommonUser],

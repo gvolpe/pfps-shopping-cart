@@ -17,6 +17,6 @@ object HttpClients {
     }
 }
 
-trait HttpClients[F[_]] {
+sealed trait HttpClients[F[_]] {
   def payment: PaymentClient[F]
 }
