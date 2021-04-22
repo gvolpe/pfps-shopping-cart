@@ -9,8 +9,7 @@ import shop.generators._
 import shop.optics.IsUUID
 
 import monocle.law.discipline._
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.{ Arbitrary, Gen }
+import org.scalacheck.{Arbitrary, Cogen, Gen}
 import weaver.FunSuite
 import weaver.discipline.Discipline
 
@@ -19,14 +18,22 @@ object OpticsSuite extends FunSuite with Discipline {
   implicit val arbStatus: Arbitrary[Status] =
     Arbitrary(Gen.oneOf(Status.Okay, Status.Unreachable))
 
+  implicit val uuidCogen: Cogen[UUID] =
+    Cogen[(Long, Long)].contramap { uuid =>
+      uuid.getLeastSignificantBits -> uuid.getMostSignificantBits
+    }
+
   implicit val brandIdArb: Arbitrary[BrandId] =
     Arbitrary(brandIdGen)
+
+  implicit val brandIdCogen: Cogen[BrandId] =
+    Cogen[UUID].contramap[BrandId](_.value)
 
   implicit val catIdArb: Arbitrary[CategoryId] =
     Arbitrary(categoryIdGen)
 
-  implicit def arbFunction[A: Arbitrary]: Arbitrary[A => A] =
-    Arbitrary(arbitrary[A].map[A => A](a => (_ => a)))
+  implicit val catIdCogen: Cogen[CategoryId] =
+    Cogen[UUID].contramap[CategoryId](_.value)
 
   checkAll("Iso[Status._Bool]", IsoTests(Status._Bool))
 
