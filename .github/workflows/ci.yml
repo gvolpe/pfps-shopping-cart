@@ -24,10 +24,10 @@ jobs:
         run: docker-compose up -d
 
       - name: "Install Nix ❄️"
-        uses: cachix/install-nix-action@v12
+        uses: cachix/install-nix-action@v13
 
       - name: "Install Cachix ❄️"
-        uses: cachix/cachix-action@v8
+        uses: cachix/cachix-action@v10
         with:
           name: practical-fp-in-scala
 
