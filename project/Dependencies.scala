@@ -13,7 +13,7 @@ object Dependencies {
     val fs2           = "3.0.2"
     val http4s        = "1.0.0-M21"
     val http4sJwtAuth = "1.0.0-RC1"
-    val log4cats      = "2.0.1"
+    val log4cats      = "2.1.0"
     val monocle       = "3.0.0-M5"
     val newtype       = "0.4.4"
     val refined       = "0.9.24"
