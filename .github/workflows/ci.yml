@@ -30,6 +30,7 @@ jobs:
         uses: cachix/cachix-action@v10
         with:
           name: practical-fp-in-scala
+          signingKey: "${{ secrets.CACHIX_SIGNING_KEY }}"
 
       - name: "Run with ${{ matrix.java }} 🚀"
         run: nix-shell --argstr jdk "${{ matrix.java }}" --run "sbt 'test;it:test'"
