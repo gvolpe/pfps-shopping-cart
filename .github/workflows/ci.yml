@@ -4,7 +4,6 @@ on:
   pull_request: {}
   push:
     branches:
-      - master
       - second-edition
 
 jobs:
@@ -14,8 +13,7 @@ jobs:
     strategy:
       matrix:
         java:
-          - jdk11
-          - jdk15
+          - graalvm11-ce
     steps:
       - uses: actions/checkout@v2.3.2
 
@@ -26,12 +24,13 @@ jobs:
         run: docker-compose up -d
 
       - name: "Install Nix ❄️"
-        uses: cachix/install-nix-action@v12
+        uses: cachix/install-nix-action@v13
 
       - name: "Install Cachix ❄️"
-        uses: cachix/cachix-action@v8
+        uses: cachix/cachix-action@v10
         with:
-          name: neutron
+          name: practical-fp-in-scala
+          signingKey: "${{ secrets.CACHIX_SIGNING_KEY }}"
 
       - name: "Run with ${{ matrix.java }} 🚀"
         run: nix-shell --argstr jdk "${{ matrix.java }}" --run "sbt 'test;it:test'"

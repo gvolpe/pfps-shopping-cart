@@ -50,7 +50,7 @@ lazy val core = (project in file("modules/core"))
     resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
     scalafixCommonSettings,
-    dockerBaseImage := "openjdk:8u201-jre-alpine3.9",
+    dockerBaseImage := "openjdk:11-jre-slim-buster",
     dockerExposedPorts ++= Seq(8080),
     makeBatScripts := Seq(),
     dockerUpdateLatest := true,
