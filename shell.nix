@@ -1,4 +1,4 @@
-{ jdk ? "jdk15" }:
+{ jdk ? "graalvm11-ce" }:
 
 let
   config = {
@@ -7,13 +7,6 @@ let
 
       sbt = p.sbt.overrideAttrs (
         old: rec {
-          version = "1.4.7";
-
-          src = builtins.fetchurl {
-            url    = "https://github.com/sbt/sbt/releases/download/v${version}/sbt-${version}.tgz";
-            sha256 = "1zal5lxbips276v63sp4443nzbzkcv6h13d8nlb1mhm383z5k9y2";
-          };
-
           patchPhase = ''
             echo -java-home ${java} >> conf/sbtopts
           '';
@@ -23,9 +16,9 @@ let
   };
 
   nixpkgs = fetchTarball {
-    name   = "nixos-unstable-2021-02-21";
-    url    = "https://github.com/NixOS/nixpkgs/archive/9816b99e71c.tar.gz";
-    sha256 = "1dpz36i3vx0c1wmacrki0wsf30if8xq3bnj71g89rsbxyi87lhcm";
+    name   = "nixpkgs-unstable-2021-04-23";
+    url    = "https://github.com/NixOS/nixpkgs/archive/b2c2551614aa.tar.gz";
+    sha256 = "1wf3yy2gaphzmxn5iiyp63cm3wj16niafnimx5qh52vgqjw9fbrq";
   };
 
   pkgs = import nixpkgs { inherit config; };
