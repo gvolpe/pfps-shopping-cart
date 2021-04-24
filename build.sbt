@@ -1,7 +1,7 @@
 import Dependencies._
 
 ThisBuild / scalaVersion := "2.13.5"
-ThisBuild / version := "0.2.0"
+ThisBuild / version := "2.0.0"
 ThisBuild / organization := "dev.profunktor"
 ThisBuild / organizationName := "ProfunKtor"
 
@@ -44,7 +44,7 @@ lazy val core = (project in file("modules/core"))
   .enablePlugins(AshScriptPlugin)
   .settings(
     name := "shopping-cart-core",
-    packageName in Docker := "shopping-cart",
+    Docker / packageName := "shopping-cart",
     scalacOptions ++= List("-Ymacro-annotations", "-Yrangepos", "-Wconf:cat=unused:info"),
     scalafmtOnCompile := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
