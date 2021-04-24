@@ -27,7 +27,6 @@ pkgs.mkShell {
   name = "scala-shell";
 
   buildInputs = [
-    pkgs.coursier
     pkgs.${jdk}
     pkgs.sbt
   ];
