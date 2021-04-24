@@ -9,7 +9,7 @@ import shop.generators._
 import shop.optics.IsUUID
 
 import monocle.law.discipline._
-import org.scalacheck.{Arbitrary, Cogen, Gen}
+import org.scalacheck.{ Arbitrary, Cogen, Gen }
 import weaver.FunSuite
 import weaver.discipline.Discipline
 
