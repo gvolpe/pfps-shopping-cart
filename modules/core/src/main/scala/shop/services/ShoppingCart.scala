@@ -8,7 +8,7 @@ import shop.domain.item._
 import shop.effects._
 
 import cats.syntax.all._
-import cats.{ ApplicativeThrow, MonadThrow }
+import cats.MonadThrow
 import dev.profunktor.redis4cats.RedisCommands
 
 trait ShoppingCart[F[_]] {
@@ -28,17 +28,17 @@ object ShoppingCart {
     new ShoppingCart[F] {
 
       def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit] =
-        redis.hSet(userId.value.show, itemId.value.show, quantity.value.show) *>
-          redis.expire(userId.value.show, exp.value).void
+        redis.hSet(userId.show, itemId.show, quantity.show) *>
+          redis.expire(userId.show, exp.value).void
 
       def get(userId: UserId): F[CartTotal] =
-        redis.hGetAll(userId.value.show).flatMap {
+        redis.hGetAll(userId.show).flatMap {
           _.toList
             .traverseFilter {
               case (k, v) =>
                 for {
                   id <- ID.read[F, ItemId](k)
-                  qt <- ApplicativeThrow[F].catchNonFatal(Quantity(v.toInt))
+                  qt <- MonadThrow[F].catchNonFatal(Quantity(v.toInt))
                   rs <- items.findById(id).map(_.map(_.cart(qt)))
                 } yield rs
             }
@@ -48,22 +48,22 @@ object ShoppingCart {
         }
 
       def delete(userId: UserId): F[Unit] =
-        redis.del(userId.value.show).void
+        redis.del(userId.show).void
 
       def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
-        redis.hDel(userId.value.show, itemId.value.show).void
+        redis.hDel(userId.show, itemId.show).void
 
       def update(userId: UserId, cart: Cart): F[Unit] =
-        redis.hGetAll(userId.value.show).flatMap {
+        redis.hGetAll(userId.show).flatMap {
           _.toList.traverse_ {
             case (k, _) =>
               ID.read[F, ItemId](k).flatMap { id =>
                 cart.items.get(id).traverse_ { q =>
-                  redis.hSet(userId.value.show, k, q.value.show)
+                  redis.hSet(userId.show, k, q.show)
                 }
               }
           } *>
-            redis.expire(userId.value.show, exp.value).void
+            redis.expire(userId.show, exp.value).void
         }
     }
 }
