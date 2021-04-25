@@ -1,20 +1,15 @@
 package shop.ext.http4s
 
-import cats.data.{ Validated, ValidatedNel }
+import scala.annotation.implicitNotFound
+
 import derevo.{ Derivation, NewTypeDerivation }
-import magnolia.{ CaseClass, Magnolia }
-import org.http4s._
+import org.http4s.QueryParamDecoder
 
 object queryParam extends Derivation[QueryParamDecoder] with NewTypeDerivation[QueryParamDecoder] {
-  type Typeclass[T] = QueryParamDecoder[T]
+  def instance(implicit ev: OnlyNewtypes): Nothing = ev.absurd
 
-  def combine[T](ctx: CaseClass[QueryParamDecoder, T]): QueryParamDecoder[T] = new QueryParamDecoder[T] {
-    def decode(value: QueryParameterValue): ValidatedNel[ParseFailure, T] =
-      ctx.parameters.toList match {
-        case (p :: _) => p.typeclass.decode(value).map(_.asInstanceOf[T])
-        case _        => Validated.invalidNel(ParseFailure("error", "invalid"))
-      }
+  @implicitNotFound("use @derive(queryParam) only for newtypes")
+  abstract final class OnlyNewtypes {
+    def absurd: Nothing = ???
   }
-
-  def instance[T]: QueryParamDecoder[T] = macro Magnolia.gen[T]
 }
