@@ -17,16 +17,16 @@ trait Categories[F[_]] {
 
 object Categories {
   def make[F[_]: GenUUID: MonadCancelThrow](
-      pool: Resource[F, Session[F]]
+      postgres: Resource[F, Session[F]]
   ): Categories[F] =
     new Categories[F] {
       import CategorySQL._
 
       def findAll: F[List[Category]] =
-        pool.use(_.execute(selectAll))
+        postgres.use(_.execute(selectAll))
 
       def create(name: CategoryName): F[Unit] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(insertCategory).use { cmd =>
             ID.make[F, CategoryId].flatMap { id =>
               cmd.execute(Category(id, name)).void

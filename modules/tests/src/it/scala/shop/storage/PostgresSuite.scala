@@ -47,9 +47,9 @@ object PostgresSuite extends ResourceSuite {
         }
       }
 
-  test("Brands") { pool =>
+  test("Brands") { postgres =>
     forall(brandGen) { brand =>
-      val b = Brands.make[IO](pool)
+      val b = Brands.make[IO](postgres)
       for {
         x <- b.findAll
         _ <- b.create(brand.name)
@@ -59,9 +59,9 @@ object PostgresSuite extends ResourceSuite {
     }
   }
 
-  test("Categories") { pool =>
+  test("Categories") { postgres =>
     forall(categoryGen) { category =>
-      val c = Categories.make[IO](pool)
+      val c = Categories.make[IO](postgres)
       for {
         x <- c.findAll
         _ <- c.create(category.name)
@@ -71,7 +71,7 @@ object PostgresSuite extends ResourceSuite {
     }
   }
 
-  test("Items") { pool =>
+  test("Items") { postgres =>
     forall(itemGen) { item =>
       def newItem(
           bid: Option[BrandId],
@@ -84,9 +84,9 @@ object PostgresSuite extends ResourceSuite {
         categoryId = cid.getOrElse(item.category.uuid)
       )
 
-      val b = Brands.make[IO](pool)
-      val c = Categories.make[IO](pool)
-      val i = Items.make[IO](pool)
+      val b = Brands.make[IO](postgres)
+      val c = Categories.make[IO](postgres)
+      val i = Items.make[IO](postgres)
 
       for {
         x <- i.findAll
@@ -100,7 +100,7 @@ object PostgresSuite extends ResourceSuite {
     }
   }
 
-  test("Users") { pool =>
+  test("Users") { postgres =>
     val gen = for {
       u <- userNameGen
       p <- passwordGen
@@ -110,7 +110,7 @@ object PostgresSuite extends ResourceSuite {
       case (username, password) =>
         for {
           c <- Crypto.make[IO](salt)
-          u = Users.make[IO](pool, c)
+          u = Users.make[IO](postgres, c)
           d <- u.create(username, password)
           x <- u.find(username)
           z <- u.create(username, password).attempt
@@ -118,7 +118,7 @@ object PostgresSuite extends ResourceSuite {
     }
   }
 
-  test("Orders") { pool =>
+  test("Orders") { postgres =>
     val gen = for {
       oid <- orderIdGen
       pid <- paymentIdGen
@@ -130,10 +130,10 @@ object PostgresSuite extends ResourceSuite {
 
     forall(gen) {
       case (oid, pid, un, pw, items, price) =>
-        val o = Orders.make[IO](pool)
+        val o = Orders.make[IO](postgres)
         for {
           c <- Crypto.make[IO](salt)
-          u = Users.make[IO](pool, c)
+          u = Users.make[IO](postgres, c)
           d <- u.create(un, pw)
           x <- o.findBy(d)
           y <- o.get(d, oid)

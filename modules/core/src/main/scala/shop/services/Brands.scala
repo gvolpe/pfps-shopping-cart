@@ -17,16 +17,16 @@ trait Brands[F[_]] {
 
 object Brands {
   def make[F[_]: GenUUID: MonadCancelThrow](
-      pool: Resource[F, Session[F]]
+      postgres: Resource[F, Session[F]]
   ): Brands[F] =
     new Brands[F] {
       import BrandSQL._
 
       def findAll: F[List[Brand]] =
-        pool.use(_.execute(selectAll))
+        postgres.use(_.execute(selectAll))
 
       def create(name: BrandName): F[Unit] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(insertBrand).use { cmd =>
             ID.make[F, BrandId].flatMap { id =>
               cmd.execute(Brand(id, name)).void

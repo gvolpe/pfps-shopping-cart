@@ -22,31 +22,31 @@ trait Items[F[_]] {
 
 object Items {
   def make[F[_]: Concurrent: GenUUID](
-      pool: Resource[F, Session[F]]
+      postgres: Resource[F, Session[F]]
   ): Items[F] =
     new Items[F] {
       import ItemSQL._
 
       // In the book we'll see how to retrieve results in chunks using stream or cursor
       def findAll: F[List[Item]] =
-        pool.use(_.execute(selectAll))
+        postgres.use(_.execute(selectAll))
 
       def findBy(brand: BrandName): F[List[Item]] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(selectByBrand).use { ps =>
             ps.stream(brand, 1024).compile.toList
           }
         }
 
       def findById(itemId: ItemId): F[Option[Item]] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(selectById).use { ps =>
             ps.option(itemId)
           }
         }
 
       def create(item: CreateItem): F[Unit] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(insertItem).use { cmd =>
             ID.make[F, ItemId].flatMap { id =>
               cmd.execute(id ~ item).void
@@ -55,7 +55,7 @@ object Items {
         }
 
       def update(item: UpdateItem): F[Unit] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(updateItem).use { cmd =>
             cmd.execute(item).void
           }

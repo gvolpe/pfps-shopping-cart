@@ -190,7 +190,7 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
     }
   }
 
-  test(s"successful checkout") {
+  test("successful checkout") {
     forall(gen) {
       case (uid, pid, oid, ct, card) =>
         Checkout[IO](successfulClient(pid), successfulCart(ct), successfulOrders(oid), retryPolicy)
