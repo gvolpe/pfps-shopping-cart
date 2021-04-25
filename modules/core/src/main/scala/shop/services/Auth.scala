@@ -74,7 +74,7 @@ object Auth {
               t <- tokens.create
               u = User(i, username).asJson.noSpaces
               _ <- redis.setEx(t.value, u, TokenExpiration)
-              _ <- redis.setEx(username.value, t.value, TokenExpiration)
+              _ <- redis.setEx(username.show, t.value, TokenExpiration)
             } yield t
         }
 
@@ -84,18 +84,18 @@ object Auth {
           case Some(user) if user.password =!= crypto.encrypt(password) =>
             InvalidPassword(user.name).raiseError[F, JwtToken]
           case Some(user) =>
-            redis.get(username.value).flatMap {
+            redis.get(username.show).flatMap {
               case Some(t) => JwtToken(t).pure[F]
               case None =>
                 tokens.create.flatTap { t =>
                   redis.setEx(t.value, user.asJson.noSpaces, TokenExpiration) *>
-                    redis.setEx(username.value, t.value, TokenExpiration)
+                    redis.setEx(username.show, t.value, TokenExpiration)
                 }
             }
         }
 
       def logout(token: JwtToken, username: UserName): F[Unit] =
-        redis.del(token.value) *> redis.del(username.value).void
+        redis.del(token.show) *> redis.del(username.show).void
 
     }
 }

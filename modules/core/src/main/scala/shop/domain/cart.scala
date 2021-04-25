@@ -37,7 +37,7 @@ object cart {
 
   @derive(decoder, encoder, eqv, show)
   case class CartItem(item: Item, quantity: Quantity) {
-    def subTotal: Money = USD(item.price.value * quantity.value)
+    def subTotal: Money = USD(item.price.amount * quantity.value)
   }
 
   @derive(decoder, encoder, eqv, show)
