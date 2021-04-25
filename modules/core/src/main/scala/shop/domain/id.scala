@@ -4,11 +4,12 @@ import shop.effects.GenUUID
 import shop.optics.IsUUID
 
 import cats.Functor
+import cats.syntax.functor._
 
 object ID {
   def make[F[_]: Functor: GenUUID, A: IsUUID]: F[A] =
-    IsUUID[A].make[F]
+    GenUUID[F].make.map(IsUUID[A]._UUID.get)
 
   def read[F[_]: Functor: GenUUID, A: IsUUID](str: String): F[A] =
-    IsUUID[A].read[F](str)
+    GenUUID[F].read(str).map(IsUUID[A]._UUID.get)
 }
