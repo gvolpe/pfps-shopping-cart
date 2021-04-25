@@ -2,21 +2,13 @@ package shop.optics
 
 import java.util.UUID
 
-import shop.effects.GenUUID
+import scala.annotation.implicitNotFound
 
-import cats.Functor
-import cats.syntax.all._
 import derevo._
 import monocle.Iso
 
 trait IsUUID[A] {
   def _UUID: Iso[UUID, A]
-
-  def make[F[_]: Functor: GenUUID]: F[A] =
-    GenUUID[F].make.map(_UUID.get)
-
-  def read[F[_]: Functor: GenUUID](str: String): F[A] =
-    GenUUID[F].read(str).map(_UUID.get)
 }
 
 object IsUUID {
@@ -28,7 +20,10 @@ object IsUUID {
 }
 
 object uuid extends Derivation[IsUUID] with NewTypeDerivation[IsUUID] {
-  def instance[A]: IsUUID[A] = new IsUUID[A] {
-    val _UUID: Iso[UUID, A] = Iso[UUID, A](_.asInstanceOf[A])(_.asInstanceOf[UUID])
+  def instance(implicit ev: OnlyNewtypes): Nothing = ev.absurd
+
+  @implicitNotFound("use @derive(uuid) only for newtypes")
+  abstract final class OnlyNewtypes {
+    def absurd: Nothing = ???
   }
 }
