@@ -19,14 +19,14 @@ trait Users[F[_]] {
 
 object Users {
   def make[F[_]: GenUUID: MonadCancelThrow](
-      pool: Resource[F, Session[F]],
+      postgres: Resource[F, Session[F]],
       crypto: Crypto
   ): Users[F] =
     new Users[F] {
       import UserSQL._
 
       def find(username: UserName): F[Option[UserWithPassword]] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(selectUser).use { q =>
             q.option(username).map {
               case Some(u ~ p) => UserWithPassword(u.id, u.name, p).some
@@ -36,7 +36,7 @@ object Users {
         }
 
       def create(username: UserName, password: Password): F[UserId] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(insertUser).use { cmd =>
             ID.make[F, UserId].flatMap { id =>
               cmd

@@ -28,20 +28,20 @@ trait Orders[F[_]] {
 
 object Orders {
   def make[F[_]: Concurrent: GenUUID](
-      pool: Resource[F, Session[F]]
+      postgres: Resource[F, Session[F]]
   ): Orders[F] =
     new Orders[F] {
       import OrderSQL._
 
       def get(userId: UserId, orderId: OrderId): F[Option[Order]] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(selectByUserIdAndOrderId).use { q =>
             q.option(userId ~ orderId)
           }
         }
 
       def findBy(userId: UserId): F[List[Order]] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(selectByUserId).use { q =>
             q.stream(userId, 1024).compile.toList
           }
@@ -53,7 +53,7 @@ object Orders {
           items: List[CartItem],
           total: Money
       ): F[OrderId] =
-        pool.use { session =>
+        postgres.use { session =>
           session.prepare(insertOrder).use { cmd =>
             ID.make[F, OrderId].flatMap { id =>
               val itMap = items.map(x => x.item.uuid -> x.quantity).toMap

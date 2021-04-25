@@ -1,7 +1,7 @@
 package shop
 
-import cats.{ Eq, Monoid, Show }
 import cats.syntax.contravariant._
+import cats.{ Eq, Monoid, Show }
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe.{ Decoder, Encoder }
 import squants.market.{ Currency, Money, USD }

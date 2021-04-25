@@ -46,7 +46,7 @@ object RedisSuite extends ResourceSuite {
   val jwtClaim    = JwtClaim("test")
   val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
 
-  test("Shopping Cart") { cmd =>
+  test("Shopping Cart") { redis =>
     val gen = for {
       uid <- userIdGen
       it1 <- itemGen
@@ -59,7 +59,7 @@ object RedisSuite extends ResourceSuite {
       case (uid, it1, it2, q1, q2) =>
         Ref.of[IO, Map[ItemId, Item]](Map(it1.uuid -> it1, it2.uuid -> it2)).flatMap { ref =>
           val items = new TestItems(ref)
-          val c     = ShoppingCart.make[IO](items, cmd, Exp)
+          val c     = ShoppingCart.make[IO](items, redis, Exp)
           for {
             x <- c.get(uid)
             _ <- c.add(uid, it1.uuid, q1)
@@ -82,7 +82,7 @@ object RedisSuite extends ResourceSuite {
     }
   }
 
-  test("Authentication") { cmd =>
+  test("Authentication") { redis =>
     val gen = for {
       un1 <- userNameGen
       un2 <- userNameGen
@@ -94,17 +94,17 @@ object RedisSuite extends ResourceSuite {
         for {
           t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
           c <- Crypto.make[IO](PasswordSalt(Secret("test")))
-          a = Auth.make(tokenExp, t, new TestUsers(un2), cmd, c)
-          u = UsersAuth.common[IO](cmd)
+          a = Auth.make(tokenExp, t, new TestUsers(un2), redis, c)
+          u = UsersAuth.common[IO](redis)
           x <- u.findUser(JwtToken("invalid"))(jwtClaim)
           y <- a.login(un1, pw).attempt // UserNotFound
           j <- a.newUser(un1, pw)
           e <- jwtDecode[IO](j, userJwtAuth.value).attempt
           k <- a.login(un2, pw).attempt // InvalidPassword
           w <- u.findUser(j)(jwtClaim)
-          s <- cmd.get(j.value)
+          s <- redis.get(j.value)
           _ <- a.logout(j, un1)
-          z <- cmd.get(j.value)
+          z <- redis.get(j.value)
         } yield expect.all(
           x.isEmpty,
           y == Left(UserNotFound(un1)),

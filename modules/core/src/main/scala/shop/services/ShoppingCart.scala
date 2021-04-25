@@ -7,8 +7,8 @@ import shop.domain.cart._
 import shop.domain.item._
 import shop.effects._
 
-import cats.syntax.all._
 import cats.MonadThrow
+import cats.syntax.all._
 import dev.profunktor.redis4cats.RedisCommands
 
 trait ShoppingCart[F[_]] {
