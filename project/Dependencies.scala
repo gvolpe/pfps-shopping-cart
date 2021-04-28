@@ -8,7 +8,7 @@ object Dependencies {
     val catsRetry     = "2.1.0" // not published for CE3 yet
     val circe         = "0.14.0-M6"
     val ciris         = "2.0.0-RC2"
-    val derevo        = "0.12.3"
+    val derevo        = "0.12.5"
     val javaxCrypto   = "1.0.1"
     val fs2           = "3.0.2"
     val http4s        = "1.0.0-M21"
