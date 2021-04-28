@@ -5,11 +5,10 @@ import java.util.UUID
 import shop.domain.brand._
 import shop.domain.cart.{ CartItem, Quantity }
 import shop.domain.category._
-import shop.ext.circe.{ keyDecoder, keyEncoder }
 import shop.optics.uuid
 
 import derevo.cats._
-import derevo.circe.magnolia.{ decoder, encoder }
+import derevo.circe.magnolia._
 import derevo.derive
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
