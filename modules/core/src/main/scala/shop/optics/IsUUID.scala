@@ -2,9 +2,8 @@ package shop.optics
 
 import java.util.UUID
 
-import scala.annotation.implicitNotFound
+import shop.ext.derevo.Derive
 
-import derevo._
 import monocle.Iso
 
 trait IsUUID[A] {
@@ -19,11 +18,4 @@ object IsUUID {
   }
 }
 
-object uuid extends Derivation[IsUUID] with NewTypeDerivation[IsUUID] {
-  def instance(implicit ev: OnlyNewtypes): Nothing = ev.absurd
-
-  @implicitNotFound("use @derive(uuid) only for newtypes")
-  abstract final class OnlyNewtypes {
-    def absurd: Nothing = ???
-  }
-}
+object uuid extends Derive[IsUUID]
