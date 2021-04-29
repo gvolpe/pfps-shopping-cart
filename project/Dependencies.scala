@@ -19,7 +19,7 @@ object Dependencies {
     val refined       = "0.9.24"
     val redis4cats    = "1.0.0-RC3"
     val skunk         = "0.1.0"
-    val squants       = "1.7.4"
+    val squants       = "1.8.0"
 
     val betterMonadicFor = "0.3.1"
     val kindProjector    = "0.11.3"
