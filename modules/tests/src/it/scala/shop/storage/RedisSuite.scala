@@ -136,8 +136,8 @@ protected class TestItems(ref: Ref[IO, Map[ItemId, Item]]) extends Items[IO] {
     ref.get.map(_.values.filter(_.brand.name == brand).toList)
   def findById(itemId: ItemId): IO[Option[Item]] =
     ref.get.map(_.get(itemId))
-  def create(item: CreateItem): IO[Unit] =
-    ID.make[IO, ItemId].flatMap { id =>
+  def create(item: CreateItem): IO[ItemId] =
+    ID.make[IO, ItemId].flatTap { id =>
       val brand    = Brand(item.brandId, BrandName("foo"))
       val category = Category(item.categoryId, CategoryName("foo"))
       val newItem  = Item(id, item.name, item.description, item.price, brand, category)

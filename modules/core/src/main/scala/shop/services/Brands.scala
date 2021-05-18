@@ -12,7 +12,7 @@ import skunk.implicits._
 
 trait Brands[F[_]] {
   def findAll: F[List[Brand]]
-  def create(name: BrandName): F[Unit]
+  def create(name: BrandName): F[BrandId]
 }
 
 object Brands {
@@ -25,11 +25,11 @@ object Brands {
       def findAll: F[List[Brand]] =
         postgres.use(_.execute(selectAll))
 
-      def create(name: BrandName): F[Unit] =
+      def create(name: BrandName): F[BrandId] =
         postgres.use { session =>
           session.prepare(insertBrand).use { cmd =>
             ID.make[F, BrandId].flatMap { id =>
-              cmd.execute(Brand(id, name)).void
+              cmd.execute(Brand(id, name)).as(id)
             }
           }
         }

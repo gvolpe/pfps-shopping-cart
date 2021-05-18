@@ -1,5 +1,6 @@
 package shop.http.routes
 
+import shop.domain.ID
 import shop.domain.brand._
 import shop.generators._
 import shop.services.Brands
@@ -42,6 +43,6 @@ object BrandRoutesSuite extends HttpSuite {
 }
 
 protected class TestBrands extends Brands[IO] {
-  def create(name: BrandName): IO[Unit] = IO.unit
-  def findAll: IO[List[Brand]]          = IO.pure(List.empty)
+  def create(name: BrandName): IO[BrandId] = ID.make[IO, BrandId]
+  def findAll: IO[List[Brand]]             = IO.pure(List.empty)
 }
