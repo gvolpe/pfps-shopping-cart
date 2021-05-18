@@ -1,5 +1,6 @@
 package shop.http.routes
 
+import shop.domain.ID
 import shop.domain.brand._
 import shop.domain.item._
 import shop.generators._
@@ -63,6 +64,6 @@ protected class TestItems extends Items[IO] {
   def findAll: IO[List[Item]]                    = IO.pure(List.empty)
   def findBy(brand: BrandName): IO[List[Item]]   = IO.pure(List.empty)
   def findById(itemId: ItemId): IO[Option[Item]] = IO.pure(none[Item])
-  def create(item: CreateItem): IO[Unit]         = IO.unit
+  def create(item: CreateItem): IO[ItemId]       = ID.make[IO, ItemId]
   def update(item: UpdateItem): IO[Unit]         = IO.unit
 }

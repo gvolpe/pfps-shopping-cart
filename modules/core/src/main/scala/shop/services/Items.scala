@@ -16,7 +16,7 @@ trait Items[F[_]] {
   def findAll: F[List[Item]]
   def findBy(brand: BrandName): F[List[Item]]
   def findById(itemId: ItemId): F[Option[Item]]
-  def create(item: CreateItem): F[Unit]
+  def create(item: CreateItem): F[ItemId]
   def update(item: UpdateItem): F[Unit]
 }
 
@@ -45,11 +45,11 @@ object Items {
           }
         }
 
-      def create(item: CreateItem): F[Unit] =
+      def create(item: CreateItem): F[ItemId] =
         postgres.use { session =>
           session.prepare(insertItem).use { cmd =>
             ID.make[F, ItemId].flatMap { id =>
-              cmd.execute(id ~ item).void
+              cmd.execute(id ~ item).as(id)
             }
           }
         }
