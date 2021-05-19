@@ -1,6 +1,5 @@
 package shop.storage
 
-import shop.config.data.PasswordSalt
 import shop.domain._
 import shop.domain.brand._
 import shop.domain.category._
@@ -10,7 +9,6 @@ import shop.services._
 
 import cats.effect._
 import cats.implicits._
-import ciris._
 import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import natchez.Trace.Implicits.noop
@@ -20,8 +18,6 @@ import skunk.implicits._
 import suite.ResourceSuite
 
 object PostgresSuite extends ResourceSuite {
-
-  val salt = PasswordSalt(Secret("53kr3t"))
 
   val flushTables: List[Command[Void]] =
     List("items", "brands", "categories", "orders", "users").map { table =>
