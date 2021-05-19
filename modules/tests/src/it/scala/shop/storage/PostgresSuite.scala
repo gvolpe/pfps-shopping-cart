@@ -1,6 +1,5 @@
 package shop.storage
 
-import shop.auth._
 import shop.config.data.PasswordSalt
 import shop.domain._
 import shop.domain.brand._
@@ -103,14 +102,13 @@ object PostgresSuite extends ResourceSuite {
   test("Users") { postgres =>
     val gen = for {
       u <- userNameGen
-      p <- passwordGen
+      p <- encryptedPasswordGen
     } yield u -> p
 
     forall(gen) {
       case (username, password) =>
+        val u = Users.make[IO](postgres)
         for {
-          c <- Crypto.make[IO](salt)
-          u = Users.make[IO](postgres, c)
           d <- u.create(username, password)
           x <- u.find(username)
           z <- u.create(username, password).attempt
@@ -123,7 +121,7 @@ object PostgresSuite extends ResourceSuite {
       oid <- orderIdGen
       pid <- paymentIdGen
       un  <- userNameGen
-      pw  <- passwordGen
+      pw  <- encryptedPasswordGen
       it  <- Gen.listOf(cartItemGen)
       pr  <- moneyGen
     } yield (oid, pid, un, pw, it, pr)
@@ -131,9 +129,8 @@ object PostgresSuite extends ResourceSuite {
     forall(gen) {
       case (oid, pid, un, pw, items, price) =>
         val o = Orders.make[IO](postgres)
+        val u = Users.make[IO](postgres)
         for {
-          c <- Crypto.make[IO](salt)
-          u = Users.make[IO](postgres, c)
           d <- u.create(un, pw)
           x <- o.findBy(d)
           y <- o.get(d, oid)

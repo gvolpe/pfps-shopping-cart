@@ -67,6 +67,9 @@ object generators {
   val passwordGen: Gen[Password] =
     nesGen(Password.apply)
 
+  val encryptedPasswordGen: Gen[EncryptedPassword] =
+    nesGen(EncryptedPassword.apply)
+
   val quantityGen: Gen[Quantity] =
     Gen.posNum[Int].map(Quantity.apply)
 

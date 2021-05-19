@@ -49,7 +49,7 @@ object Security {
       adminUser = AdminUser(User(UserId(content.uuid), UserName("admin")))
       tokens <- JwtExpire.make[F].map(Tokens.make[F](_, cfg.tokenConfig, cfg.tokenExpiration))
       crypto <- Crypto.make[F](cfg.passwordSalt)
-      users     = Users.make[F](postgres, crypto)
+      users     = Users.make[F](postgres)
       auth      = Auth.make[F](cfg.tokenExpiration, tokens, users, redis, crypto)
       adminAuth = UsersAuth.admin[F](adminToken, adminUser)
       usersAuth = UsersAuth.common[F](redis)

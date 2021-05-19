@@ -1,12 +1,9 @@
 package shop.domain
 
-import java.util.UUID
-
 import scala.util.control.NoStackTrace
 
 import shop.domain.auth.UserId
 import shop.domain.item._
-import shop.optics.uuid
 
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
@@ -30,10 +27,6 @@ object cart {
     implicit val jsonDecoder: Decoder[Cart] =
       Decoder.forProduct1("items")(Cart.apply)
   }
-
-  @derive(decoder, encoder, eqv, show, uuid)
-  @newtype
-  case class CartId(value: UUID)
 
   @derive(decoder, encoder, eqv, show)
   case class CartItem(item: Item, quantity: Quantity) {
