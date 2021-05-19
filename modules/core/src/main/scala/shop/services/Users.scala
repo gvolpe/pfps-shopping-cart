@@ -1,6 +1,5 @@
 package shop.services
 
-import shop.auth.Crypto
 import shop.domain.ID
 import shop.domain.auth._
 import shop.effects.GenUUID
@@ -14,13 +13,12 @@ import skunk.implicits._
 
 trait Users[F[_]] {
   def find(username: UserName): F[Option[UserWithPassword]]
-  def create(username: UserName, password: Password): F[UserId]
+  def create(username: UserName, password: EncryptedPassword): F[UserId]
 }
 
 object Users {
   def make[F[_]: GenUUID: MonadCancelThrow](
-      postgres: Resource[F, Session[F]],
-      crypto: Crypto
+      postgres: Resource[F, Session[F]]
   ): Users[F] =
     new Users[F] {
       import UserSQL._
@@ -35,12 +33,12 @@ object Users {
           }
         }
 
-      def create(username: UserName, password: Password): F[UserId] =
+      def create(username: UserName, password: EncryptedPassword): F[UserId] =
         postgres.use { session =>
           session.prepare(insertUser).use { cmd =>
             ID.make[F, UserId].flatMap { id =>
               cmd
-                .execute(User(id, username) ~ crypto.encrypt(password))
+                .execute(User(id, username) ~ password)
                 .as(id)
                 .recoverWith {
                   case SqlState.UniqueViolation(_) =>

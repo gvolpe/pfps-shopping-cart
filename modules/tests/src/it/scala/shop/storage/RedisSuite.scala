@@ -125,7 +125,7 @@ protected class TestUsers(un: UserName) extends Users[IO] {
       .guard[Option]
       .as(UserWithPassword(UserId(UUID.randomUUID), un, EncryptedPassword("foo")))
   }
-  def create(username: UserName, password: Password): IO[UserId] =
+  def create(username: UserName, password: EncryptedPassword): IO[UserId] =
     ID.make[IO, UserId]
 }
 

@@ -70,7 +70,7 @@ object Auth {
           case Some(_) => UserNameInUse(username).raiseError[F, JwtToken]
           case None =>
             for {
-              i <- users.create(username, password)
+              i <- users.create(username, crypto.encrypt(password))
               t <- tokens.create
               u = User(i, username).asJson.noSpaces
               _ <- redis.setEx(t.value, u, TokenExpiration)
