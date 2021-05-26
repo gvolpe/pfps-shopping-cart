@@ -1,19 +1,31 @@
-Postgres:
-  restart: always
-  image: postgres:13.0-alpine
-  ports:
-    - "5432:5432"
-  environment:
-    - DEBUG=false
-    - POSTGRES_DB=store
-    - POSTGRES_PASSWORD=my-password
-  volumes:
-    - ./modules/core/src/main/resources/tables.sql:/docker-entrypoint-initdb.d/init.sql
+services:
 
-Redis:
-  restart: always
-  image: redis:6.2.0
-  ports:
-    - "6379:6379"
-  environment:
-    - DEBUG=false
+  postgres:
+    restart: always
+    image: postgres:13.0-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - DEBUG=false
+      - POSTGRES_DB=store
+      - POSTGRES_PASSWORD=my-password
+    volumes:
+      - ./modules/core/src/main/resources/tables.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    restart: always
+    image: redis:6.2.0
+    ports:
+      - "6379:6379"
+    environment:
+      - DEBUG=false
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
