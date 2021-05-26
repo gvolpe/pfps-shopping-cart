@@ -13,6 +13,10 @@ import shop.domain.payment.Payment
 import shop.http.auth.users._
 
 import eu.timepit.refined.api.Refined
+import eu.timepit.refined.scalacheck.string._
+import eu.timepit.refined.string.ValidBigDecimal
+import eu.timepit.refined.types.string.NonEmptyString
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import squants.market._
 
@@ -135,6 +139,9 @@ object generators {
       n <- userNameGen
     } yield User(i, n)
 
+  val adminUserGen: Gen[AdminUser] =
+    userGen.map(AdminUser(_))
+
   val commonUserGen: Gen[CommonUser] =
     userGen.map(CommonUser(_))
 
@@ -144,5 +151,17 @@ object generators {
       m <- moneyGen
       c <- cardGen
     } yield Payment(i, m, c)
+
+  val brandParamGen: Gen[BrandParam] =
+    arbitrary[NonEmptyString].map(BrandParam(_))
+
+  val createItemParamGen: Gen[CreateItemParam] =
+    for {
+      n <- arbitrary[NonEmptyString].map(ItemNameParam(_))
+      d <- arbitrary[NonEmptyString].map(ItemDescriptionParam(_))
+      p <- arbitrary[String Refined ValidBigDecimal].map(PriceParam(_))
+      b <- brandIdGen
+      c <- categoryIdGen
+    } yield CreateItemParam(n, d, p, b, c)
 
 }

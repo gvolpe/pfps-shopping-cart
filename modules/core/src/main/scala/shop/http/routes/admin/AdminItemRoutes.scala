@@ -6,6 +6,9 @@ import shop.http.auth.users.AdminUser
 import shop.services.Items
 
 import cats._
+import cats.syntax.all._
+import io.circe.JsonObject
+import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe.JsonDecoder
@@ -23,13 +26,15 @@ final case class AdminItemRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
       // Create new item
       case ar @ POST -> Root as _ =>
         ar.req.decodeR[CreateItemParam] { item =>
-          Created(items.create(item.toDomain))
+          items.create(item.toDomain).flatMap { id =>
+            Created(JsonObject.singleton("item_id", id.asJson))
+          }
         }
 
       // Update price of item
       case ar @ PUT -> Root as _ =>
         ar.req.decodeR[UpdateItemParam] { item =>
-          Ok(items.update(item.toDomain))
+          items.update(item.toDomain) >> Ok()
         }
     }
 

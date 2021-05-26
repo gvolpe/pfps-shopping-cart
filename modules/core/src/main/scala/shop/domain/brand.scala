@@ -12,9 +12,10 @@ import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
 import eu.timepit.refined.auto._
+import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
-import io.circe.Decoder
 import io.circe.refined._
+import io.circe.{ Decoder, Encoder }
 import io.estatico.newtype.macros.newtype
 
 object brand {
@@ -29,13 +30,16 @@ object brand {
       Brand(brandId, this)
   }
 
-  @derive(queryParam)
+  @derive(queryParam, show)
   @newtype
   case class BrandParam(value: NonEmptyString) {
     def toDomain: BrandName = BrandName(value.toLowerCase.capitalize)
   }
 
   object BrandParam {
+    implicit val jsonEncoder: Encoder[BrandParam] =
+      Encoder.forProduct1("name")(_.value)
+
     implicit val jsonDecoder: Decoder[BrandParam] =
       Decoder.forProduct1("name")(BrandParam.apply)
   }

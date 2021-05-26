@@ -23,6 +23,8 @@ object users {
   @newtype
   case class CommonUser(value: User)
 
-  @newtype case class AdminUser(value: User)
+  @derive(show)
+  @newtype
+  case class AdminUser(value: User)
 
 }
