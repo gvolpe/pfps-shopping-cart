@@ -82,12 +82,13 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % V.logback
 
     // Test
-    val catsLaws         = "org.typelevel"              %% "cats-laws"         % V.cats
-    val log4catsNoOp     = "org.typelevel"              %% "log4cats-noop"     % V.log4cats
-    val monocleLaw       = "com.github.julien-truffaut" %% "monocle-law"       % V.monocle
-    val weaverCats       = "com.disneystreaming"        %% "weaver-cats"       % V.weaver
-    val weaverDiscipline = "com.disneystreaming"        %% "weaver-discipline" % V.weaver
-    val weaverScalaCheck = "com.disneystreaming"        %% "weaver-scalacheck" % V.weaver
+    val catsLaws          = "org.typelevel"              %% "cats-laws"          % V.cats
+    val log4catsNoOp      = "org.typelevel"              %% "log4cats-noop"      % V.log4cats
+    val monocleLaw        = "com.github.julien-truffaut" %% "monocle-law"        % V.monocle
+    val refinedScalacheck = "eu.timepit"                 %% "refined-scalacheck" % V.refined
+    val weaverCats        = "com.disneystreaming"        %% "weaver-cats"        % V.weaver
+    val weaverDiscipline  = "com.disneystreaming"        %% "weaver-discipline"  % V.weaver
+    val weaverScalaCheck  = "com.disneystreaming"        %% "weaver-scalacheck"  % V.weaver
 
     // Scalafix rules
     val organizeImports = "com.github.liancheng" %% "organize-imports" % V.organizeImports

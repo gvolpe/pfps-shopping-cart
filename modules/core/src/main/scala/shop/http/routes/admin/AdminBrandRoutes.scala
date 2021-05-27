@@ -6,6 +6,9 @@ import shop.http.auth.users.AdminUser
 import shop.services.Brands
 
 import cats._
+import cats.syntax.all._
+import io.circe.JsonObject
+import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe.JsonDecoder
@@ -22,7 +25,9 @@ final case class AdminBrandRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
     AuthedRoutes.of {
       case ar @ POST -> Root as _ =>
         ar.req.decodeR[BrandParam] { bp =>
-          Created(brands.create(bp.toDomain))
+          brands.create(bp.toDomain).flatMap { id =>
+            Created(JsonObject.singleton("brand_id", id.asJson))
+          }
         }
     }
 

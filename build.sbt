@@ -32,6 +32,7 @@ lazy val tests = (project in file("modules/tests"))
       Libraries.catsLaws,
       Libraries.log4catsNoOp,
       Libraries.monocleLaw,
+      Libraries.refinedScalacheck,
       Libraries.weaverCats,
       Libraries.weaverDiscipline,
       Libraries.weaverScalaCheck
