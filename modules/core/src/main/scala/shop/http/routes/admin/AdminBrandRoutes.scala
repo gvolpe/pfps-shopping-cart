@@ -5,7 +5,7 @@ import shop.ext.http4s.refined._
 import shop.http.auth.users.AdminUser
 import shop.services.Brands
 
-import cats._
+import cats.MonadThrow
 import cats.syntax.all._
 import io.circe.JsonObject
 import io.circe.syntax._
@@ -15,7 +15,7 @@ import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 
-final case class AdminBrandRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
+final case class AdminBrandRoutes[F[_]: JsonDecoder: MonadThrow](
     brands: Brands[F]
 ) extends Http4sDsl[F] {
 

@@ -7,15 +7,15 @@ import shop.ext.http4s.refined._
 import shop.http.auth.users.CommonUser
 import shop.programs.Checkout
 
+import cats.MonadThrow
 import cats.syntax.all._
-import cats.{ Defer, MonadThrow }
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe.JsonDecoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 
-final case class CheckoutRoutes[F[_]: Defer: JsonDecoder: MonadThrow](
+final case class CheckoutRoutes[F[_]: JsonDecoder: MonadThrow](
     checkout: Checkout[F]
 ) extends Http4sDsl[F] {
 

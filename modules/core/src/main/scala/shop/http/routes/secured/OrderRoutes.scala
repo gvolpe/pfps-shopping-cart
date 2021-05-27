@@ -4,13 +4,13 @@ import shop.http.auth.users.CommonUser
 import shop.http.vars.OrderIdVar
 import shop.services.Orders
 
-import cats._
+import cats.Monad
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 
-final case class OrderRoutes[F[_]: Defer: Monad](
+final case class OrderRoutes[F[_]: Monad](
     orders: Orders[F]
 ) extends Http4sDsl[F] {
 
