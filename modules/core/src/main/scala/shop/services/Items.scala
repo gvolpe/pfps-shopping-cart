@@ -1,7 +1,7 @@
 package shop.services
 
 import shop.domain.ID
-import shop.domain.brand.{ Brand, _ }
+import shop.domain.brand._
 import shop.domain.category._
 import shop.domain.item._
 import shop.effects.GenUUID
