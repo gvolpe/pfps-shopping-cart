@@ -5,7 +5,7 @@ import shop.http.auth.users.CommonUser
 import shop.http.vars.ItemIdVar
 import shop.services.ShoppingCart
 
-import cats._
+import cats.Monad
 import cats.syntax.all._
 import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
@@ -13,7 +13,7 @@ import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 
-final case class CartRoutes[F[_]: Defer: JsonDecoder: Monad](
+final case class CartRoutes[F[_]: JsonDecoder: Monad](
     shoppingCart: ShoppingCart[F]
 ) extends Http4sDsl[F] {
 
