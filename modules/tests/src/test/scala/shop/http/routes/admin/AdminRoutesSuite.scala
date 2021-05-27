@@ -5,7 +5,7 @@ import shop.domain.item._
 import shop.generators._
 import shop.http.auth.users._
 import shop.http.routes.admin._
-import shop.services.{Brands, Items}
+import shop.services.{ Brands, Items }
 
 import cats.data.Kleisli
 import cats.effect._
