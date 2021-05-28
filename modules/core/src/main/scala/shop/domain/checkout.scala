@@ -5,7 +5,6 @@ import shop.ext.refined._
 import derevo.cats._
 import derevo.circe.magnolia.{ decoder, encoder }
 import derevo.derive
-import eu.timepit.refined._
 import eu.timepit.refined.api._
 import eu.timepit.refined.boolean.And
 import eu.timepit.refined.cats._
@@ -16,7 +15,7 @@ import io.circe.refined._
 import io.estatico.newtype.macros.newtype
 
 object checkout {
-  type Rgx = W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T
+  type Rgx = "^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"
 
   type CardNamePred       = String Refined MatchesRegex[Rgx]
   type CardNumberPred     = Long Refined Size[16]
