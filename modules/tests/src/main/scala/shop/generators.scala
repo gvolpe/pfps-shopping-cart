@@ -123,13 +123,28 @@ object generators {
   val cartGen: Gen[Cart] =
     Gen.nonEmptyMap(itemMapGen).map(Cart.apply)
 
+  val cardNameGen: Gen[CardName] =
+    Gen.stringOf(Gen.oneOf(('a' to 'z') ++ ('A' to 'Z'))).map { x =>
+      CardName(Refined.unsafeApply(x))
+    }
+
+  private def sized(size: Int): Gen[Long] = {
+    def go(s: Int, acc: String): Gen[Long] =
+      Gen.oneOf(1 to 9).flatMap { n =>
+        if (s == size) acc.toLong
+        else go(s + 1, acc + n.toString)
+      }
+
+    go(0, "")
+  }
+
   val cardGen: Gen[Card] =
     for {
-      n <- nonEmptyStringGen.map[CardNamePred](Refined.unsafeApply)
-      u <- Gen.posNum[Long].map[CardNumberPred](Refined.unsafeApply)
-      x <- Gen.posNum[Int].map[CardExpirationPred](x => Refined.unsafeApply(x.toString))
-      c <- Gen.posNum[Int].map[CardCVVPred](Refined.unsafeApply)
-    } yield Card(CardName(n), CardNumber(u), CardExpiration(x), CardCVV(c))
+      n <- cardNameGen
+      u <- sized(16).map(x => CardNumber(Refined.unsafeApply(x)))
+      x <- sized(4).map(x => CardExpiration(Refined.unsafeApply(x.toString)))
+      c <- sized(3).map(x => CardCVV(Refined.unsafeApply(x.toInt)))
+    } yield Card(n, u, x, c)
 
   // http routes generators
 
