@@ -14,7 +14,7 @@ object Dependencies {
     val http4s        = "1.0.0-M23"
     val http4sJwtAuth = "1.0.0-RC3"
     val log4cats      = "2.1.1"
-    val monocle       = "3.0.0-M6"
+    val monocle       = "3.0.0-RC2"
     val newtype       = "0.4.4"
     val refined       = "0.9.26"
     val redis4cats    = "1.0.0-RC3"
@@ -62,7 +62,7 @@ object Dependencies {
 
     val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % V.http4sJwtAuth
 
-    val monocleCore = "com.github.julien-truffaut" %% "monocle-core" % V.monocle
+    val monocleCore = "dev.optics" %% "monocle-core" % V.monocle
 
     val refinedCore = "eu.timepit" %% "refined"      % V.refined
     val refinedCats = "eu.timepit" %% "refined-cats" % V.refined
@@ -82,13 +82,13 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % V.logback
 
     // Test
-    val catsLaws          = "org.typelevel"              %% "cats-laws"          % V.cats
-    val log4catsNoOp      = "org.typelevel"              %% "log4cats-noop"      % V.log4cats
-    val monocleLaw        = "com.github.julien-truffaut" %% "monocle-law"        % V.monocle
-    val refinedScalacheck = "eu.timepit"                 %% "refined-scalacheck" % V.refined
-    val weaverCats        = "com.disneystreaming"        %% "weaver-cats"        % V.weaver
-    val weaverDiscipline  = "com.disneystreaming"        %% "weaver-discipline"  % V.weaver
-    val weaverScalaCheck  = "com.disneystreaming"        %% "weaver-scalacheck"  % V.weaver
+    val catsLaws          = "org.typelevel"       %% "cats-laws"          % V.cats
+    val log4catsNoOp      = "org.typelevel"       %% "log4cats-noop"      % V.log4cats
+    val monocleLaw        = "dev.optics"          %% "monocle-law"        % V.monocle
+    val refinedScalacheck = "eu.timepit"          %% "refined-scalacheck" % V.refined
+    val weaverCats        = "com.disneystreaming" %% "weaver-cats"        % V.weaver
+    val weaverDiscipline  = "com.disneystreaming" %% "weaver-discipline"  % V.weaver
+    val weaverScalaCheck  = "com.disneystreaming" %% "weaver-scalacheck"  % V.weaver
 
     // Scalafix rules
     val organizeImports = "com.github.liancheng" %% "organize-imports" % V.organizeImports
