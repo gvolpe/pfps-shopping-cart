@@ -133,7 +133,7 @@ protected class TestItems(ref: Ref[IO, Map[ItemId, Item]]) extends Items[IO] {
   def findAll: IO[List[Item]] =
     ref.get.map(_.values.toList)
   def findBy(brand: BrandName): IO[List[Item]] =
-    ref.get.map(_.values.filter(_.brand.name == brand).toList)
+    ref.get.map(_.values.filter(_.brand.name === brand).toList)
   def findById(itemId: ItemId): IO[Option[Item]] =
     ref.get.map(_.get(itemId))
   def create(item: CreateItem): IO[ItemId] =

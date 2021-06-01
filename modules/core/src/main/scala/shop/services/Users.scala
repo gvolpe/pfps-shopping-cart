@@ -65,7 +65,7 @@ private object UserSQL {
   val selectUser: Query[UserName, User ~ EncryptedPassword] =
     sql"""
         SELECT * FROM users
-        WHERE name = ${userName}
+        WHERE name = $userName
        """.query(codec)
 
   val insertUser: Command[User ~ EncryptedPassword] =
