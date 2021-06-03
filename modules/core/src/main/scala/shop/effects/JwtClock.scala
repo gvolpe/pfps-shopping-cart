@@ -11,7 +11,7 @@ trait JwtClock[F[_]] {
 object JwtClock {
   def apply[F[_]: JwtClock]: JwtClock[F] = implicitly
 
-  implicit def syncInstance[F[_]: Sync]: JwtClock[F] =
+  implicit def forSync[F[_]: Sync]: JwtClock[F] =
     new JwtClock[F] {
       def utc: F[Clock] = Sync[F].delay(Clock.systemUTC())
     }

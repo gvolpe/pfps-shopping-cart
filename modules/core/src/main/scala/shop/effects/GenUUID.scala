@@ -13,7 +13,7 @@ trait GenUUID[F[_]] {
 object GenUUID {
   def apply[F[_]: GenUUID]: GenUUID[F] = implicitly
 
-  implicit def syncGenUUID[F[_]: Sync]: GenUUID[F] =
+  implicit def forSync[F[_]: Sync]: GenUUID[F] =
     new GenUUID[F] {
       def make: F[UUID] = Sync[F].delay(UUID.randomUUID())
 
