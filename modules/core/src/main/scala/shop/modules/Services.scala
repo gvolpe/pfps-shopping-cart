@@ -1,6 +1,6 @@
 package shop.modules
 
-import shop.config.data._
+import shop.config.types._
 import shop.effects.GenUUID
 import shop.services._
 

@@ -1,7 +1,7 @@
 package shop.services
 
 import shop.auth.{ Crypto, Tokens }
-import shop.config.data.TokenExpiration
+import shop.config.types.TokenExpiration
 import shop.domain._
 import shop.domain.auth._
 import shop.http.auth.users._

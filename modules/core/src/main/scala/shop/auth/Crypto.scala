@@ -5,7 +5,7 @@ import java.util.Base64
 import javax.crypto.spec.{ IvParameterSpec, PBEKeySpec, SecretKeySpec }
 import javax.crypto.{ Cipher, SecretKeyFactory }
 
-import shop.config.data.PasswordSalt
+import shop.config.types.PasswordSalt
 import shop.domain.auth._
 
 import cats.effect.Sync

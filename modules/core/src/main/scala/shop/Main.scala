@@ -1,5 +1,6 @@
 package shop
 
+import shop.config.Config
 import shop.modules._
 import shop.resources._
 
@@ -15,7 +16,7 @@ object Main extends IOApp.Simple {
   implicit val logger = Slf4jLogger.getLogger[IO]
 
   override def run: IO[Unit] =
-    config.load[IO].flatMap { cfg =>
+    Config.load[IO].flatMap { cfg =>
       Logger[IO].info(s"Loaded config $cfg") >>
         Supervisor[IO].use { implicit sp =>
           AppResources

@@ -1,6 +1,6 @@
 package shop.auth
 
-import shop.config.data._
+import shop.config.types._
 import shop.effects._
 
 import cats.Monad
@@ -17,7 +17,7 @@ trait Tokens[F[_]] {
 object Tokens {
   def make[F[_]: GenUUID: Monad](
       jwtExpire: JwtExpire[F],
-      config: JwtSecretKeyConfig,
+      config: JwtAccessTokenKeyConfig,
       exp: TokenExpiration
   ): Tokens[F] =
     new Tokens[F] {

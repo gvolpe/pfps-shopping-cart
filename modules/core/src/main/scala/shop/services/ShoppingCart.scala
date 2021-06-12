@@ -1,6 +1,6 @@
 package shop.services
 
-import shop.config.data.ShoppingCartExpiration
+import shop.config.types.ShoppingCartExpiration
 import shop.domain._
 import shop.domain.auth._
 import shop.domain.cart._
