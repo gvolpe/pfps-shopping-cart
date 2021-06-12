@@ -1,6 +1,6 @@
 package shop.resources
 
-import shop.config.data._
+import shop.config.types._
 
 import cats.effect.std.Console
 import cats.effect.{ Concurrent, Resource }

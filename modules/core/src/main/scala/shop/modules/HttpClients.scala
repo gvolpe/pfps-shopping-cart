@@ -1,6 +1,6 @@
 package shop.modules
 
-import shop.config.data.PaymentConfig
+import shop.config.types.PaymentConfig
 import shop.http.clients.PaymentClient
 
 import cats.effect.MonadCancelThrow

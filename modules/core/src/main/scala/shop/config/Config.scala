@@ -2,7 +2,8 @@ package shop.config
 
 import scala.concurrent.duration._
 
-import shop.config.data._
+import shop.config.AppEnvironment._
+import shop.config.types._
 
 import cats.effect.Async
 import cats.syntax.all._
@@ -13,13 +14,10 @@ import eu.timepit.refined.auto._
 import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 
-import environments._
-import environments.AppEnvironment._
-
-object load {
+object Config {
 
   // Ciris promotes configuration as code
-  def apply[F[_]: Async]: F[AppConfig] =
+  def load[F[_]: Async]: F[AppConfig] =
     env("SC_APP_ENV")
       .as[AppEnvironment]
       .flatMap {
@@ -41,21 +39,17 @@ object load {
       paymentUri: PaymentURI
   ): ConfigValue[F, AppConfig] =
     (
-      env("SC_JWT_SECRET_KEY").as[NonEmptyString].secret,
-      env("SC_JWT_CLAIM").as[NonEmptyString].secret,
-      env("SC_ACCESS_TOKEN_SECRET_KEY").as[NonEmptyString].secret,
-      env("SC_ADMIN_USER_TOKEN").as[NonEmptyString].secret,
-      env("SC_PASSWORD_SALT").as[NonEmptyString].secret,
+      env("SC_JWT_SECRET_KEY").as[JwtSecretKeyConfig].secret,
+      env("SC_JWT_CLAIM").as[JwtClaimConfig].secret,
+      env("SC_ACCESS_TOKEN_SECRET_KEY").as[JwtAccessTokenKeyConfig].secret,
+      env("SC_ADMIN_USER_TOKEN").as[AdminUserTokenConfig].secret,
+      env("SC_PASSWORD_SALT").as[PasswordSalt].secret,
       env("SC_POSTGRES_PASSWORD").as[NonEmptyString].secret
-    ).parMapN { (secretKey, claimStr, tokenKey, adminToken, salt, postgresPassword) =>
+    ).parMapN { (jwtSecretKey, jwtClaim, tokenKey, adminToken, salt, postgresPassword) =>
       AppConfig(
-        AdminJwtConfig(
-          JwtSecretKeyConfig(secretKey),
-          JwtClaimConfig(claimStr),
-          AdminUserTokenConfig(adminToken)
-        ),
-        JwtSecretKeyConfig(tokenKey),
-        PasswordSalt(salt),
+        AdminJwtConfig(jwtSecretKey, jwtClaim, adminToken),
+        tokenKey,
+        salt,
         TokenExpiration(30.minutes),
         ShoppingCartExpiration(30.minutes),
         CheckoutConfig(

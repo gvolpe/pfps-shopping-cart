@@ -1,6 +1,6 @@
 package shop.modules
 
-import shop.config.data.CheckoutConfig
+import shop.config.types.CheckoutConfig
 import shop.effects._
 import shop.programs._
 

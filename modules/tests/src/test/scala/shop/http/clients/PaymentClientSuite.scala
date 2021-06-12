@@ -1,6 +1,6 @@
 package shop.http.clients
 
-import shop.config.data.{ PaymentConfig, PaymentURI }
+import shop.config.types.{ PaymentConfig, PaymentURI }
 import shop.domain.order.PaymentError
 import shop.generators._
 

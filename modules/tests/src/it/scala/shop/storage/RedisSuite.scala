@@ -5,7 +5,7 @@ import java.util.UUID
 import scala.concurrent.duration._
 
 import shop.auth._
-import shop.config.data._
+import shop.config.types._
 import shop.domain.ID
 import shop.domain.auth._
 import shop.domain.brand._
@@ -19,7 +19,6 @@ import shop.services._
 import cats.effect._
 import cats.effect.kernel.Ref
 import cats.implicits._
-import ciris.Secret
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.log4cats._
 import dev.profunktor.redis4cats.{ Redis, RedisCommands }
@@ -41,7 +40,7 @@ object RedisSuite extends ResourceSuite {
       .beforeAll(_.flushAll)
 
   val Exp         = ShoppingCartExpiration(30.seconds)
-  val tokenConfig = JwtSecretKeyConfig(Secret("bar"))
+  val tokenConfig = JwtAccessTokenKeyConfig("bar")
   val tokenExp    = TokenExpiration(30.seconds)
   val jwtClaim    = JwtClaim("test")
   val userJwtAuth = UserJwtAuth(JwtAuth.hmac("bar", JwtAlgorithm.HS256))
@@ -93,7 +92,7 @@ object RedisSuite extends ResourceSuite {
       case (un1, un2, pw) =>
         for {
           t <- JwtExpire.make[IO].map(Tokens.make[IO](_, tokenConfig, tokenExp))
-          c <- Crypto.make[IO](PasswordSalt(Secret("test")))
+          c <- Crypto.make[IO](PasswordSalt("test"))
           a = Auth.make(tokenExp, t, new TestUsers(un2), redis, c)
           u = UsersAuth.common[IO](redis)
           x <- u.findUser(JwtToken("invalid"))(jwtClaim)

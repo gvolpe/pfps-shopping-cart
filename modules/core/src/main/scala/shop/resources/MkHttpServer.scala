@@ -1,6 +1,6 @@
 package shop.resources
 
-import shop.config.data.HttpServerConfig
+import shop.config.types.HttpServerConfig
 
 import cats.effect.kernel.{ Async, Resource }
 import org.http4s.HttpApp

@@ -1,6 +1,6 @@
 package shop.http.clients
 
-import shop.config.data.PaymentConfig
+import shop.config.types.PaymentConfig
 import shop.domain.order._
 import shop.domain.payment._
 

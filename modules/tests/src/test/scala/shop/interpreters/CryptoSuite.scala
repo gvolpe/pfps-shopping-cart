@@ -1,18 +1,16 @@
 package shop.interpreters
 
 import shop.auth.Crypto
-import shop.config.data.PasswordSalt
+import shop.config.types.PasswordSalt
 import shop.domain.auth.Password
 
 import cats.effect.IO
-import ciris.Secret
 import eu.timepit.refined.auto._
-import eu.timepit.refined.cats._
 import weaver.SimpleIOSuite
 
 object CryptoSuite extends SimpleIOSuite {
 
-  private val salt = PasswordSalt(Secret("53kr3t"))
+  private val salt = PasswordSalt("53kr3t")
 
   test("password encoding and decoding roundtrip") {
     Crypto.make[IO](salt).map { crypto =>
