@@ -17,7 +17,7 @@ object Dependencies {
     val monocle       = "3.0.0-RC2"
     val newtype       = "0.4.4"
     val refined       = "0.9.26"
-    val redis4cats    = "1.0.0-RC3"
+    val redis4cats    = "1.0.0"
     val skunk         = "0.2.0"
     val squants       = "1.8.0"
 
