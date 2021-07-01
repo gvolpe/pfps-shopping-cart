@@ -10,7 +10,7 @@ object Dependencies {
     val ciris         = "2.0.1"
     val derevo        = "0.12.6"
     val javaxCrypto   = "1.0.1"
-    val fs2           = "3.0.4"
+    val fs2           = "3.0.5"
     val http4s        = "1.0.0-M23"
     val http4sJwtAuth = "1.0.0-RC3"
     val log4cats      = "2.1.1"
