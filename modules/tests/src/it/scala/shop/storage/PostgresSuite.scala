@@ -7,6 +7,7 @@ import shop.domain.item._
 import shop.generators._
 import shop.services._
 
+import cats.data.NonEmptyList
 import cats.effect._
 import cats.implicits._
 import eu.timepit.refined.auto._
@@ -118,7 +119,7 @@ object PostgresSuite extends ResourceSuite {
       pid <- paymentIdGen
       un  <- userNameGen
       pw  <- encryptedPasswordGen
-      it  <- Gen.listOf(cartItemGen)
+      it  <- Gen.nonEmptyListOf(cartItemGen).map(NonEmptyList.fromListUnsafe)
       pr  <- moneyGen
     } yield (oid, pid, un, pw, it, pr)
 

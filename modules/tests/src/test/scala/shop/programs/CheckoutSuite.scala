@@ -14,6 +14,7 @@ import shop.http.clients._
 import shop.retries.TestRetry
 import shop.services._
 
+import cats.data.NonEmptyList
 import cats.effect._
 import cats.effect.kernel.Ref
 import cats.implicits._
@@ -53,7 +54,12 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
     }
 
   val failingOrders: Orders[IO] = new TestOrders {
-    override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): IO[OrderId] =
+    override def create(
+        userId: UserId,
+        paymentId: PaymentId,
+        items: NonEmptyList[CartItem],
+        total: Money
+    ): IO[OrderId] =
       IO.raiseError(OrderError(""))
   }
 
@@ -75,7 +81,12 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
   }
 
   def successfulOrders(orderId: OrderId): Orders[IO] = new TestOrders {
-    override def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): IO[OrderId] =
+    override def create(
+        userId: UserId,
+        paymentId: PaymentId,
+        items: NonEmptyList[CartItem],
+        total: Money
+    ): IO[OrderId] =
       IO.pure(orderId)
   }
 
@@ -202,9 +213,9 @@ object CheckoutSuite extends SimpleIOSuite with Checkers {
 }
 
 protected class TestOrders() extends Orders[IO] {
-  def get(userId: UserId, orderId: OrderId): IO[Option[Order]]                                       = ???
-  def findBy(userId: UserId): IO[List[Order]]                                                        = ???
-  def create(userId: UserId, paymentId: PaymentId, items: List[CartItem], total: Money): IO[OrderId] = ???
+  def get(userId: UserId, orderId: OrderId): IO[Option[Order]]                                               = ???
+  def findBy(userId: UserId): IO[List[Order]]                                                                = ???
+  def create(userId: UserId, paymentId: PaymentId, items: NonEmptyList[CartItem], total: Money): IO[OrderId] = ???
 }
 
 protected class TestCart() extends ShoppingCart[IO] {
