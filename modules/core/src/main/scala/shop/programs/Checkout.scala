@@ -13,6 +13,7 @@ import shop.retries.{ Retriable, Retry }
 import shop.services._
 
 import cats.MonadThrow
+import cats.data.NonEmptyList
 import cats.syntax.all._
 import org.typelevel.log4cats.Logger
 import retry._
@@ -36,7 +37,7 @@ final case class Checkout[F[_]: Background: Logger: MonadThrow: Retry](
   private def createOrder(
       userId: UserId,
       paymentId: PaymentId,
-      items: List[CartItem],
+      items: NonEmptyList[CartItem],
       total: Money
   ): F[OrderId] = {
     val action =
@@ -58,17 +59,18 @@ final case class Checkout[F[_]: Background: Logger: MonadThrow: Retry](
     bgAction(action)
   }
 
+  private def ensureNonEmpty[A](xs: List[A]): F[NonEmptyList[A]] =
+    MonadThrow[F].fromOption(NonEmptyList.fromList(xs), EmptyCartError)
+
   def process(userId: UserId, card: Card): F[OrderId] =
-    cart
-      .get(userId)
-      .ensure(EmptyCartError)(_.items.nonEmpty)
-      .flatMap {
-        case CartTotal(items, total) =>
-          for {
-            pid <- processPayment(Payment(userId, total, card))
-            oid <- createOrder(userId, pid, items, total)
-            _   <- cart.delete(userId).attempt.void
-          } yield oid
-      }
+    cart.get(userId).flatMap {
+      case CartTotal(items, total) =>
+        for {
+          its <- ensureNonEmpty(items)
+          pid <- processPayment(Payment(userId, total, card))
+          oid <- createOrder(userId, pid, its, total)
+          _   <- cart.delete(userId).attempt.void
+        } yield oid
+    }
 
 }

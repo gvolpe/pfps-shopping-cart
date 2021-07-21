@@ -8,6 +8,7 @@ import shop.domain.order._
 import shop.effects.GenUUID
 import shop.sql.codecs._
 
+import cats.data.NonEmptyList
 import cats.effect._
 import cats.syntax.all._
 import skunk._
@@ -21,7 +22,7 @@ trait Orders[F[_]] {
   def create(
       userId: UserId,
       paymentId: PaymentId,
-      items: List[CartItem],
+      items: NonEmptyList[CartItem],
       total: Money
   ): F[OrderId]
 }
@@ -50,13 +51,13 @@ object Orders {
       def create(
           userId: UserId,
           paymentId: PaymentId,
-          items: List[CartItem],
+          items: NonEmptyList[CartItem],
           total: Money
       ): F[OrderId] =
         postgres.use { session =>
           session.prepare(insertOrder).use { cmd =>
             ID.make[F, OrderId].flatMap { id =>
-              val itMap = items.map(x => x.item.uuid -> x.quantity).toMap
+              val itMap = items.toList.map(x => x.item.uuid -> x.quantity).toMap
               val order = Order(id, paymentId, itMap, total)
               cmd.execute(userId ~ order).as(id)
             }
