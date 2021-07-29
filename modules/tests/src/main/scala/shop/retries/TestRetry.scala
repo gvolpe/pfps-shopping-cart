@@ -1,7 +1,6 @@
 package shop.retries
 
 import scala.annotation.nowarn
-import scala.reflect.ClassTag
 
 import cats.effect.IO
 import cats.effect.kernel.Ref
@@ -10,7 +9,7 @@ import retry._
 
 object TestRetry {
 
-  private[retries] def handlerFor[A <: RetryDetails: ClassTag](ref: Ref[IO, Option[A]]): Retry[IO] =
+  private[retries] def handlerFor[A <: RetryDetails](ref: Ref[IO, Option[A]]): Retry[IO] =
     new Retry[IO] {
       def retry[T](policy: RetryPolicy[IO], retriable: Retriable)(fa: IO[T]): IO[T] = {
         @nowarn
