@@ -12,7 +12,7 @@ object Dependencies {
     val javaxCrypto   = "1.0.1"
     val fs2           = "3.0.6"
     val http4s        = "1.0.0-M23"
-    val http4sJwtAuth = "1.0.0-RC3"
+    val http4sJwtAuth = "1.0.0"
     val log4cats      = "2.1.1"
     val monocle       = "3.0.0"
     val newtype       = "0.4.4"
