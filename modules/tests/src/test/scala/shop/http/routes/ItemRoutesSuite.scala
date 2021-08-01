@@ -7,7 +7,7 @@ import shop.generators._
 import shop.services.Items
 
 import cats.effect._
-import cats.syntax.option._
+import cats.syntax.all._
 import org.http4s.Method._
 import org.http4s._
 import org.http4s.client.dsl.io._
@@ -19,6 +19,8 @@ object ItemRoutesSuite extends HttpSuite {
   def dataItems(items: List[Item]) = new TestItems {
     override def findAll: IO[List[Item]] =
       IO.pure(items)
+    override def findBy(brand: BrandName): IO[List[Item]] =
+      IO.pure(items.find(_.brand.name === brand).toList)
   }
 
   def failingItems(items: List[Item]) = new TestItems {
@@ -44,9 +46,10 @@ object ItemRoutesSuite extends HttpSuite {
 
     forall(gen) {
       case (it, b) =>
-        val req    = GET(Uri.uri("/items").withQueryParam(b.name.value))
-        val routes = ItemRoutes[IO](dataItems(it)).routes
-        expectHttpBodyAndStatus(routes, req)(it, Status.Ok)
+        val req      = GET(Uri.uri("/items").withQueryParam("brand", b.name.value))
+        val routes   = ItemRoutes[IO](dataItems(it)).routes
+        val expected = it.find(_.brand.name === b.name).toList
+        expectHttpBodyAndStatus(routes, req)(expected, Status.Ok)
     }
   }
 
