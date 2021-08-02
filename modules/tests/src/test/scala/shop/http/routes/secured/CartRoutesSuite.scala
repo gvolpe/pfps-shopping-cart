@@ -14,6 +14,7 @@ import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.client.dsl.io._
 import org.http4s.server.AuthMiddleware
+import org.http4s.syntax.literals._
 import squants.market.USD
 import suite.HttpSuite
 
@@ -35,7 +36,7 @@ object CartRoutesSuite extends HttpSuite {
 
     forall(gen) {
       case (user, ct) =>
-        val req    = GET(Uri.uri("/cart"))
+        val req    = GET(uri"/cart")
         val routes = CartRoutes[IO](dataCart(ct)).routes(authMiddleware(user))
         expectHttpBodyAndStatus(routes, req)(ct, Status.Ok)
     }
@@ -49,7 +50,7 @@ object CartRoutesSuite extends HttpSuite {
 
     forall(gen) {
       case (user, c) =>
-        val req    = POST(c, Uri.uri("/cart"))
+        val req    = POST(c, uri"/cart")
         val routes = CartRoutes[IO](new TestShoppingCart).routes(authMiddleware(user))
         expectHttpStatus(routes, req)(Status.Created)
     }

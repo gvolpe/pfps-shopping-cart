@@ -16,6 +16,7 @@ import org.http4s._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.client.dsl.io._
 import org.http4s.server.AuthMiddleware
+import org.http4s.syntax.literals._
 import suite.HttpSuite
 
 object AdminRoutesSuite extends HttpSuite {
@@ -32,7 +33,7 @@ object AdminRoutesSuite extends HttpSuite {
 
     forall(gen) {
       case (id, user, brand) =>
-        val req      = POST(brand, Uri.uri("/brands"))
+        val req      = POST(brand, uri"/brands")
         val routes   = AdminBrandRoutes[IO](new TestBrands(id)).routes(authMiddleware(user))
         val expected = JsonObject.singleton("brand_id", id.asJson).asJson
         expectHttpBodyAndStatus(routes, req)(expected, Status.Created)
@@ -48,7 +49,7 @@ object AdminRoutesSuite extends HttpSuite {
 
     forall(gen) {
       case (id, user, item) =>
-        val req      = POST(item, Uri.uri("/items"))
+        val req      = POST(item, uri"/items")
         val routes   = AdminItemRoutes[IO](new TestItems(id)).routes(authMiddleware(user))
         val expected = JsonObject.singleton("item_id", id.asJson).asJson
         expectHttpBodyAndStatus(routes, req)(expected, Status.Created)
