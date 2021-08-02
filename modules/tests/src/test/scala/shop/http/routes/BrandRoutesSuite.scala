@@ -9,6 +9,7 @@ import cats.effect._
 import org.http4s.Method._
 import org.http4s._
 import org.http4s.client.dsl.io._
+import org.http4s.syntax.literals._
 import org.scalacheck.Gen
 import suite.HttpSuite
 
@@ -26,7 +27,7 @@ object BrandRoutesSuite extends HttpSuite {
 
   test("GET brands succeeds") {
     forall(Gen.listOf(brandGen)) { b =>
-      val req    = GET(Uri.uri("/brands"))
+      val req    = GET(uri"/brands")
       val routes = BrandRoutes[IO](dataBrands(b)).routes
       expectHttpBodyAndStatus(routes, req)(b, Status.Ok)
     }
@@ -34,7 +35,7 @@ object BrandRoutesSuite extends HttpSuite {
 
   test("GET brands fails") {
     forall(Gen.listOf(brandGen)) { b =>
-      val req    = GET(Uri.uri("/brands"))
+      val req    = GET(uri"/brands")
       val routes = BrandRoutes[IO](failingBrands(b)).routes
       expectHttpFailure(routes, req)
     }
