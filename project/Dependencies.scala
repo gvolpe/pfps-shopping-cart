@@ -4,7 +4,7 @@ object Dependencies {
 
   object V {
     val cats          = "2.6.1"
-    val catsEffect    = "3.2.4"
+    val catsEffect    = "3.2.5"
     val catsRetry     = "2.1.0" // not published for CE3 yet
     val circe         = "0.14.1"
     val ciris         = "2.1.1"
