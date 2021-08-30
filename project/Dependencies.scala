@@ -27,7 +27,7 @@ object Dependencies {
     val organizeImports  = "0.5.0"
     val semanticDB       = "4.4.26"
 
-    val weaver = "0.7.5"
+    val weaver = "0.7.6"
   }
 
   object Libraries {
