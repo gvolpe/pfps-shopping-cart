@@ -4,14 +4,14 @@ object Dependencies {
 
   object V {
     val cats          = "2.6.1"
-    val catsEffect    = "3.2.5"
-    val catsRetry     = "2.1.0" // not published for CE3 yet
+    val catsEffect    = "3.2.8"
+    val catsRetry     = "3.1.0"
     val circe         = "0.14.1"
     val ciris         = "2.1.1"
     val derevo        = "0.12.6"
     val javaxCrypto   = "1.0.1"
-    val fs2           = "3.1.1"
-    val http4s        = "0.23.3"
+    val fs2           = "3.1.2"
+    val http4s        = "0.23.1"
     val http4sJwtAuth = "1.0.0"
     val log4cats      = "2.1.1"
     val monocle       = "3.1.0"
@@ -22,8 +22,8 @@ object Dependencies {
     val squants       = "1.8.3"
 
     val betterMonadicFor = "0.3.1"
-    val kindProjector    = "0.13.1"
-    val logback          = "1.2.5"
+    val kindProjector    = "0.13.2"
+    val logback          = "1.2.6"
     val organizeImports  = "0.5.0"
     val semanticDB       = "4.4.26"
 

@@ -61,7 +61,7 @@ lazy val core = (project in file("modules/core"))
       CompilerPlugin.semanticDB,
       Libraries.cats,
       Libraries.catsEffect,
-      //Libraries.catsRetry,
+      Libraries.catsRetry,
       Libraries.circeCore,
       Libraries.circeGeneric,
       Libraries.circeParser,
