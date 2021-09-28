@@ -74,7 +74,9 @@ sealed abstract class HttpApi[F[_]: Async] private (
     { http: HttpRoutes[F] =>
       AutoSlash(http)
     } andThen { http: HttpRoutes[F] =>
-      CORS(http)
+      CORS.policy.withAllowOriginAll
+        .withAllowCredentials(false)
+        .apply(http)
     } andThen { http: HttpRoutes[F] =>
       Timeout(60.seconds)(http)
     }
