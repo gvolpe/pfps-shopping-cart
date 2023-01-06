@@ -18,6 +18,11 @@ class ItemRoutesSpec extends HttpTestSuite {
     override def findAll: IO[List[Item]] =
       IO.pure(items)
   }
+  
+  def dataItemsForBrand(items: List[Item]) = new TestItems {
+    override def findBy(brand: BrandName): IO[List[Item]] =
+      IO.pure(items)
+  }  
 
   def failingItems(items: List[Item]) = new TestItems {
     override def findAll: IO[List[Item]] =
@@ -40,8 +45,8 @@ class ItemRoutesSpec extends HttpTestSuite {
   test("GET items by brand [OK]") {
     forAll { (it: List[Item], b: Brand) =>
       IOAssertion {
-        GET(Uri.uri("/items").withQueryParam(b.name.value)).flatMap { req =>
-          val routes = new ItemRoutes[IO](dataItems(it)).routes
+        GET(Uri.uri("/items").withQueryParam("brand",b.name.value)).flatMap { req =>
+          val routes = new ItemRoutes[IO](dataItemsForBrand(it)).routes
           assertHttp(routes, req)(Status.Ok, it)
         }
       }
