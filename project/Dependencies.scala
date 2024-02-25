@@ -22,7 +22,7 @@ object Dependencies {
     val squants       = "1.8.3"
 
     val betterMonadicFor = "0.3.1"
-    val kindProjector    = "0.13.2"
+    val kindProjector    = "0.13.3"
     val logback          = "1.2.11"
     val organizeImports  = "0.6.0"
     val semanticDB       = "4.5.8"
